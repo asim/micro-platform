@@ -27,3 +27,8 @@ variable "nats_image" {
   description = "nats-io docker image"
   default     = "nats:2.1.0-alpine3.10"
 }
+
+variable "netdata_image" {
+  description = "Micro customised netdata image"
+  default     = "micro/netdata:latest"
+}
