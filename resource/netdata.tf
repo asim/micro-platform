@@ -42,7 +42,7 @@ resource "kubernetes_config_map" "netdata_master" {
         diskspace = no
         micro.d = yes
       [plugin:micro.d]
-        command options = --registry=etcd --registry_address=etcd-cluster
+        command options = --registry=etcd --registry_address=etcd-cluster.${var.resource_namespace}.svc
       EONETDATA
     "stream"  = <<-EOSTREAM
       [${upper(random_uuid.netdata_stream_id.result)}]
