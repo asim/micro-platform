@@ -104,6 +104,16 @@
               [chartType]="concurrencyRates.lineChartType"
             ></canvas>
           </div>
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="gcRates.data"
+              [options]="gcRates.options"
+              [chartType]="gcRates.lineChartType"
+            ></canvas>
+          </div>
       </mat-tab>
       <mat-tab label="Nodes">
         <br />

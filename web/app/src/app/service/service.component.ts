@@ -181,11 +181,42 @@ ${indent}}`;
           })
       };
     });
-    this.concurrencyRates.options.scales.yAxes[0].ticks.max = concMax * 1.5;
+    //this.concurrencyRates.options.scales.yAxes[0].ticks.max = concMax * 1.5;
+    this.gcRates.data = nodes.map(node => {
+      return {
+        label: node,
+        type: "line",
+        pointRadius: 0,
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        data: this.stats
+          .filter(stat => stat.service.node.id == node)
+          .map((stat, i) => {
+            let value = stat.gc;
+            if (i == 0 && this.stats.length > 0) {
+              const first = this.stats[0].gc ? this.stats[0].gc : 0;
+              value = this.stats[1].gc - first;
+            } else {
+              const prev = this.stats[i - 1].gc
+                ? this.stats[i - 1].gc
+                : 0;
+              value = this.stats[i].gc - prev;
+            }
+            return {
+              x: new Date(stat.timestamp * 1000),
+              y: value ? value : 0
+            };
+          })
+      };
+    });
   }
 
   // config options taken from https://www.chartjs.org/samples/latest/scales/time/financial.html
-  options(ylabel: string) {
+  options(ylabel: string, distribution?: string) {
+    if (!distribution) {
+      distribution = "series"
+    }
     return {
       options: {
         animation: {
@@ -195,7 +226,7 @@ ${indent}}`;
           xAxes: [
             {
               type: "time",
-              distribution: "series",
+              distribution: distribution,
               offset: true,
               ticks: {
                 major: {
@@ -245,4 +276,5 @@ ${indent}}`;
   requestRates = this.options("requests/second");
   errorRates = this.options("errors/second");
   concurrencyRates = this.options("goroutines");
+  gcRates = this.options("garbage collection (nanoseconds/seconds)");
 }
