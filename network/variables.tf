@@ -1,9 +1,13 @@
-variable "do_token" {
-  description = "DigitalOcean Personal Access Token"
+variable "network_namespace" {
+  description = "Network Kubernetes namespace"
+  type        = string
+  default     = "network"
 }
 
-variable "slack_token" {
-  description = "Slack token for Micro Bot"
+variable "resource_namespace" {
+  description = "Shared Infrastructure Kubernetes namespace"
+  type        = string
+  default     = "resource"
 }
 
 variable "cloudflare_account_id" {

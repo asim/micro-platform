@@ -9,9 +9,22 @@ variable "service_replicas" {
   default     = 1
 }
 
+variable "create_k8s_service" {
+  description = "Whether to create a Kubernetes service"
+  type        = bool
+  default     = true
+}
+
+variable "service_type" {
+  description = "Kubernetes service type"
+  type        = string
+  default     = "ClusterIP"
+}
+
 variable "service_port" {
   description = "Service port"
   type        = number
+  default     = -1
 }
 
 variable "service_protocol" {

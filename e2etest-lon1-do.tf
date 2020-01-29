@@ -2,8 +2,9 @@
 
 # Instatiate a specific digitalocean provider per module.
 provider "digitalocean" {
-  alias = "e2etest"
-  token = var.do_token
+  alias   = "e2etest"
+  token   = var.do_token
+  version = "~> 1.13"
 }
 
 module "e2etest_k8s" {
@@ -53,6 +54,21 @@ module "e2etest_control" {
   control_namespace  = "e2econtrol"
   resource_namespace = "e2eresource"
   slack_token        = var.slack_token
+}
+
+module "e2etest_network" {
+  source = "./network"
+  providers = {
+    kubernetes = kubernetes.e2etest
+  }
+  network_namespace  = "e2enetwork"
+  resource_namespace = "e2eresource"
+
+  cloudflare_account_id              = var.cloudflare_account_id
+  cloudflare_api_token               = var.cloudflare_api_token
+  cloudflare_dns_zone_id             = var.cloudflare_dns_zone_id
+  cloudflare_kv_namespace_id         = var.cloudflare_kv_namespace_id
+  cloudflare_kv_namespace_id_runtime = var.cloudflare_kv_namespace_id_runtime
 }
 
 resource "local_file" "e2etest_kubeconfig" {
