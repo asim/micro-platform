@@ -10,3 +10,5 @@ require (
 	github.com/micro/micro v1.18.1-0.20200129112143-c64a2f7745fe
 	golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6
 )
+
+replace github.com/micro/micro => github.com/micro/micro v1.18.1-0.20200123150258-806d0dbc6970
