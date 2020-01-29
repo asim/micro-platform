@@ -66,6 +66,16 @@ module "debug_web" {
   }
 }
 
+module "debug" {
+    source = "./service"
+
+  resource_namespace = var.resource_namespace
+  network_namespace  = kubernetes_namespace.network.id
+
+  service_name       = "debug"
+  create_k8s_service = false
+}
+
 module "monitor" {
   source = "./service"
 
