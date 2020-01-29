@@ -38,6 +38,9 @@ resource "kubernetes_service" "network_service" {
     }
     selector = merge(local.common_labels, var.extra_labels)
   }
+  lifecycle {
+    ignore_changes = [metadata.0.annotations]
+  }
 }
 
 resource "kubernetes_deployment" "network_deployment" {
