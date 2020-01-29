@@ -63,57 +63,25 @@
       </mat-tab>
       <mat-tab label="Stats">
         <br />
-
-          <div style="display: block;">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="requestRates.data"
-              [options]="requestRates.options"
-              [chartType]="requestRates.lineChartType"
-            ></canvas>
-          </div>
-          <div style="display: block;">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="memoryRates.data"
-              [options]="memoryRates.options"
-              [chartType]="memoryRates.lineChartType"
-            ></canvas>
-          </div>
-          <div style="display: block;">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="errorRates.data"
-              [options]="errorRates.options"
-              [chartType]="errorRates.lineChartType"
-            ></canvas>
-          </div>
-          <div style="display: block;">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="concurrencyRates.data"
-              [options]="concurrencyRates.options"
-              [chartType]="concurrencyRates.lineChartType"
-            ></canvas>
-          </div>
-          <div style="display: block;">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="gcRates.data"
-              [options]="gcRates.options"
-              [chartType]="gcRates.lineChartType"
-            ></canvas>
-          </div>
+        <ngx-charts-line-chart *ngIf="requestRates.data"
+          [view]="requestRates.view"
+          [legendTitle]="requestRates.legendTitle"
+          animations="false"
+          [scheme]="requestRates.colorScheme"
+          [legend]="requestRates.legend"
+          [showXAxisLabel]="requestRates.showXAxisLabel"
+          [showYAxisLabel]="requestRates.showYAxisLabel"
+          [xAxis]="requestRates.xAxis"
+          [yAxis]="requestRates.yAxis"
+          [xAxisLabel]="requestRates.xAxisLabel"
+          [yAxisLabel]="requestRates.yAxisLabel"
+          [timeline]="requestRates.timeline"
+          [results]="requestRates.data"
+          (select)="requestRates.onSelect($event)"
+          (activate)="requestRates.onActivate($event)"
+          (deactivate)="requestRates.onDeactivate($event)"
+        >
+        </ngx-charts-line-chart>
       </mat-tab>
       <mat-tab label="Nodes">
         <br />

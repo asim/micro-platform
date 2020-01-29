@@ -41,12 +41,6 @@ export class ServiceComponent implements OnInit {
         this.stats = stats;
         this.processStats();
       });
-      this.intervalId = setInterval(() => {
-        this.ses.stats(this.serviceName).then(stats => {
-          this.stats = stats;
-          this.processStats();
-        });
-      }, 5000);
     });
   }
 
@@ -84,197 +78,65 @@ ${indent}}`;
       .filter(onlyUnique);
     this.requestRates.data = nodes.map(node => {
       return {
-        label: node,
-        type: "line",
-        pointRadius: 0,
-        fill: false,
-        lineTension: 0,
-        borderWidth: 2,
-        data: this.stats
+        name: node,
+        series: this.stats
           .filter(stat => stat.service.node.id == node)
           .map((stat, i) => {
-            let value = stat.requests;
-            if (i == 0 && this.stats.length > 0) {
-              const first = this.stats[0].requests ? this.stats[0].requests : 0;
-              value = this.stats[1].requests - first;
-            } else {
-              const prev = this.stats[i - 1].requests
-                ? this.stats[i - 1].requests
-                : 0;
-              value = this.stats[i].requests - prev;
-            }
+            let value = stat.requests
+            //if (i == 0 && this.stats.length > 0) {
+            //  const first = this.stats[0].requests ? this.stats[0].requests : 0
+            //  value = this.stats[1].requests - first
+            //} else {
+            //  const prev = this.stats[i-1].requests ? this.stats[i-1].requests : 0
+            //  value = this.stats[i].requests - prev
+            //}
             return {
-              x: new Date(stat.timestamp * 1000),
-              y: value ? value : 0
+              name: new Date(stat.timestamp * 1000),
+              value: value ? value : 0 
             };
           })
       };
     });
-
-    this.memoryRates.data = nodes.map(node => {
-      return {
-        label: node,
-        type: "line",
-        pointRadius: 0,
-        fill: false,
-        lineTension: 0,
-        borderWidth: 2,
-        data: this.stats
-          .filter(stat => stat.service.node.id == node)
-          .map((stat, i) => {
-            let value = stat.memory;
-            return {
-              x: new Date(stat.timestamp * 1000),
-              y: value ? value / (1000 * 1000) : 0
-            };
-          })
-      };
-    });
-    this.errorRates.data = nodes.map(node => {
-      return {
-        label: node,
-        type: "line",
-        pointRadius: 0,
-        fill: false,
-        lineTension: 0,
-        borderWidth: 2,
-        data: this.stats
-          .filter(stat => stat.service.node.id == node)
-          .map((stat, i) => {
-            let value = stat.errors;
-            if (i == 0 && this.stats.length > 0) {
-              const first = this.stats[0].errors ? this.stats[0].errors : 0;
-              value = this.stats[1].errors - first;
-            } else {
-              const prev = this.stats[i - 1].errors
-                ? this.stats[i - 1].errors
-                : 0;
-              value = this.stats[i].errors - prev;
-            }
-            return {
-              x: new Date(stat.timestamp * 1000),
-              y: value ? value : 0
-            };
-          })
-      };
-    });
-    let concMax = 0;
-    this.concurrencyRates.data = nodes.map(node => {
-      return {
-        label: node,
-        type: "line",
-        pointRadius: 0,
-        fill: false,
-        lineTension: 0,
-        borderWidth: 2,
-        data: this.stats
-          .filter(stat => stat.service.node.id == node)
-          .map((stat, i) => {
-            let value = stat.threads;
-            if (value > concMax) {
-              concMax = value;
-            }
-            return {
-              x: new Date(stat.timestamp * 1000),
-              y: value ? value : 0
-            };
-          })
-      };
-    });
-    //this.concurrencyRates.options.scales.yAxes[0].ticks.max = concMax * 1.5;
-    this.gcRates.data = nodes.map(node => {
-      return {
-        label: node,
-        type: "line",
-        pointRadius: 0,
-        fill: false,
-        lineTension: 0,
-        borderWidth: 2,
-        data: this.stats
-          .filter(stat => stat.service.node.id == node)
-          .map((stat, i) => {
-            let value = stat.gc;
-            if (i == 0 && this.stats.length > 0) {
-              const first = this.stats[0].gc ? this.stats[0].gc : 0;
-              value = this.stats[1].gc - first;
-            } else {
-              const prev = this.stats[i - 1].gc
-                ? this.stats[i - 1].gc
-                : 0;
-              value = this.stats[i].gc - prev;
-            }
-            return {
-              x: new Date(stat.timestamp * 1000),
-              y: value ? value : 0
-            };
-          })
-      };
-    });
+    console.log(this.requestRates.data);
   }
 
-  // config options taken from https://www.chartjs.org/samples/latest/scales/time/financial.html
-  options(ylabel: string, distribution?: string) {
-    if (!distribution) {
-      distribution = "series"
-    }
-    return {
-      options: {
-        animation: {
-          duration: 0
-        },
-        scales: {
-          xAxes: [
-            {
-              type: "time",
-              distribution: distribution,
-              offset: true,
-              ticks: {
-                major: {
-                  enabled: true,
-                  fontStyle: "bold"
-                },
-                source: "data",
-                autoSkip: true,
-                autoSkipPadding: 75,
-                maxRotation: 0,
-                sampleSize: 100
-              }
-            }
-          ],
-          yAxes: [
-            {
-              gridLines: {
-                drawBorder: false
-              },
-              scaleLabel: {
-                display: true,
-                labelString: ylabel
-              }
-            }
-          ]
-        },
-        tooltips: {
-          intersect: false,
-          mode: "index",
-          callbacks: {
-            label: function(tooltipItem, myData) {
-              var label = myData.datasets[tooltipItem.datasetIndex].label || "";
-              if (label) {
-                label += ": ";
-              }
-              label += parseFloat(tooltipItem.value).toFixed(2);
-              return label;
-            }
-          }
-        }
-      },
-      data: [],
-      lineChartType: "line"
-    };
-  }
-  memoryRates = this.options("memory usage (MB)");
-  requestRates = this.options("requests/second");
-  errorRates = this.options("errors/second");
-  concurrencyRates = this.options("goroutines");
-  gcRates = this.options("garbage collection (nanoseconds/seconds)");
+
+
+  // options
+  requestRates = {
+    view: [700, 300],
+    legend: true,
+    showLabels: true,
+    animations: true,
+    xAxis: true,
+    yAxis: true,
+    showYAxisLabel: true,
+    showXAxisLabel: true,
+    xAxisLabel: "time",
+    yAxisLabel: "req/s",
+    timeline: false,
+    legendTitle: "Nodes",
+
+    colorScheme: {
+      domain: ["#5AA454", "#E44D25", "#CFC0BB", "#7aa3e5", "#a8385d", "#aae3f5"]
+    },
+
+    data: [],
+    onSelect (data): void {
+      //console.log("Item clicked", JSON.parse(JSON.stringify(data)));
+    },
+  
+    onActivate(data): void {
+      //console.log("Activate", JSON.parse(JSON.stringify(data)));
+    },
+  
+    onDeactivate(data): void {
+     // console.log("Deactivate", JSON.parse(JSON.stringify(data)));
+    },
+
+    lineChartType: "line",
+    lineChartPlugins: [],
+  };
+
+
 }
