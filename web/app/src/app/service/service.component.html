@@ -63,11 +63,46 @@
       </mat-tab>
       <mat-tab label="Stats">
         <br />
-        <div style="display: block;">
-          <canvas baseChart width="400" height="400"
-                      [datasets]="requestRates.data"
-                      [options]="requestRates.options"
-                      [chartType]="requestRates.lineChartType"></canvas>
+
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="requestRates.data"
+              [options]="requestRates.options"
+              [chartType]="requestRates.lineChartType"
+            ></canvas>
+          </div>
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="memoryRates.data"
+              [options]="memoryRates.options"
+              [chartType]="memoryRates.lineChartType"
+            ></canvas>
+          </div>
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="errorRates.data"
+              [options]="errorRates.options"
+              [chartType]="errorRates.lineChartType"
+            ></canvas>
+          </div>
+          <div style="display: block;">
+            <canvas
+              baseChart
+              width="400"
+              height="400"
+              [datasets]="concurrencyRates.data"
+              [options]="concurrencyRates.options"
+              [chartType]="concurrencyRates.lineChartType"
+            ></canvas>
           </div>
       </mat-tab>
       <mat-tab label="Nodes">
