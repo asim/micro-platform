@@ -68,29 +68,27 @@ ${indent}}`;
       .filter(onlyUnique);
     this.requestRates.data = nodes.map(node => {
       return {
-        name: node,
-        series: this.stats
+        label: node,
+        data: this.stats
           .filter(stat => stat.service.node.id == node)
           .map((stat, i) => {
-            let value = stat.requests
-            //if (i == 0 && this.stats.length > 0) {
-            //  const first = this.stats[0].requests ? this.stats[0].requests : 0
-            //  value = this.stats[1].requests - first
-            //} else {
-            //  const prev = this.stats[i-1].requests ? this.stats[i-1].requests : 0
-            //  value = this.stats[i].requests - prev
-            //}
+            let value = stat.requests;
+            if (i == 0 && this.stats.length > 0) {
+              const first = this.stats[0].requests ? this.stats[0].requests : 0
+              value = this.stats[1].requests - first
+            } else {
+              const prev = this.stats[i-1].requests ? this.stats[i-1].requests : 0
+              value = this.stats[i].requests - prev
+            }
             return {
-              name: new Date(stat.timestamp * 1000),
-              value: value ? value : 0 
+              x: new Date(stat.timestamp * 1000),
+              y: value ? value : 0
             };
           })
       };
     });
     console.log(this.requestRates.data);
   }
-
-
 
   // options
   requestRates = {
@@ -100,6 +98,18 @@ ${indent}}`;
     animations: true,
     xAxis: true,
     yAxis: true,
+    options: {
+      scales: {
+        xAxes: [
+          {
+            type: "time",
+            time: {
+              unit: "month"
+            }
+          }
+        ]
+      }
+    },
     showYAxisLabel: true,
     showXAxisLabel: true,
     xAxisLabel: "time",
@@ -112,21 +122,19 @@ ${indent}}`;
     },
 
     data: [],
-    onSelect (data): void {
+    onSelect(data): void {
       //console.log("Item clicked", JSON.parse(JSON.stringify(data)));
     },
-  
+
     onActivate(data): void {
       //console.log("Activate", JSON.parse(JSON.stringify(data)));
     },
-  
+
     onDeactivate(data): void {
-     // console.log("Deactivate", JSON.parse(JSON.stringify(data)));
+      // console.log("Deactivate", JSON.parse(JSON.stringify(data)));
     },
 
     lineChartType: "line",
-    lineChartPlugins: [],
+    lineChartPlugins: []
   };
-
-
 }

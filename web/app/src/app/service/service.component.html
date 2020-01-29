@@ -63,25 +63,12 @@
       </mat-tab>
       <mat-tab label="Stats">
         <br />
-        <ngx-charts-line-chart *ngIf="requestRates.data"
-          [view]="requestRates.view"
-          [legendTitle]="requestRates.legendTitle"
-          animations="false"
-          [scheme]="requestRates.colorScheme"
-          [legend]="requestRates.legend"
-          [showXAxisLabel]="requestRates.showXAxisLabel"
-          [showYAxisLabel]="requestRates.showYAxisLabel"
-          [xAxis]="requestRates.xAxis"
-          [yAxis]="requestRates.yAxis"
-          [xAxisLabel]="requestRates.xAxisLabel"
-          [yAxisLabel]="requestRates.yAxisLabel"
-          [timeline]="requestRates.timeline"
-          [results]="requestRates.data"
-          (select)="requestRates.onSelect($event)"
-          (activate)="requestRates.onActivate($event)"
-          (deactivate)="requestRates.onDeactivate($event)"
-        >
-        </ngx-charts-line-chart>
+        <div style="display: block;">
+          <canvas baseChart width="400" height="400"
+                      [datasets]="requestRates.data"
+                      [options]="requestRates.options"
+                      [chartType]="requestRates.lineChartType"></canvas>
+          </div>
       </mat-tab>
       <mat-tab label="Nodes">
         <br />
