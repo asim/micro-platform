@@ -41,6 +41,12 @@ export class ServiceComponent implements OnInit {
         this.stats = stats;
         this.processStats();
       });
+      this.intervalId = setInterval(() => {
+        this.ses.stats(this.serviceName).then(stats => {
+          this.stats = stats;
+          this.processStats();
+        });
+      }, 5000);
     });
   }
 
@@ -88,13 +94,15 @@ ${indent}}`;
           .filter(stat => stat.service.node.id == node)
           .map((stat, i) => {
             let value = stat.requests;
-            //if (i == 0 && this.stats.length > 0) {
-            //  const first = this.stats[0].requests ? this.stats[0].requests : 0
-            //  value = this.stats[1].requests - first
-            //} else {
-            //  const prev = this.stats[i-1].requests ? this.stats[i-1].requests : 0
-            //  value = this.stats[i].requests - prev
-            //}
+            if (i == 0 && this.stats.length > 0) {
+              const first = this.stats[0].requests ? this.stats[0].requests : 0;
+              value = this.stats[1].requests - first;
+            } else {
+              const prev = this.stats[i - 1].requests
+                ? this.stats[i - 1].requests
+                : 0;
+              value = this.stats[i].requests - prev;
+            }
             return {
               x: new Date(stat.timestamp * 1000),
               y: value ? value : 0
@@ -102,116 +110,139 @@ ${indent}}`;
           })
       };
     });
-    console.log(this.requestRates.data);
+
+    this.memoryRates.data = nodes.map(node => {
+      return {
+        label: node,
+        type: "line",
+        pointRadius: 0,
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        data: this.stats
+          .filter(stat => stat.service.node.id == node)
+          .map((stat, i) => {
+            let value = stat.memory;
+            return {
+              x: new Date(stat.timestamp * 1000),
+              y: value ? value / (1000 * 1000) : 0
+            };
+          })
+      };
+    });
+    this.errorRates.data = nodes.map(node => {
+      return {
+        label: node,
+        type: "line",
+        pointRadius: 0,
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        data: this.stats
+          .filter(stat => stat.service.node.id == node)
+          .map((stat, i) => {
+            let value = stat.errors;
+            if (i == 0 && this.stats.length > 0) {
+              const first = this.stats[0].errors ? this.stats[0].errors : 0;
+              value = this.stats[1].errors - first;
+            } else {
+              const prev = this.stats[i - 1].errors
+                ? this.stats[i - 1].errors
+                : 0;
+              value = this.stats[i].errors - prev;
+            }
+            return {
+              x: new Date(stat.timestamp * 1000),
+              y: value ? value : 0
+            };
+          })
+      };
+    });
+    let concMax = 0;
+    this.concurrencyRates.data = nodes.map(node => {
+      return {
+        label: node,
+        type: "line",
+        pointRadius: 0,
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        data: this.stats
+          .filter(stat => stat.service.node.id == node)
+          .map((stat, i) => {
+            let value = stat.threads;
+            if (value > concMax) {
+              concMax = value;
+            }
+            return {
+              x: new Date(stat.timestamp * 1000),
+              y: value ? value : 0
+            };
+          })
+      };
+    });
+    this.concurrencyRates.options.scales.yAxes[0].ticks.max = concMax * 1.5;
   }
 
-  // options
-  requestRates = {
-    options: {
-      animation: {
-        duration: 0
-      },
-      scales: {
-        xAxes: [
-          {
-            type: "time",
-            distribution: "series",
-            offset: true,
-            ticks: {
-              major: {
-                enabled: true,
-                fontStyle: "bold"
+  // config options taken from https://www.chartjs.org/samples/latest/scales/time/financial.html
+  options(ylabel: string) {
+    return {
+      options: {
+        animation: {
+          duration: 0
+        },
+        scales: {
+          xAxes: [
+            {
+              type: "time",
+              distribution: "series",
+              offset: true,
+              ticks: {
+                major: {
+                  enabled: true,
+                  fontStyle: "bold"
+                },
+                source: "data",
+                autoSkip: true,
+                autoSkipPadding: 75,
+                maxRotation: 0,
+                sampleSize: 100
+              }
+            }
+          ],
+          yAxes: [
+            {
+              gridLines: {
+                drawBorder: false
               },
-              source: "data",
-              autoSkip: true,
-              autoSkipPadding: 75,
-              maxRotation: 0,
-              sampleSize: 100
+              scaleLabel: {
+                display: true,
+                labelString: ylabel
+              }
             }
-            //afterBuildTicks: function(scale, ticks) {
-            //  var majorUnit = scale._majorUnit;
-            //  var firstTick = ticks[0];
-            //  var i, ilen, val, tick, currMajor, lastMajor;
-            //
-            //  val = moment(ticks[0].value);
-            //  if (
-            //    (majorUnit === "minute" && val.second() === 0) ||
-            //    (majorUnit === "hour" && val.minute() === 0) ||
-            //    (majorUnit === "day" && val.hour() === 9) ||
-            //    (majorUnit === "month" &&
-            //      val.date() <= 3 &&
-            //      val.isoWeekday() === 1) ||
-            //    (majorUnit === "year" && val.month() === 0)
-            //  ) {
-            //    firstTick.major = true;
-            //  } else {
-            //    firstTick.major = false;
-            //  }
-            //  lastMajor = val.get(majorUnit);
-            //
-            //  for (i = 1, ilen = ticks.length; i < ilen; i++) {
-            //    tick = ticks[i];
-            //    val = moment(tick.value);
-            //    currMajor = val.get(majorUnit);
-            //    tick.major = currMajor !== lastMajor;
-            //    lastMajor = currMajor;
-            //  }
-            //  return ticks;
-            //}
-          }
-        ],
-        yAxes: [
-          {
-            gridLines: {
-              drawBorder: false
-            },
-            scaleLabel: {
-              display: true,
-              labelString: "requests/second"
+          ]
+        },
+        tooltips: {
+          intersect: false,
+          mode: "index",
+          callbacks: {
+            label: function(tooltipItem, myData) {
+              var label = myData.datasets[tooltipItem.datasetIndex].label || "";
+              if (label) {
+                label += ": ";
+              }
+              label += parseFloat(tooltipItem.value).toFixed(2);
+              return label;
             }
-          }
-        ]
-      },
-      tooltips: {
-        intersect: false,
-        mode: "index",
-        callbacks: {
-          label: function(tooltipItem, myData) {
-            var label = myData.datasets[tooltipItem.datasetIndex].label || "";
-            if (label) {
-              label += ": ";
-            }
-            label += parseFloat(tooltipItem.value).toFixed(2);
-            return label;
           }
         }
-      }
-    },
-    showYAxisLabel: true,
-    showXAxisLabel: true,
-    xAxisLabel: "time",
-    yAxisLabel: "req/s",
-    timeline: false,
-    legendTitle: "Nodes",
-
-    colorScheme: {
-      domain: ["#5AA454", "#E44D25", "#CFC0BB", "#7aa3e5", "#a8385d", "#aae3f5"]
-    },
-
-    data: [],
-    onSelect(data): void {
-      //console.log("Item clicked", JSON.parse(JSON.stringify(data)));
-    },
-
-    onActivate(data): void {
-      //console.log("Activate", JSON.parse(JSON.stringify(data)));
-    },
-
-    onDeactivate(data): void {
-      // console.log("Deactivate", JSON.parse(JSON.stringify(data)));
-    },
-
-    lineChartType: "line",
-    lineChartPlugins: []
-  };
+      },
+      data: [],
+      lineChartType: "line"
+    };
+  }
+  memoryRates = this.options("memory usage (MB)");
+  requestRates = this.options("requests/second");
+  errorRates = this.options("errors/second");
+  concurrencyRates = this.options("goroutines");
 }
