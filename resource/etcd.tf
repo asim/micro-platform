@@ -1,7 +1,7 @@
 resource "kubernetes_service" "etcd" {
   metadata {
     name      = "etcd"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     annotations = {
       # Deprecated but still around
       "service.alpha.kubernetes.io/tolerate-unready-endpoints" = "true"
@@ -27,7 +27,7 @@ resource "kubernetes_service" "etcd" {
 resource "kubernetes_service" "etcd_cluster" {
   metadata {
     name      = "etcd-cluster"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     labels = {
       "component" = "etcd"
     }
@@ -47,7 +47,7 @@ resource "kubernetes_service" "etcd_cluster" {
 resource "kubernetes_pod_disruption_budget" "etcd" {
   metadata {
     name      = "etcd"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
   }
   spec {
     max_unavailable = "1"
@@ -70,7 +70,7 @@ resource "random_id" "etcd_cluster_token" {
 resource "kubernetes_stateful_set" "etcd" {
   metadata {
     name      = "etcd"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     labels = {
       "component" = "etcd"
     }

@@ -1,6 +1,6 @@
 resource "kubernetes_deployment" "bot" {
   metadata {
-    namespace   = var.control_namespace
+    namespace   = kubernetes_namespace.control.id
     name        = "micro-bot"
     labels      = merge(local.common_labels, { "name" = "micro-bot" })
     annotations = merge(local.common_annotations, { "name" = "go.micro.bot" })
@@ -52,7 +52,7 @@ resource "kubernetes_deployment" "bot" {
 
 resource "kubernetes_secret" "bot_slack_token" {
   metadata {
-    namespace = var.control_namespace
+    namespace = kubernetes_namespace.control.id
     name      = "micro-slack"
   }
   type = "Opaque"

@@ -2,7 +2,7 @@
 
 resource "kubernetes_config_map" "nats_server" {
   metadata {
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     name      = "nats-config"
   }
   data = {
@@ -13,9 +13,9 @@ resource "kubernetes_config_map" "nats_server" {
       cluster {
         port: 6222
         routes [
-          nats://nats-0.nats.${var.resource_namespace}.svc:6222
-          nats://nats-1.nats.${var.resource_namespace}.svc:6222
-          nats://nats-2.nats.${var.resource_namespace}.svc:6222
+          nats://nats-0.nats.${kubernetes_namespace.resource.id}.svc:6222
+          nats://nats-1.nats.${kubernetes_namespace.resource.id}.svc:6222
+          nats://nats-2.nats.${kubernetes_namespace.resource.id}.svc:6222
         ]
 
         cluster_advertise: $CLUSTER_ADVERTISE
@@ -38,7 +38,7 @@ locals {
 
 resource "kubernetes_service" "nats" {
   metadata {
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     name      = "nats"
     labels = {
       "app" = "nats"
@@ -61,7 +61,7 @@ resource "kubernetes_service" "nats" {
 
 resource "kubernetes_service" "nats_cluster" {
   metadata {
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     name      = "nats-cluster"
     labels = {
       "app" = "nats"
@@ -81,7 +81,7 @@ resource "kubernetes_service" "nats_cluster" {
 
 resource "kubernetes_stateful_set" "nats" {
   metadata {
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     name      = "nats"
     labels = {
       "app" = "nats"
@@ -196,7 +196,7 @@ resource "kubernetes_stateful_set" "nats" {
 resource "kubernetes_pod_disruption_budget" "nats" {
   metadata {
     name      = "nats"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
   }
   spec {
     max_unavailable = "1"

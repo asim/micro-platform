@@ -5,7 +5,7 @@ resource "random_uuid" "netdata_stream_id" {}
 resource "kubernetes_config_map" "netdata_master" {
   metadata {
     name      = "netdata-conf-master"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     labels = {
       "app" = "netdata"
     }
@@ -58,7 +58,7 @@ resource "kubernetes_config_map" "netdata_master" {
 resource "kubernetes_config_map" "netdata_worker" {
   metadata {
     name      = "netdata-conf-worker"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     labels = {
       "app" = "netdata"
     }
@@ -106,7 +106,7 @@ resource "kubernetes_config_map" "netdata_worker" {
 resource "kubernetes_service_account" "netdata" {
   metadata {
     name      = "netdata"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     labels = {
       "app" = "netdata"
     }
@@ -167,14 +167,14 @@ resource "kubernetes_cluster_role_binding" "netdata" {
   subject {
     kind      = "ServiceAccount"
     name      = "netdata"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
   }
 }
 
 resource "kubernetes_service" "netdata" {
   metadata {
     name      = "netdata"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     labels = {
       "app"  = "netdata"
       "role" = "master"
@@ -198,7 +198,7 @@ resource "kubernetes_service" "netdata" {
 resource "kubernetes_daemonset" "netdata-worker" {
   metadata {
     name      = "netdata-worker"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     labels = {
       "app"  = "netdata"
       "role" = "worker"
@@ -361,7 +361,7 @@ resource "kubernetes_daemonset" "netdata-worker" {
 resource "kubernetes_stateful_set" "netdata_master" {
   metadata {
     name      = "netdata-master"
-    namespace = var.resource_namespace
+    namespace = kubernetes_namespace.resource.id
     labels = {
       "app"  = "netdata"
       "role" = "master"
@@ -462,6 +462,12 @@ resource "kubernetes_stateful_set" "netdata_master" {
             name = kubernetes_config_map.netdata_master.metadata.0.name
           }
         }
+      }
+    }
+    update_strategy {
+      type = "RollingUpdate"
+      rolling_update {
+        partition = 0
       }
     }
   }

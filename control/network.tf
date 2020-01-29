@@ -1,6 +1,6 @@
 resource "kubernetes_deployment" "network" {
   metadata {
-    namespace   = var.control_namespace
+    namespace   = kubernetes_namespace.control.id
     name        = "micro-network"
     labels      = merge(local.common_labels, { "name" = "micro-network" })
     annotations = merge(local.common_annotations, { "name" = "go.micro.network" })
@@ -75,7 +75,7 @@ resource "kubernetes_deployment" "network" {
 
 resource "kubernetes_service" "network" {
   metadata {
-    namespace = var.control_namespace
+    namespace = kubernetes_namespace.control.id
     name      = "micro-network"
     labels    = merge(local.common_labels, { "name" = "micro-network" })
   }
@@ -93,7 +93,7 @@ resource "kubernetes_service" "network" {
 
 resource "kubernetes_service" "gateway" {
   metadata {
-    namespace = var.control_namespace
+    namespace = kubernetes_namespace.control.id
     name      = "micro-gateway"
     labels    = merge(local.common_labels, { "name" = "micro-gateway" })
   }
