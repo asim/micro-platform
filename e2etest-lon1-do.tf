@@ -28,7 +28,8 @@ provider "kubernetes" {
   alias            = "e2etest"
   load_config_file = false
   host             = data.digitalocean_kubernetes_cluster.e2etest.endpoint
-  token            = data.digitalocean_kubernetes_cluster.e2etest.kube_config[0].token
+  token            = var.do_token
+  #token            = data.digitalocean_kubernetes_cluster.e2etest.kube_config[0].token
   cluster_ca_certificate = base64decode(
     data.digitalocean_kubernetes_cluster.e2etest.kube_config[0].cluster_ca_certificate
   )

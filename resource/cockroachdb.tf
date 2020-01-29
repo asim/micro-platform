@@ -193,10 +193,14 @@ resource "kubernetes_job" "cockroachdb_init" {
     namespace = kubernetes_namespace.resource.id
   }
   spec {
+    selector {
+      match_labels = {}
+    }
     template {
       metadata {}
       spec {
-        restart_policy = "OnFailure"
+        active_deadline_seconds = 300
+        restart_policy          = "OnFailure"
         init_container {
           name  = "wait-for-cluster"
           image = "alpine:3.9"

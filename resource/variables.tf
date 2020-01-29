@@ -42,3 +42,8 @@ variable "cockroachdb_storage" {
   description = "CockroachDB Kubernetes storage request"
   default     = "10Gi"
 }
+
+variable "jaeger_image" {
+  description = "Jaeger Tracing All in one Image"
+  default     = "jaegertracing/all-in-one"
+}

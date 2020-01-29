@@ -257,6 +257,7 @@ resource "kubernetes_daemonset" "netdata-worker" {
           port {
             name           = "http"
             container_port = 19999
+            host_port      = 19999
             protocol       = "TCP"
           }
           liveness_probe {
@@ -466,9 +467,6 @@ resource "kubernetes_stateful_set" "netdata_master" {
     }
     update_strategy {
       type = "RollingUpdate"
-      rolling_update {
-        partition = 0
-      }
     }
   }
   depends_on = [kubernetes_config_map.netdata_master]
