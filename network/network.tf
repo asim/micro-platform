@@ -144,6 +144,13 @@ module "web" {
   service_name = "web"
   service_port = 443
   service_type = "LoadBalancer"
+
+  extra_env_vars = {
+    "MICRO_ENABLE_ACME"   = "true"
+    "MICRO_ACME_PROVIDER" = "certmagic"
+    "MICRO_ACME_HOSTS"    = "*.micro.mu,*.cloud.micro.mu,micro.mu"
+    "CF_API_TOKEN"        = var.cloudflare_api_token
+    "CF_ACCOUNT_ID"       = var.cloudflare_account_id
+    "KV_NAMESPACE_ID"     = var.cloudflare_kv_namespace_id
+  }
 }
-
-
