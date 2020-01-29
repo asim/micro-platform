@@ -69,17 +69,22 @@ ${indent}}`;
     this.requestRates.data = nodes.map(node => {
       return {
         label: node,
+        type: "line",
+        pointRadius: 0,
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
         data: this.stats
           .filter(stat => stat.service.node.id == node)
           .map((stat, i) => {
             let value = stat.requests;
-            if (i == 0 && this.stats.length > 0) {
-              const first = this.stats[0].requests ? this.stats[0].requests : 0
-              value = this.stats[1].requests - first
-            } else {
-              const prev = this.stats[i-1].requests ? this.stats[i-1].requests : 0
-              value = this.stats[i].requests - prev
-            }
+            //if (i == 0 && this.stats.length > 0) {
+            //  const first = this.stats[0].requests ? this.stats[0].requests : 0
+            //  value = this.stats[1].requests - first
+            //} else {
+            //  const prev = this.stats[i-1].requests ? this.stats[i-1].requests : 0
+            //  value = this.stats[i].requests - prev
+            //}
             return {
               x: new Date(stat.timestamp * 1000),
               y: value ? value : 0
@@ -92,22 +97,84 @@ ${indent}}`;
 
   // options
   requestRates = {
-    view: [700, 300],
-    legend: true,
-    showLabels: true,
-    animations: true,
-    xAxis: true,
-    yAxis: true,
     options: {
+      animation: {
+        duration: 0
+      },
       scales: {
         xAxes: [
           {
             type: "time",
-            time: {
-              unit: "month"
+            distribution: "series",
+            offset: true,
+            ticks: {
+              major: {
+                enabled: true,
+                fontStyle: "bold"
+              },
+              source: "data",
+              autoSkip: true,
+              autoSkipPadding: 75,
+              maxRotation: 0,
+              sampleSize: 100
+            }
+            //afterBuildTicks: function(scale, ticks) {
+            //  var majorUnit = scale._majorUnit;
+            //  var firstTick = ticks[0];
+            //  var i, ilen, val, tick, currMajor, lastMajor;
+            //
+            //  val = moment(ticks[0].value);
+            //  if (
+            //    (majorUnit === "minute" && val.second() === 0) ||
+            //    (majorUnit === "hour" && val.minute() === 0) ||
+            //    (majorUnit === "day" && val.hour() === 9) ||
+            //    (majorUnit === "month" &&
+            //      val.date() <= 3 &&
+            //      val.isoWeekday() === 1) ||
+            //    (majorUnit === "year" && val.month() === 0)
+            //  ) {
+            //    firstTick.major = true;
+            //  } else {
+            //    firstTick.major = false;
+            //  }
+            //  lastMajor = val.get(majorUnit);
+            //
+            //  for (i = 1, ilen = ticks.length; i < ilen; i++) {
+            //    tick = ticks[i];
+            //    val = moment(tick.value);
+            //    currMajor = val.get(majorUnit);
+            //    tick.major = currMajor !== lastMajor;
+            //    lastMajor = currMajor;
+            //  }
+            //  return ticks;
+            //}
+          }
+        ],
+        yAxes: [
+          {
+            gridLines: {
+              drawBorder: false
+            },
+            scaleLabel: {
+              display: true,
+              labelString: "requests/second"
             }
           }
         ]
+      },
+      tooltips: {
+        intersect: false,
+        mode: "index",
+        callbacks: {
+          label: function(tooltipItem, myData) {
+            var label = myData.datasets[tooltipItem.datasetIndex].label || "";
+            if (label) {
+              label += ": ";
+            }
+            label += parseFloat(tooltipItem.value).toFixed(2);
+            return label;
+          }
+        }
       }
     },
     showYAxisLabel: true,
