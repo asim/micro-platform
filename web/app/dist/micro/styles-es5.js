@@ -400,11 +400,11 @@
   /***/
   function _(module, exports, __webpack_require__) {
     __webpack_require__(
-    /*! /home/crufter/code/src/github.com/micro/muweb/web/node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css */
+    /*! /home/crufter/code/src/github.com/micro/platform/web/web/node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css */
     "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css");
 
     module.exports = __webpack_require__(
-    /*! /home/crufter/code/src/github.com/micro/muweb/web/src/styles.css */
+    /*! /home/crufter/code/src/github.com/micro/platform/web/web/src/styles.css */
     "./src/styles.css");
     /***/
   }

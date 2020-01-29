@@ -7,7 +7,7 @@
 # Only exists if Bazel was run
 /bazel-out
 # dependencies
-/web/node_modules
+/app/node_modules
 # profiling files
 chrome-profiler-events*.json
 speed-measure-plugin*.json
