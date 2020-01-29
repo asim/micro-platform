@@ -32,3 +32,13 @@ variable "netdata_image" {
   description = "Micro customised netdata image"
   default     = "micro/netdata:latest"
 }
+
+variable "cockroachdb_image" {
+  description = "CockroachDB Image"
+  default     = "cockroachdb/cockroach:v19.2.1"
+}
+
+variable "cockroachdb_storage" {
+  description = "CockroachDB Kubernetes storage request"
+  default     = "10Gi"
+}
