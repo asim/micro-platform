@@ -8,7 +8,11 @@
 <div *ngIf="services" style="padding-left: 1em; margin: auto;">
   <mat-card class="mat-card-flat">
     <mat-card-title>
-      <a routerLink="/services">services</a>&nbsp; &gt; <mat-icon style="color: green; vertical-align: middle;">fiber_manual_record</mat-icon> {{ serviceName }}
+      <a routerLink="/services">services</a>&nbsp; &gt;
+      <mat-icon style="color: green; vertical-align: middle;"
+        >fiber_manual_record</mat-icon
+      >
+      {{ serviceName }}
     </mat-card-title>
     <mat-tab-group>
       <mat-tab style="padding-top: 1em;" label="Endpoints">
@@ -59,7 +63,25 @@
       </mat-tab>
       <mat-tab label="Stats">
         <br />
-        Stats coming soon.
+        <ngx-charts-line-chart *ngIf="requestRates.data"
+          [view]="requestRates.view"
+          [legendTitle]="requestRates.legendTitle"
+          animations="false"
+          [scheme]="requestRates.colorScheme"
+          [legend]="requestRates.legend"
+          [showXAxisLabel]="requestRates.showXAxisLabel"
+          [showYAxisLabel]="requestRates.showYAxisLabel"
+          [xAxis]="requestRates.xAxis"
+          [yAxis]="requestRates.yAxis"
+          [xAxisLabel]="requestRates.xAxisLabel"
+          [yAxisLabel]="requestRates.yAxisLabel"
+          [timeline]="requestRates.timeline"
+          [results]="requestRates.data"
+          (select)="requestRates.onSelect($event)"
+          (activate)="requestRates.onActivate($event)"
+          (deactivate)="requestRates.onDeactivate($event)"
+        >
+        </ngx-charts-line-chart>
       </mat-tab>
       <mat-tab label="Nodes">
         <br />

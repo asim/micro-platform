@@ -41,6 +41,9 @@ import { ServiceComponent } from "./service/service.component";
 import { FormsModule } from "@angular/forms";
 import { SearchPipe } from "./search.pipe";
 import { NewServiceComponent } from './new-service/new-service.component';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+
+import { ChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -74,7 +77,9 @@ import { NewServiceComponent } from './new-service/new-service.component';
     FormsModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    NgxChartsModule,
+    ChartsModule
   ],
   providers: [CookieService, UserService],
   bootstrap: [AppComponent]

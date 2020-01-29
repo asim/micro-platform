@@ -39,4 +39,17 @@ export class ServiceService {
         })
     });
   }
+
+  stats(service: string): Promise<types.DebugSnapshot[]> {
+    return new Promise<types.DebugSnapshot[]>((resolve, reject) => {
+      return this.http
+        .get<types.DebugSnapshot[]>(
+          environment.backendUrl + '/v1/service/stats?service=' + service + '&token=' + this.us.token()
+        )
+        .toPromise()
+        .then(servs => {
+          resolve(servs as types.DebugSnapshot[])
+        })
+    });
+  }
 }

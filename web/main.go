@@ -22,7 +22,7 @@ import (
 	"github.com/micro/go-micro/web"
 	logproto "github.com/micro/micro/debug/log/proto"
 
-	//statproto "github.com/micro/micro/debug/stats/proto"
+	statsproto "github.com/micro/micro/debug/stats/proto"
 	"golang.org/x/oauth2"
 	githubOAuth2 "golang.org/x/oauth2/github"
 )
@@ -106,7 +106,7 @@ func logsHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 		}
 		service := req.URL.Query().Get("service")
 		if len(service) == 0 {
-			write400(w, errors.New("Token missing"))
+			write400(w, errors.New("Service missing"))
 			return
 		}
 		request := client.NewRequest("go.micro.debug", "Log.Read", &logproto.ReadRequest{
@@ -129,18 +129,21 @@ func statsHandler(service web.Service) func(http.ResponseWriter, *http.Request) 
 		}
 		service := req.URL.Query().Get("service")
 		if len(service) == 0 {
-			write400(w, errors.New("Token missing"))
+			write400(w, errors.New("Service missing"))
 			return
 		}
-		request := client.NewRequest("go.micro.debug", "Log.Read", &logproto.ReadRequest{
-			Service: service,
+		request := client.NewRequest("go.micro.debug", "Stats.Read", &statsproto.ReadRequest{
+			Service: &statsproto.Service{
+				Name: service,
+			},
+			Past: true,
 		})
-		rsp := &logproto.ReadResponse{}
+		rsp := &statsproto.ReadResponse{}
 		if err := client.Call(context.TODO(), request, rsp); err != nil {
 			write500(w, err)
 			return
 		}
-		write(w, rsp.GetRecords())
+		write(w, rsp.GetStats())
 	}
 }
 
@@ -190,6 +193,7 @@ func main() {
 	service.HandleFunc("/v1/user", userHandler)
 	service.HandleFunc("/v1/services", servicesHandler(service))
 	service.HandleFunc("/v1/service/logs", logsHandler(service))
+	service.HandleFunc("/v1/service/stats", statsHandler(service))
 	service.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		// Count is an ugly fix to serve urls containing micro service names ie. "go.micro.something"
 		if strings.Contains(req.URL.Path, ".") && strings.Count(req.URL.Path, ".") == 1 {
