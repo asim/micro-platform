@@ -44,6 +44,16 @@ variable "cockroachdb_storage" {
 }
 
 variable "jaeger_image" {
-  description = "Jaeger Tracing All in one Image"
+  description = "Jaeger Tracing All in one image"
   default     = "jaegertracing/all-in-one"
+}
+
+variable "athens_image" {
+  description = "Athens Go Module Proxy image"
+  default = "gomods/athens:0.7.0"
+}
+
+variable "athens_storage" {
+  description = "Athens Go Mpdule Proxy Kubernetes storage request"
+  default     = "10Gi"
 }
