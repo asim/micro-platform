@@ -44,14 +44,10 @@ resource "kubernetes_service" "nats" {
   metadata {
     namespace = kubernetes_namespace.resource.id
     name      = "nats"
-    labels = {
-      "app" = "nats"
-    }
+    labels    = local.nats_labels
   }
   spec {
-    selector = {
-      "app" = "nats"
-    }
+    selector   = local.nats_labels
     cluster_ip = "None"
     dynamic "port" {
       for_each = local.nats_ports
@@ -67,14 +63,10 @@ resource "kubernetes_service" "nats_cluster" {
   metadata {
     namespace = kubernetes_namespace.resource.id
     name      = "nats-cluster"
-    labels = {
-      "app" = "nats"
-    }
+    labels    = local.nats_labels
   }
   spec {
-    selector = {
-      "app" = "nats"
-    }
+    selector = local.nats_labels
     port {
       name        = "client"
       port        = lookup(local.nats_ports, "client", 4222)
@@ -87,23 +79,17 @@ resource "kubernetes_stateful_set" "nats" {
   metadata {
     namespace = kubernetes_namespace.resource.id
     name      = "nats"
-    labels = {
-      "app" = "nats"
-    }
+    labels    = local.nats_labels
   }
   spec {
     replicas     = 3
     service_name = "nats"
     selector {
-      match_labels = {
-        "app" = "nats"
-      }
+      match_labels = local.nats_labels
     }
     template {
       metadata {
-        labels = {
-          "app" = "nats"
-        }
+        labels = local.nats_labels
       }
       spec {
         volume {
@@ -205,9 +191,7 @@ resource "kubernetes_pod_disruption_budget" "nats" {
   spec {
     max_unavailable = "1"
     selector {
-      match_labels = {
-        "app" = "nats"
-      }
+      match_labels = local.nats_labels
     }
   }
 }
