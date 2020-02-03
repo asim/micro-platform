@@ -67,7 +67,7 @@ module "debug_web" {
 }
 
 module "debug" {
-    source = "./service"
+  source = "./service"
 
   resource_namespace = var.resource_namespace
   network_namespace  = kubernetes_namespace.network.id

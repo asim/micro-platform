@@ -15,6 +15,12 @@ variable "create_k8s_service" {
   default     = true
 }
 
+variable "create_k8s_ingress" {
+  description = "Whether to create a Kubernetes ingress"
+  type        = bool
+  default     = false
+}
+
 variable "service_type" {
   description = "Kubernetes service type"
   type        = string
@@ -73,4 +79,10 @@ variable "image_pull_policy" {
   description = "Kubernetes image pull policy"
   type        = string
   default     = "Always"
+}
+
+variable "domain_names" {
+  description = "List of valid domain names for network services"
+  type        = list(string)
+  default     = ["micro.mu", "cloud.micro.mu"]
 }
