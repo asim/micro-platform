@@ -1,5 +1,9 @@
 # Based off https://github.com/nats-io/k8s/blob/53bfb34f36bfcd08a9434c558b6b77fa9081118a/nats-server/simple-nats.yml
 
+locals {
+  nats_labels = { "app" = "nats" }
+}
+
 resource "kubernetes_config_map" "nats_server" {
   metadata {
     namespace = kubernetes_namespace.resource.id

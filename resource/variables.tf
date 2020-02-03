@@ -50,7 +50,7 @@ variable "jaeger_image" {
 
 variable "athens_image" {
   description = "Athens Go Module Proxy image"
-  default = "gomods/athens:0.7.0"
+  default     = "gomods/athens:0.7.0"
 }
 
 variable "athens_storage" {

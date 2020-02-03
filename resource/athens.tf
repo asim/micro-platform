@@ -1,12 +1,12 @@
 locals {
-  athens_labels = {"app" = "athens_proxy"}
+  athens_labels = { "app" = "athens-proxy" }
 }
 
 resource "kubernetes_persistent_volume_claim" "athens" {
   metadata {
     name      = "athens-storage"
     namespace = kubernetes_namespace.resource.id
-    labels = local.athens_labels
+    labels    = local.athens_labels
   }
   spec {
     access_modes = ["ReadWriteOnce"]
@@ -20,37 +20,40 @@ resource "kubernetes_persistent_volume_claim" "athens" {
 
 resource "kubernetes_service" "athens" {
   metadata {
-    name = "athens-proxy"
+    name      = "athens-proxy"
     namespace = kubernetes_namespace.resource.id
-    labels = local.athens_labels
+    labels    = local.athens_labels
   }
   spec {
-    type = "ClusterIP"
+    type     = "ClusterIP"
     selector = local.athens_labels
     port {
-      name = "http"
-      port = 80
+      name        = "http"
+      port        = 80
       target_port = "http"
-      protocol = "TCP"
+      protocol    = "TCP"
     }
   }
 }
 
 resource "kubernetes_deployment" "athens" {
   metadata {
-    name = "athens-proxy"
+    name      = "athens-proxy"
     namespace = kubernetes_namespace.resource.id
-    labels = local.athens_labels
+    labels    = local.athens_labels
   }
   spec {
+    selector {
+      match_labels = local.athens_labels
+    }
     template {
       metadata {
         labels = local.athens_labels
       }
       spec {
         container {
-          name = "athens-proxy"
-          image = var.athens_image
+          name              = "athens-proxy"
+          image             = var.athens_image
           image_pull_policy = var.image_pull_policy
 
           liveness_probe {
@@ -62,27 +65,27 @@ resource "kubernetes_deployment" "athens" {
           }
 
           env {
-            name = "ATHENS_GOGET_WORKERS"
+            name  = "ATHENS_GOGET_WORKERS"
             value = "4"
           }
 
           env {
-            name = "ATHENS_STORAGE_TYPE"
+            name  = "ATHENS_STORAGE_TYPE"
             value = "disk"
           }
 
           env {
-            name = "ATHENS_DISK_STORAGE_ROOT"
+            name  = "ATHENS_DISK_STORAGE_ROOT"
             value = "/var/lib/athens"
           }
 
           port {
-            name = "http"
+            name           = "http"
             container_port = 3000
           }
 
           volume_mount {
-            name = "storage-volume"
+            name       = "storage-volume"
             mount_path = "/var/lib/athens"
           }
         }

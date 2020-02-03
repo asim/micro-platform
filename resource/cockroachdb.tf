@@ -1,3 +1,7 @@
+locals {
+  cockroachdb_labels = { "app" = "cockroachdb" }
+}
+
 resource "kubernetes_service" "cockroachdb_public" {
   metadata {
     name      = "cockroachdb-public"
@@ -14,9 +18,7 @@ resource "kubernetes_service" "cockroachdb_public" {
       port        = 8080
       target_port = "http"
     }
-    selector = {
-      "app" = "cockroachdb"
-    }
+    selector = local.cockroachdb_labels
   }
 }
 
@@ -25,9 +27,7 @@ resource "kubernetes_service" "cockroachdb" {
     name      = "cockroachdb"
     namespace = kubernetes_namespace.resource.id
 
-    labels = {
-      "app" = "cockroachdb"
-    }
+    labels = local.cockroachdb_labels
     annotations = {
       "service.alpha.kubernetes.io/tolerate-unready-endpoints" = "true"
     }
@@ -45,9 +45,7 @@ resource "kubernetes_service" "cockroachdb" {
     }
     publish_not_ready_addresses = true
     cluster_ip                  = "None"
-    selector = {
-      "app" = "cockroachdb"
-    }
+    selector                    = local.cockroachdb_labels
   }
 }
 
@@ -55,15 +53,11 @@ resource "kubernetes_pod_disruption_budget" "cockroachdb" {
   metadata {
     name      = "cockroachdb"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app" = "cockroachdb"
-    }
+    labels    = local.cockroachdb_labels
   }
   spec {
     selector {
-      match_labels = {
-        "app" = "cockroachdb"
-      }
+      match_labels = local.cockroachdb_labels
     }
     max_unavailable = 1
   }
@@ -78,15 +72,11 @@ resource "kubernetes_stateful_set" "cockroachdb" {
     service_name = kubernetes_service.cockroachdb.metadata.0.name
     replicas     = 3
     selector {
-      match_labels = {
-        "app" = "cockroachdb"
-      }
+      match_labels = local.cockroachdb_labels
     }
     template {
       metadata {
-        labels = {
-          "app" = "cockroachdb"
-        }
+        labels = local.cockroachdb_labels
       }
       spec {
         affinity {
@@ -96,10 +86,13 @@ resource "kubernetes_stateful_set" "cockroachdb" {
               pod_affinity_term {
                 topology_key = "kubernetes.io/hostname"
                 label_selector {
-                  match_expressions {
-                    key      = "app"
-                    operator = "In"
-                    values   = ["cockroachdb"]
+                  dynamic "match_expressions" {
+                    for_each = local.cockroachdb_labels
+                    content {
+                      key      = match_expressions.key
+                      operator = "In"
+                      values   = [match_expressions.value]
+                    }
                   }
                 }
               }
