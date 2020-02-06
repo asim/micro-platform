@@ -142,7 +142,7 @@
             [pageIndex]="currentPage"
             [pageSize]="pageSize"
             [pageSizeOptions]="[5, 10, 25, 100]"
-            (page)="pageEvent = handlePage($event)"
+            (page)="handlePage($event)"
           >
           </mat-paginator>
         </ng-template>
