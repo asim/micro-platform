@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -23,9 +22,9 @@ import (
 	"github.com/micro/go-micro/v2/store"
 	memstore "github.com/micro/go-micro/v2/store/memory"
 	"github.com/micro/go-micro/v2/web"
-	logproto "github.com/micro/micro/debug/log/proto"
-	statsproto "github.com/micro/micro/debug/stats/proto"
-	traceproto "github.com/micro/micro/debug/trace/proto"
+	logproto "github.com/micro/micro/v2/debug/log/proto"
+	statsproto "github.com/micro/micro/v2/debug/stats/proto"
+	traceproto "github.com/micro/micro/v2/debug/trace/proto"
 	"golang.org/x/oauth2"
 	githubOAuth2 "golang.org/x/oauth2/github"
 )
@@ -72,7 +71,7 @@ func issueSession() http.Handler {
 			write500(w, err)
 			return
 		}
-		membership, _, err := client.Teams.GetTeamMembership(context.TODO(), teamID, githubUser.GetLogin())
+		membership, _, err := client.Teams.GetTeamMembership(req.Context(), teamID, githubUser.GetLogin())
 		if err != nil {
 			log.Println(err)
 			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
@@ -149,16 +148,16 @@ func logsHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 			write400(w, err)
 			return
 		}
-		service := req.URL.Query().Get("service")
-		if len(service) == 0 {
+		serviceName := req.URL.Query().Get("service")
+		if len(serviceName) == 0 {
 			write400(w, errors.New("Service missing"))
 			return
 		}
 		request := client.NewRequest("go.micro.debug", "Log.Read", &logproto.ReadRequest{
-			Service: service,
+			Service: serviceName,
 		})
 		rsp := &logproto.ReadResponse{}
-		if err := client.Call(context.TODO(), request, rsp); err != nil {
+		if err := service.Options().Service.Client().Call(req.Context(), request, rsp); err != nil {
 			write500(w, err)
 			return
 		}
@@ -176,19 +175,19 @@ func statsHandler(service web.Service) func(http.ResponseWriter, *http.Request) 
 			write400(w, err)
 			return
 		}
-		service := req.URL.Query().Get("service")
-		if len(service) == 0 {
+		serviceName := req.URL.Query().Get("service")
+		if len(serviceName) == 0 {
 			write400(w, errors.New("Service missing"))
 			return
 		}
 		request := client.NewRequest("go.micro.debug", "Stats.Read", &statsproto.ReadRequest{
 			Service: &statsproto.Service{
-				Name: service,
+				Name: serviceName,
 			},
 			Past: true,
 		})
 		rsp := &statsproto.ReadResponse{}
-		if err := client.Call(context.TODO(), request, rsp); err != nil {
+		if err := service.Options().Service.Client().Call(req.Context(), request, rsp); err != nil {
 			write500(w, err)
 			return
 		}
@@ -206,24 +205,22 @@ func tracesHandler(service web.Service) func(http.ResponseWriter, *http.Request)
 			write400(w, err)
 			return
 		}
-		service := req.URL.Query().Get("service")
-		if len(service) == 0 {
-			write400(w, errors.New("Service missing"))
-			return
-		}
-		request := client.NewRequest("go.micro.debug", "Trace.Read", &traceproto.ReadRequest{
-			Service: &traceproto.Service{
-				Name: service,
-			},
+		serviceName := req.URL.Query().Get("service")
+		reqProto := &traceproto.ReadRequest{
 			Past: true,
-		})
+		}
+		if len(serviceName) > 0 {
+			reqProto.Service = &traceproto.Service{
+				Name: serviceName,
+			}
+		}
+		request := client.NewRequest("go.micro.debug", "Trace.Read", reqProto)
 		rsp := &traceproto.ReadResponse{}
-		if err := client.Call(context.TODO(), request, rsp); err != nil {
+		if err := service.Options().Service.Client().Call(req.Context(), request, rsp); err != nil {
 			write500(w, err)
 			return
 		}
-		fmt.Println(rsp.GetTrace())
-		writeJSON(w, rsp.GetTrace())
+		writeJSON(w, rsp.GetSpans())
 	}
 }
 
