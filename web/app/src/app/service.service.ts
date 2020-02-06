@@ -52,4 +52,17 @@ export class ServiceService {
         })
     });
   }
+
+  trace(service: string): Promise<types.TraceSnapshot[]> {
+    return new Promise<types.TraceSnapshot[]>((resolve, reject) => {
+      return this.http
+        .get<types.TraceSnapshot[]>(
+          environment.backendUrl + '/v1/service/trace?service=' + service + '&token=' + this.us.token()
+        )
+        .toPromise()
+        .then(servs => {
+          resolve(servs as types.TraceSnapshot[])
+        })
+    });
+  }
 }

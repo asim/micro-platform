@@ -62,7 +62,7 @@
       <mat-nav-list>
         <div><a (click)="sidenav.toggle()" mat-list-item>Close</a></div>
         <div><a href="https://micro.mu" mat-button>Main Micro Website</a></div>
-        <div><a routerLink="/services" mat-button>Services</a></div>
+        <div><a (click)="sidenav.toggle()" routerLink="/services" mat-button>Services</a></div>
         <div><a href="https://micro.mu/community" mat-button>Slack</a></div>
       </mat-nav-list>
     </mat-sidenav>

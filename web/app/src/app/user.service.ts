@@ -38,12 +38,12 @@ export class UserService {
     // todo We are nulling out the name here because that's what we use
     // for user existence checks.
     this.user.name = "";
-    this.cookie.delete("token", "/")
+    this.cookie.delete("micro_token", "/")
     document.location.href = "/";
   }
 
   token(): string {
-    return this.cookie.get("token");
+    return this.cookie.get("micro_token")
   }
 
   // gets current user

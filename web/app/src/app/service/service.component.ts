@@ -16,6 +16,7 @@ export class ServiceComponent implements OnInit {
   services: types.Service[];
   logs: types.LogRecord[];
   stats: types.DebugSnapshot[];
+  trace: types.TraceSnapshot[];
   serviceName: string;
   endpointQuery: string;
   intervalId: any;
@@ -41,6 +42,9 @@ export class ServiceComponent implements OnInit {
         this.stats = stats;
         this.processStats();
       });
+      this.ses.trace(this.serviceName).then(trace => {
+        this.trace = trace;
+      })
       this.intervalId = setInterval(() => {
         this.ses.stats(this.serviceName).then(stats => {
           this.stats = stats;
@@ -94,6 +98,7 @@ ${indent}}`;
         fill: false,
         lineTension: 0,
         borderWidth: 2,
+        fillcolor: "rgba(220,220,220,0.8)",
         data: this.stats
           .filter(stat => stat.service.node.id == node)
           .map((stat, i) => {

@@ -20,13 +20,17 @@ const routes: Routes = [
     component: NotInvitedComponent
   },
   //{ path: "login", component: LoginComponent },
+  {
+    path: "service/:id",
+    component: ServiceComponent,
+    canActivate: [AuthGuard]
+  },
   { path: "services", component: ServicesComponent, canActivate: [AuthGuard] },
   {
     path: "service/new",
     component: NewServiceComponent,
     canActivate: [AuthGuard]
-  },
-  { path: "service/:id", component: ServiceComponent, canActivate: [AuthGuard] }
+  }
 ];
 
 @NgModule({
