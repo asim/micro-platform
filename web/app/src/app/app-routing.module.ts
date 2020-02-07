@@ -12,25 +12,23 @@ const routes: Routes = [
   {
     path: "",
     component: WelcomeComponent,
-    pathMatch: "full",
-    canActivate: [AuthGuard]
+    pathMatch: "full"
   },
   {
     path: "not-invited",
     component: NotInvitedComponent
   },
-  //{ path: "login", component: LoginComponent },
+  {
+    path: "service/new",
+    component: NewServiceComponent,
+    canActivate: [AuthGuard]
+  },
   {
     path: "service/:id",
     component: ServiceComponent,
     canActivate: [AuthGuard]
   },
-  { path: "services", component: ServicesComponent, canActivate: [AuthGuard] },
-  {
-    path: "service/new",
-    component: NewServiceComponent,
-    canActivate: [AuthGuard]
-  }
+  { path: "services", component: ServicesComponent, canActivate: [AuthGuard] }
 ];
 
 @NgModule({

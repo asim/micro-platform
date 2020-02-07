@@ -1,21 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { UserService } from '../user.service';
+import { Component, OnInit } from "@angular/core";
+import { environment } from '../../environments/environment';
 
 @Component({
-  selector: 'app-welcome',
-  templateUrl: './welcome.component.html',
-  styleUrls: ['./welcome.component.css']
+  selector: "app-welcome",
+  templateUrl: "./welcome.component.html",
+  styleUrls: ["./welcome.component.css"]
 })
 export class WelcomeComponent implements OnInit {
-  code = ""
+  constructor() {}
 
-  constructor(
-    public us: UserService
-  ) {
+  ngOnInit() {}
+
+  login() {
+    window.location.href = environment.backendUrl + "/v1/github/login"
   }
-
-  ngOnInit() {
-    this.code = "micro login --token " + this.us.token()
-  }
-
 }

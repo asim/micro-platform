@@ -9,3 +9,8 @@ mat-sidenav-content {
 *[ng-reflect-router-link] {
   cursor: pointer;
 }
+
+mat-menu-content:not(:empty) {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}

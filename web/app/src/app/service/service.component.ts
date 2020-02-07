@@ -112,6 +112,9 @@ ${indent}}`;
   // Stats/ Chart related things
 
   processTraces(spans: types.Span[]) {
+    if (!spans) {
+      return
+    }
     const groupedSpans = _.values(_.groupBy(_.uniqBy(spans, "id"), "trace"));
     let traceDatas: any[] = [];
     groupedSpans.forEach(spanGroup => {
@@ -160,6 +163,9 @@ ${indent}}`;
   }
 
   processStats() {
+    if (!this.stats) {
+      return
+    }
     function onlyUnique(value, index, self) {
       return self.indexOf(value) === index;
     }

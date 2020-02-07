@@ -66,7 +66,8 @@ export class ServiceService {
             "/v1/service/trace?" +
             qs +
             "token=" +
-            this.us.token()
+            this.us.token() +
+            "&limit=1000"
         )
         .toPromise()
         .then(servs => {

@@ -104,7 +104,7 @@ func issueSession() http.Handler {
 			Expires: expire,
 			Path:    "/",
 		})
-		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS"), http.StatusFound)
+		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/services", http.StatusFound)
 	}
 	return http.HandlerFunc(fn)
 }

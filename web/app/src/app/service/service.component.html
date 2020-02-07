@@ -17,7 +17,7 @@
     <mat-tab-group>
       <mat-tab style="padding-top: 1em;" label="Endpoints">
         <br />
-        <form class="example-form">
+        <form style="margin-left: 1.5em;" class="example-form">
           <mat-form-field class="example-full-width">
             <input
               name="query"
@@ -33,8 +33,8 @@
               let endpoint of service.endpoints | search: 'name':endpointQuery
             "
           >
-            <div style="padding-left: 2px; padding-right: 2px;">
-              <mat-expansion-panel>
+            <div>
+              <mat-expansion-panel class="mat-elevation-z0">
                 <mat-expansion-panel-header>
                   <mat-panel-title>
                     {{ endpoint.name }}
@@ -129,11 +129,13 @@
                 traceData.dataTable.length - 1
               }})</a
             ><br /><br />
-            <div *ngIf="traceData.show" style="width: 100%;" [ngStyle]="{'height.px': traceData.divHeight}">
+            <div
+              *ngIf="traceData.show"
+              style="width: 100%;"
+              [ngStyle]="{ 'height.px': traceData.divHeight }"
+            >
               <br />
-              <google-chart
-                [data]="traceData"
-              ></google-chart>
+              <google-chart [data]="traceData"></google-chart>
             </div>
           </ng-container>
           <mat-paginator
