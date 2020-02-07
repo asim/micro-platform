@@ -34,3 +34,9 @@ variable "cloudflare_dns_zone_id" {
   description = "Cloudflare DNS Zone ID"
   type        = string
 }
+
+variable "domain_names" {
+  description = "List of valid domain names for network services"
+  type        = list(string)
+  default     = ["micro.mu", "cloud.micro.mu"]
+}

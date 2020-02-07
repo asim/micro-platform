@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -18,13 +17,14 @@ import (
 	gologinOauth "github.com/dghubble/gologin/v2/oauth2"
 	githubApi "github.com/google/go-github/v29/github"
 	"github.com/google/uuid"
-	"github.com/micro/go-micro/client"
-	"github.com/micro/go-micro/registry"
-	"github.com/micro/go-micro/store"
-	memstore "github.com/micro/go-micro/store/memory"
-	"github.com/micro/go-micro/web"
-	logproto "github.com/micro/micro/debug/log/proto"
-	statsproto "github.com/micro/micro/debug/stats/proto"
+	"github.com/micro/go-micro/v2/client"
+	"github.com/micro/go-micro/v2/registry"
+	"github.com/micro/go-micro/v2/store"
+	memstore "github.com/micro/go-micro/v2/store/memory"
+	"github.com/micro/go-micro/v2/web"
+	logproto "github.com/micro/micro/v2/debug/log/proto"
+	statsproto "github.com/micro/micro/v2/debug/stats/proto"
+	traceproto "github.com/micro/micro/v2/debug/trace/proto"
 	"golang.org/x/oauth2"
 	githubOAuth2 "golang.org/x/oauth2/github"
 )
@@ -71,14 +71,14 @@ func issueSession() http.Handler {
 			write500(w, err)
 			return
 		}
-		membership, _, err := client.Teams.GetTeamMembership(context.TODO(), teamID, githubUser.GetLogin())
+		membership, _, err := client.Teams.GetTeamMembership(req.Context(), teamID, githubUser.GetLogin())
 		if err != nil {
 			log.Println(err)
-			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/login/not_authorized=true", http.StatusFound)
+			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
 			return
 		}
 		if membership.GetState() != "active" {
-			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/login?not_authorized=true", http.StatusFound)
+			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
 			return
 		}
 		token := uuid.New().String()
@@ -97,7 +97,14 @@ func issueSession() http.Handler {
 		// Include the minted session in a query parameter so the frontend can save it.
 		// Although with https query paramteres are encrypted, this is still not the most ideal
 		// way to do it. Will suffice for now.
-		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/services?token="+token, http.StatusFound)
+		expire := time.Now().AddDate(0, 0, 1)
+		http.SetCookie(w, &http.Cookie{
+			Name:    "micro_token",
+			Value:   token,
+			Expires: expire,
+			Path:    "/",
+		})
+		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS"), http.StatusFound)
 	}
 	return http.HandlerFunc(fn)
 }
@@ -127,7 +134,7 @@ func servicesHandler(service web.Service) func(http.ResponseWriter, *http.Reques
 			}
 			ret = append(ret, service...)
 		}
-		write(w, ret)
+		writeJSON(w, ret)
 	}
 }
 
@@ -141,20 +148,20 @@ func logsHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 			write400(w, err)
 			return
 		}
-		service := req.URL.Query().Get("service")
-		if len(service) == 0 {
+		serviceName := req.URL.Query().Get("service")
+		if len(serviceName) == 0 {
 			write400(w, errors.New("Service missing"))
 			return
 		}
 		request := client.NewRequest("go.micro.debug", "Log.Read", &logproto.ReadRequest{
-			Service: service,
+			Service: serviceName,
 		})
 		rsp := &logproto.ReadResponse{}
-		if err := client.Call(context.TODO(), request, rsp); err != nil {
+		if err := service.Options().Service.Client().Call(req.Context(), request, rsp); err != nil {
 			write500(w, err)
 			return
 		}
-		write(w, rsp.GetRecords())
+		writeJSON(w, rsp.GetRecords())
 	}
 }
 
@@ -168,23 +175,52 @@ func statsHandler(service web.Service) func(http.ResponseWriter, *http.Request) 
 			write400(w, err)
 			return
 		}
-		service := req.URL.Query().Get("service")
-		if len(service) == 0 {
+		serviceName := req.URL.Query().Get("service")
+		if len(serviceName) == 0 {
 			write400(w, errors.New("Service missing"))
 			return
 		}
 		request := client.NewRequest("go.micro.debug", "Stats.Read", &statsproto.ReadRequest{
 			Service: &statsproto.Service{
-				Name: service,
+				Name: serviceName,
 			},
 			Past: true,
 		})
 		rsp := &statsproto.ReadResponse{}
-		if err := client.Call(context.TODO(), request, rsp); err != nil {
+		if err := service.Options().Service.Client().Call(req.Context(), request, rsp); err != nil {
 			write500(w, err)
 			return
 		}
-		write(w, rsp.GetStats())
+		writeJSON(w, rsp.GetStats())
+	}
+}
+
+func tracesHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		setupResponse(&w, req)
+		if (*req).Method == "OPTIONS" {
+			return
+		}
+		if err := isLoggedIn(req.URL.Query().Get("token")); err != nil {
+			write400(w, err)
+			return
+		}
+		serviceName := req.URL.Query().Get("service")
+		reqProto := &traceproto.ReadRequest{
+			Past: true,
+		}
+		if len(serviceName) > 0 {
+			reqProto.Service = &traceproto.Service{
+				Name: serviceName,
+			}
+		}
+		request := client.NewRequest("go.micro.debug", "Trace.Read", reqProto)
+		rsp := &traceproto.ReadResponse{}
+		if err := service.Options().Service.Client().Call(req.Context(), request, rsp); err != nil {
+			write500(w, err)
+			return
+		}
+		writeJSON(w, rsp.GetSpans())
 	}
 }
 
@@ -224,7 +260,7 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 		write500(w, err)
 		return
 	}
-	write(w, user)
+	writeJSON(w, user)
 }
 
 func main() {
@@ -246,6 +282,7 @@ func main() {
 	service.HandleFunc("/v1/services", servicesHandler(service))
 	service.HandleFunc("/v1/service/logs", logsHandler(service))
 	service.HandleFunc("/v1/service/stats", statsHandler(service))
+	service.HandleFunc("/v1/service/trace", tracesHandler(service))
 	service.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		// Count is an ugly fix to serve urls containing micro service names ie. "go.micro.something"
 		if strings.Contains(req.URL.Path, ".") && !strings.Contains(req.URL.Path, "go.micro") {
@@ -275,23 +312,23 @@ func setupResponse(w *http.ResponseWriter, req *http.Request) {
 	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }
 
-func write(w http.ResponseWriter, body interface{}) {
+func writeJSON(w http.ResponseWriter, body interface{}) {
 	rawBody, err := json.Marshal(body)
 	if err != nil {
 		write500(w, err)
 		return
 	}
-	writeString(w, 200, string(rawBody))
+	write(w, "application/json", 200, string(rawBody))
 }
 
-func writeString(w http.ResponseWriter, status int, body string) {
+func write(w http.ResponseWriter, contentType string, status int, body string) {
 	w.Header().Set("Content-Length", fmt.Sprintf("%v", len(body)))
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
 	fmt.Fprintf(w, `%v`, body)
 }
 
-func readJsonBody(r *http.Request, expectedBody interface{}) error {
+func readJSONBody(r *http.Request, expectedBody interface{}) error {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return errors.New("unable to read body")
@@ -310,7 +347,7 @@ func write400(w http.ResponseWriter, err error) {
 		write500(w, err)
 		return
 	}
-	writeString(w, 400, string(rawBody))
+	write(w, "application/json", 400, string(rawBody))
 }
 
 func write500(w http.ResponseWriter, err error) {
@@ -321,5 +358,5 @@ func write500(w http.ResponseWriter, err error) {
 		log.Println(err)
 		return
 	}
-	writeString(w, 500, string(rawBody))
+	write(w, "application/json", 500, string(rawBody))
 }

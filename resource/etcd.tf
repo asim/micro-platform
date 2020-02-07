@@ -1,3 +1,7 @@
+locals {
+  etcd_labels = { "component" = "etcd" }
+}
+
 resource "kubernetes_service" "etcd" {
   metadata {
     name      = "etcd"
@@ -16,10 +20,8 @@ resource "kubernetes_service" "etcd" {
       port = 2380
       name = "peer"
     }
-    cluster_ip = "None"
-    selector = {
-      "component" = "etcd"
-    }
+    cluster_ip                  = "None"
+    selector                    = local.etcd_labels
     publish_not_ready_addresses = true
   }
 }
@@ -28,14 +30,10 @@ resource "kubernetes_service" "etcd_cluster" {
   metadata {
     name      = "etcd-cluster"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "component" = "etcd"
-    }
+    labels    = local.etcd_labels
   }
   spec {
-    selector = {
-      "component" = "etcd"
-    }
+    selector = local.etcd_labels
     port {
       name        = "client"
       port        = 2379
@@ -52,9 +50,7 @@ resource "kubernetes_pod_disruption_budget" "etcd" {
   spec {
     max_unavailable = "1"
     selector {
-      match_labels = {
-        "component" = "etcd"
-      }
+      match_labels = local.etcd_labels
     }
   }
 }
@@ -71,9 +67,7 @@ resource "kubernetes_stateful_set" "etcd" {
   metadata {
     name      = "etcd"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "component" = "etcd"
-    }
+    labels    = local.etcd_labels
   }
   spec {
     service_name = "etcd"
@@ -82,16 +76,12 @@ resource "kubernetes_stateful_set" "etcd" {
       type = "RollingUpdate"
     }
     selector {
-      match_labels = {
-        "component" = "etcd"
-      }
+      match_labels = local.etcd_labels
     }
     template {
       metadata {
-        name = "etcd"
-        labels = {
-          "component" = "etcd"
-        }
+        name   = "etcd"
+        labels = local.etcd_labels
       }
       spec {
         container {

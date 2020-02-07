@@ -11,12 +11,12 @@ locals {
     "group"   = "micro"
   }
   common_env_vars = {
-    "MICRO_LOG_LEVEL"        = "debug"
-    "MICRO_BROKER"           = "nats"
-    "MICRO_BROKER_ADDRESS"   = "nats-cluster.${var.resource_namespace}.svc"
-    "MICRO_REGISTRY"         = "etcd"
-    "MICRO_REGISTRY_ADDRESS" = "etcd-cluster.${var.resource_namespace}.svc"
-    "MICRO_REGISTER_TTL" = "60"
+    "MICRO_LOG_LEVEL"         = "debug"
+    "MICRO_BROKER"            = "nats"
+    "MICRO_BROKER_ADDRESS"    = "nats-cluster.${var.resource_namespace}.svc"
+    "MICRO_REGISTRY"          = "etcd"
+    "MICRO_REGISTRY_ADDRESS"  = "etcd-cluster.${var.resource_namespace}.svc"
+    "MICRO_REGISTER_TTL"      = "60"
     "MICRO_REGISTER_INTERVAL" = "30"
   }
 }
@@ -31,15 +31,48 @@ resource "kubernetes_service" "network_service" {
   spec {
     type = var.service_type
     port {
-      name = "${var.service_name}-port"
-      port     = var.service_port
-      protocol = var.service_protocol
+      name        = "${var.service_name}-port"
+      port        = var.service_port
+      protocol    = var.service_protocol
       target_port = "${var.service_name}-port"
     }
     selector = merge(local.common_labels, var.extra_labels)
   }
   lifecycle {
     ignore_changes = [metadata.0.annotations]
+  }
+}
+
+resource "kubernetes_ingress" "network_ingress" {
+  count = var.create_k8s_ingress ? 1 : 0
+  metadata {
+    name      = "micro-${var.service_name}"
+    namespace = var.network_namespace
+    labels    = merge(local.common_labels, var.extra_labels)
+    annotations = {
+      // We only expose services that manage their own certificates
+      "nginx.ingress.kubernetes.io/ssl-passthrough" = "true"
+    }
+  }
+  spec {
+    tls {
+      hosts = formatlist("${var.service_name}.%s", var.domain_names)
+    }
+    dynamic "rule" {
+      for_each = var.domain_names
+      content {
+        host = "${var.service_name}.${rule.value}"
+        http {
+          path {
+            path = "/"
+            backend {
+              service_name = kubernetes_service.network_service.metadata.0.name
+              service_port = var.service_port
+            }
+          }
+        }
+      }
+    }
   }
 }
 

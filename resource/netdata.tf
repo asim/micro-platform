@@ -1,14 +1,16 @@
 # TODO: Pod Security Policy https://github.com/terraform-providers/terraform-provider-kubernetes/pull/624
 
+locals {
+  netdata_labels = { "app" = "netdata" }
+}
+
 resource "random_uuid" "netdata_stream_id" {}
 
 resource "kubernetes_config_map" "netdata_master" {
   metadata {
     name      = "netdata-conf-master"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app" = "netdata"
-    }
+    labels    = local.netdata_labels
   }
   data = {
     "health"  = <<-EOCONF
@@ -59,9 +61,7 @@ resource "kubernetes_config_map" "netdata_worker" {
   metadata {
     name      = "netdata-conf-worker"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app" = "netdata"
-    }
+    labels    = local.netdata_labels
   }
   data = {
     "netdata"   = <<-EONETDATA
@@ -107,9 +107,7 @@ resource "kubernetes_service_account" "netdata" {
   metadata {
     name      = "netdata"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app" = "netdata"
-    }
+    labels    = local.netdata_labels
   }
 }
 
@@ -121,10 +119,8 @@ resource "random_pet" "netdata_cluster_role" {
 
 resource "kubernetes_cluster_role" "netdata" {
   metadata {
-    name = random_pet.netdata_cluster_role.id
-    labels = {
-      "app" = "netdata"
-    }
+    name   = random_pet.netdata_cluster_role.id
+    labels = local.netdata_labels
   }
   rule {
     api_groups = [""]
@@ -154,10 +150,8 @@ resource "kubernetes_cluster_role" "netdata" {
 
 resource "kubernetes_cluster_role_binding" "netdata" {
   metadata {
-    name = random_pet.netdata_cluster_role.id
-    labels = {
-      "app" = "netdata"
-    }
+    name   = random_pet.netdata_cluster_role.id
+    labels = local.netdata_labels
   }
   role_ref {
     api_group = "rbac.authorization.k8s.io"
@@ -175,10 +169,7 @@ resource "kubernetes_service" "netdata" {
   metadata {
     name      = "netdata"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app"  = "netdata"
-      "role" = "master"
-    }
+    labels    = merge(local.netdata_labels, { "role" = "master" })
   }
   spec {
     type = "ClusterIP"
@@ -188,10 +179,7 @@ resource "kubernetes_service" "netdata" {
       protocol    = "TCP"
       name        = "http"
     }
-    selector = {
-      "app"  = "netdata"
-      "role" = "master"
-    }
+    selector = merge(local.netdata_labels, { "role" = "master" })
   }
 }
 
@@ -199,27 +187,18 @@ resource "kubernetes_daemonset" "netdata-worker" {
   metadata {
     name      = "netdata-worker"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app"  = "netdata"
-      "role" = "worker"
-    }
+    labels    = merge(local.netdata_labels, { "role" = "worker" })
   }
   spec {
     selector {
-      match_labels = {
-        "app"  = "netdata"
-        "role" = "worker"
-      }
+      match_labels = merge(local.netdata_labels, { "role" = "worker" })
     }
     template {
       metadata {
         annotations = {
           "container.apparmor.security.beta.kubernetes.io/netdata" = "unconfined"
         }
-        labels = {
-          "app"  = "netdata"
-          "role" = "worker"
-        }
+        labels = merge(local.netdata_labels, { "role" = "worker" })
       }
       spec {
         service_account_name = kubernetes_service_account.netdata.metadata.0.name
@@ -363,26 +342,17 @@ resource "kubernetes_stateful_set" "netdata_master" {
   metadata {
     name      = "netdata-master"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app"  = "netdata"
-      "role" = "master"
-    }
+    labels    = merge(local.netdata_labels, { "role" = "master" })
   }
   spec {
     service_name = "netdata"
     replicas     = 1
     selector {
-      match_labels = {
-        "app"  = "netdata"
-        "role" = "master"
-      }
+      match_labels = merge(local.netdata_labels, { "role" = "master" })
     }
     template {
       metadata {
-        labels = {
-          "app"  = "netdata"
-          "role" = "master"
-        }
+        labels = merge(local.netdata_labels, { "role" = "master" })
       }
       spec {
         security_context {

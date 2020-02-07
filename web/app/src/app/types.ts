@@ -67,3 +67,25 @@ export interface DebugSnapshot {
   errors: number;
   timestamp: number;
 }
+
+export interface Span {
+  // the trace id
+  trace: string;
+  // id of the span
+  id: string;
+  // parent span
+  parent: string;
+  // name of the resource
+  name: string;
+  // time of start in nanoseconds
+  started: number;
+  // duration of the execution in nanoseconds
+  duration: number;
+  // associated metadata
+  metadata: Map<string, string>;
+}
+
+export interface TraceSnapshot {
+  service: DebugService;
+  spans: Span[];
+}

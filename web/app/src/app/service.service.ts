@@ -1,29 +1,25 @@
-import { Injectable } from '@angular/core';
-import * as types from './types';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../environments/environment';
-import { UserService } from './user.service';
+import { Injectable } from "@angular/core";
+import * as types from "./types";
+import { HttpClient } from "@angular/common/http";
+import { environment } from "../environments/environment";
+import { UserService } from "./user.service";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class ServiceService {
-
-  constructor(
-    private us: UserService,
-    private http: HttpClient
-  ) { }
+  constructor(private us: UserService, private http: HttpClient) {}
 
   list(): Promise<types.Service[]> {
     return new Promise<types.Service[]>((resolve, reject) => {
       return this.http
         .get<types.Service[]>(
-          environment.backendUrl + '/v1/services?token=' + this.us.token()
+          environment.backendUrl + "/v1/services?token=" + this.us.token()
         )
         .toPromise()
         .then(servs => {
-          resolve(servs as types.Service[])
-        })
+          resolve(servs as types.Service[]);
+        });
     });
   }
 
@@ -31,12 +27,16 @@ export class ServiceService {
     return new Promise<types.LogRecord[]>((resolve, reject) => {
       return this.http
         .get<types.LogRecord[]>(
-          environment.backendUrl + '/v1/service/logs?service=' + service + '&token=' + this.us.token()
+          environment.backendUrl +
+            "/v1/service/logs?service=" +
+            service +
+            "&token=" +
+            this.us.token()
         )
         .toPromise()
         .then(servs => {
-          resolve(servs as types.LogRecord[])
-        })
+          resolve(servs as types.LogRecord[]);
+        });
     });
   }
 
@@ -44,12 +44,34 @@ export class ServiceService {
     return new Promise<types.DebugSnapshot[]>((resolve, reject) => {
       return this.http
         .get<types.DebugSnapshot[]>(
-          environment.backendUrl + '/v1/service/stats?service=' + service + '&token=' + this.us.token()
+          environment.backendUrl +
+            "/v1/service/stats?service=" +
+            service +
+            "&token=" +
+            this.us.token()
         )
         .toPromise()
         .then(servs => {
-          resolve(servs as types.DebugSnapshot[])
-        })
+          resolve(servs as types.DebugSnapshot[]);
+        });
+    });
+  }
+
+  trace(service?: string): Promise<types.Span[]> {
+    const qs = service ? "service=" + service + "&" : "";
+    return new Promise<types.Span[]>((resolve, reject) => {
+      return this.http
+        .get<types.Span[]>(
+          environment.backendUrl +
+            "/v1/service/trace?" +
+            qs +
+            "token=" +
+            this.us.token()
+        )
+        .toPromise()
+        .then(servs => {
+          resolve(servs as types.Span[]);
+        });
     });
   }
 }

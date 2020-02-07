@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { CookieService } from 'ngx-cookie-service';
 import { UserService } from './user.service';
 import * as types from './types';
 
@@ -13,7 +12,6 @@ export class AppComponent implements OnInit {
   user: types.User;
 
   constructor(
-    private cookie: CookieService,
     public us: UserService,
   ) { }
 

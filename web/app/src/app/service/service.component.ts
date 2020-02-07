@@ -1,7 +1,9 @@
-import { Component, OnInit, ViewEncapsulation } from "@angular/core";
+import { Component, OnInit, ViewEncapsulation, ViewChild } from "@angular/core";
 import { ServiceService } from "../service.service";
 import * as types from "../types";
 import { ActivatedRoute } from "@angular/router";
+import {PageEvent, MatPaginator} from '@angular/material/paginator';
+import * as _ from "lodash";
 
 @Component({
   selector: "app-service",
@@ -13,12 +15,43 @@ import { ActivatedRoute } from "@angular/router";
   encapsulation: ViewEncapsulation.None
 })
 export class ServiceComponent implements OnInit {
+  //@ViewChild(MatPaginator) paginator: MatPaginator;
+
   services: types.Service[];
   logs: types.LogRecord[];
   stats: types.DebugSnapshot[];
+  traceSpans: types.Span[];
+  traceDatas: any[] = [];
+  traceDatasPart: any[] = [];
   serviceName: string;
   endpointQuery: string;
   intervalId: any;
+  
+  public pageSize = 10;
+  public currentPage = 0;
+  public length = 0;
+
+  public handlePage(e: any) {
+    this.currentPage = e.pageIndex;
+    this.pageSize = e.pageSize;
+    this.iterator();
+  }
+  
+  show(td) {
+    td.show = !td.show
+    return false;
+  }
+
+  prettyId(id: string) {
+    return id.substring(0, 8)
+  }
+
+  private iterator() {
+    const end = (this.currentPage + 1) * this.pageSize;
+    const start = this.currentPage * this.pageSize;
+    const part = this.traceDatas.slice(start, end);
+    this.traceDatasPart = part;
+  }
 
   constructor(
     private ses: ServiceService,
@@ -40,6 +73,9 @@ export class ServiceComponent implements OnInit {
       this.ses.stats(this.serviceName).then(stats => {
         this.stats = stats;
         this.processStats();
+      });
+      this.ses.trace().then(spans => {
+        this.processTraces(spans);
       });
       this.intervalId = setInterval(() => {
         this.ses.stats(this.serviceName).then(stats => {
@@ -75,14 +111,62 @@ ${indent}}`;
 
   // Stats/ Chart related things
 
+  processTraces(spans: types.Span[]) {
+    const groupedSpans = _.values(_.groupBy(_.uniqBy(spans, "id"), "trace"));
+    let traceDatas: any[] = [];
+    groupedSpans.forEach(spanGroup => {
+      const spansToDisplay = _.orderBy(
+        spanGroup.map(d => {
+          return [
+            d.name,
+            new Date(d.started / 1000000),
+            new Date((d.started + d.duration) / 1000000)
+          ];
+        }),
+        sp => {
+          const row = sp as Date[];
+          return row[1];
+        },
+        ["asc"]
+      );
+      const h = (spansToDisplay.length +1) * 40 + 40
+      let traceData = {
+        // Display related things
+        traceId: spanGroup[0].trace,
+        divHeight: h,
+        // Chart related options
+        chartType: "Timeline",
+        dataTable: ([["Name", "From", "To"]] as any[][]).concat(spansToDisplay),
+        options: {
+          height: h,
+          timeline: {
+            tooltipDateFormat: 'HH:mm:ss.SSS',
+          },
+          hAxis: {
+            format: 'yyyy-MM-dd HH:mm:ss.SSS',
+            minValue: new Date((spansToDisplay[0][1] as Date).getTime() - 500),
+            maxValue: new Date(
+              (spansToDisplay[spansToDisplay.length - 1][2] as Date).getTime() +
+                500
+            )
+          }
+        }
+      };
+      traceDatas.push(traceData);
+    });
+    this.traceDatas = _.orderBy(traceDatas, td => td.dataTable.length, ['desc']);
+    this.length = this.traceDatas.length;
+    this.iterator();
+  }
+
   processStats() {
     function onlyUnique(value, index, self) {
       return self.indexOf(value) === index;
     }
     const STAT_WINDOW = 8 * 60 * 1000; /* ms */
     this.stats = this.stats.filter(stat => {
-      return Date.now() - (stat.timestamp * 1000 ) < STAT_WINDOW
-    })
+      return Date.now() - stat.timestamp * 1000 < STAT_WINDOW;
+    });
     const nodes = this.stats
       .map(stat => stat.service.node.id)
       .filter(onlyUnique);
@@ -94,6 +178,7 @@ ${indent}}`;
         fill: false,
         lineTension: 0,
         borderWidth: 2,
+        fillcolor: "rgba(220,220,220,0.8)",
         data: this.stats
           .filter(stat => stat.service.node.id == node)
           .map((stat, i) => {
@@ -202,9 +287,7 @@ ${indent}}`;
               const first = this.stats[0].gc ? this.stats[0].gc : 0;
               value = this.stats[1].gc - first;
             } else {
-              const prev = this.stats[i - 1].gc
-                ? this.stats[i - 1].gc
-                : 0;
+              const prev = this.stats[i - 1].gc ? this.stats[i - 1].gc : 0;
               value = this.stats[i].gc - prev;
             }
             return {
@@ -219,7 +302,7 @@ ${indent}}`;
   // config options taken from https://www.chartjs.org/samples/latest/scales/time/financial.html
   options(ylabel: string, distribution?: string) {
     if (!distribution) {
-      distribution = "series"
+      distribution = "series";
     }
     return {
       options: {

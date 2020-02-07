@@ -1,10 +1,12 @@
+locals {
+  jaeger_labels = { "app" = "jaeger" }
+}
+
 resource "kubernetes_deployment" "jaeger" {
   metadata {
     name      = "jaeger-tracing"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app" = "jaeger"
-    }
+    labels    = local.jaeger_labels
   }
   spec {
     replicas = 1
@@ -12,15 +14,11 @@ resource "kubernetes_deployment" "jaeger" {
       type = "Recreate"
     }
     selector {
-      match_labels = {
-        "app" = "jaeger"
-      }
+      match_labels = local.jaeger_labels
     }
     template {
       metadata {
-        labels = {
-          "app" = "jaeger"
-        }
+        labels = local.jaeger_labels
       }
       spec {
         container {
@@ -92,9 +90,7 @@ resource "kubernetes_service" "jaeger_query" {
   metadata {
     name      = "jaeger-tracing-query"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app" = "jaeger"
-    }
+    labels    = local.jaeger_labels
   }
   spec {
     port {
@@ -103,10 +99,8 @@ resource "kubernetes_service" "jaeger_query" {
       protocol    = "TCP"
       target_port = "query-http"
     }
-    type = "ClusterIP"
-    selector = {
-      "app" = "jaeger"
-    }
+    type     = "ClusterIP"
+    selector = local.jaeger_labels
   }
 }
 
@@ -116,9 +110,7 @@ resource "kubernetes_service" "jaeger_collector" {
     namespace = kubernetes_namespace.resource.id
   }
   spec {
-    selector = {
-      "app" = "jaeger"
-    }
+    selector = local.jaeger_labels
     port {
       name        = "tchannel"
       port        = 14267
@@ -144,14 +136,10 @@ resource "kubernetes_service" "jaeger_agent" {
   metadata {
     name      = "jaeger-tracing-agent"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app" = "jaeger"
-    }
+    labels    = local.jaeger_labels
   }
   spec {
-    selector = {
-      "app" = "jaeger"
-    }
+    selector = local.jaeger_labels
     port {
       name        = "zipkin-thrift"
       port        = 5775
@@ -184,14 +172,10 @@ resource "kubernetes_service" "zipkin" {
   metadata {
     name      = "zipkin"
     namespace = kubernetes_namespace.resource.id
-    labels = {
-      "app" = "jaeger"
-    }
+    labels    = local.jaeger_labels
   }
   spec {
-    selector = {
-      "app" = "jaeger"
-    }
+    selector = local.jaeger_labels
     port {
       name        = "coll-zipkin"
       port        = 9411
