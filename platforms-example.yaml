@@ -1,7 +1,7 @@
 platforms:
 - name: "Micro"
   domain: "micro.mu"
-  access: "cloudflare"
+  gslb: "cloudflare"
   kv: "cloudflare"
   regions:
   - provider: do
@@ -22,7 +22,7 @@ platforms:
     network: []
 - name: "somewhere"
   domain: "nowhere.com"
-  access: "cloudflare"
+  gslb: "cloudflare"
   kv: "cloudflare"
   regions:
   - provider: azure
