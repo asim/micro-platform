@@ -13,6 +13,7 @@ WORKDIR /
 COPY . /
 # Specify list of things to copy from builder
 COPY --from=builder web/web /web/web
+COPY --from=builder api/api /api/api
 COPY --from=builder platform /platform
 COPY entrypoint.sh /
 RUN chmod 755 entrypoint.sh

@@ -3,7 +3,8 @@ import {
   CanActivate,
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
-  UrlTree
+  UrlTree,
+  Router
 } from "@angular/router";
 import { Observable } from "rxjs";
 import { UserService } from "./user.service";
@@ -13,7 +14,9 @@ import { environment } from "../environments/environment";
   providedIn: "root"
 })
 export class AuthGuard implements CanActivate {
-  constructor(private us: UserService) {}
+  constructor(
+    private us: UserService,
+    private r: Router) {}
 
   canActivate(
     next: ActivatedRouteSnapshot,
@@ -24,19 +27,20 @@ export class AuthGuard implements CanActivate {
     | boolean
     | UrlTree {
     if (this.us.loggedIn()) {
-      return true
+      return true;
     }
-    return new Observable<boolean>((observer) => {
+    return new Observable<boolean>(observer => {
       this.us.isUserLoggedIn.subscribe(loggedIn => {
         if (loggedIn) {
-          observer.next(true)
+          observer.next(true);
         } else {
           //confirm("redirect") ? window.location.href = environment.backendUrl + "/v1/github/login" : console.log("stopping")
-          window.location.href = environment.backendUrl + "/v1/github/login"
-          observer.next(false)
+          //window.location.href = environment.backendUrl + "/v1/github/login"
+          this.r.navigate(['/'])
+          observer.next(false);
         }
-        observer.complete()
-      })
+        observer.complete();
+      });
     });
   }
 }

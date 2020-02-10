@@ -30,17 +30,17 @@
     </form>
 
     <br />
-    <mat-card
+    <mat-card class="mat-card-flat"
       *ngFor="let service of services | keyvalue | search: 'key':query"
-      style="margin-bottom: 1em; background: #fbfbfb"
+      style="margin-bottom: 1em; background: #f5f5f5;"
     >
-      <mat-card-title style="font-size: 1.25em;">
-        <mat-icon style="color: green; vertical-align: middle;"
+      <mat-card-title style="display: flex; align-items: center; font-size: 1.25em;">
+        <mat-icon style="color: green;"
           >fiber_manual_record</mat-icon
         >
         &nbsp;<a href="#" routerLink="/service/{{ service.key }}">{{
           service.key
-        }}</a>
+        }}</a>&nbsp;&nbsp;
         <mat-chip-list aria-label="Versions">
           <mat-chip *ngFor="let serv of service.value">{{
             serv.version

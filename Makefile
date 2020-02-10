@@ -15,6 +15,7 @@ vendor:
 
 build:
 	cd web && go build -a -installsuffix cgo -ldflags "-s -w ${LDFLAGS}" . && cd ..
+	cd api && go build -a -installsuffix cgo -ldflags "-s -w ${LDFLAGS}" . && cd ..
 	go build -a -installsuffix cgo -ldflags "-s -w ${LDFLAGS}" -o ${NAME} .
 
 docker:

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { UserService } from '../user.service';
 
 @Component({
   selector: 'app-new-service',
@@ -6,10 +7,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./new-service.component.css']
 })
 export class NewServiceComponent implements OnInit {
-
-  constructor() { }
+  code: string;
+  constructor(private us: UserService) { }
 
   ngOnInit() {
+    this.code = "micro login --token " + this.us.token()
   }
 
 }
