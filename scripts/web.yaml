@@ -52,6 +52,18 @@ spec:
             secretKeyRef:
               key: GITHUB_OAUTH_REDIRECT_URL
               name: github-credentials
+        - name: MICRO_AUTH
+          value: "jwt"
+        - name: MICRO_AUTH_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: micro-keypair
+              key: public
+        - name: MICRO_AUTH_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: micro-keypair
+              key: private
         image: micro/platform
         imagePullPolicy: Always
         ports:
