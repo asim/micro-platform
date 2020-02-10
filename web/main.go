@@ -10,17 +10,15 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/dghubble/gologin/v2"
 	"github.com/dghubble/gologin/v2/github"
 	gologinOauth "github.com/dghubble/gologin/v2/oauth2"
 	githubApi "github.com/google/go-github/v29/github"
-	"github.com/google/uuid"
+	"github.com/micro/go-micro/v2/auth"
+
 	"github.com/micro/go-micro/v2/client"
 	"github.com/micro/go-micro/v2/registry"
-	"github.com/micro/go-micro/v2/store"
-	memstore "github.com/micro/go-micro/v2/store/memory"
 	"github.com/micro/go-micro/v2/web"
 	logproto "github.com/micro/micro/v2/debug/log/proto"
 	statsproto "github.com/micro/micro/v2/debug/stats/proto"
@@ -29,11 +27,9 @@ import (
 	githubOAuth2 "golang.org/x/oauth2/github"
 )
 
-var userStore = memstore.NewStore(store.Namespace("users"))
-
 type User struct {
-	//Email string
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 // issueSession issues a cookie session after successful Github login
@@ -46,15 +42,6 @@ func issueSession() http.Handler {
 			return
 		}
 		githubUser, err := github.UserFromContext(ctx)
-		if err != nil {
-			write500(w, err)
-			return
-		}
-		user := User{
-			//Email: *githubUser.Email,
-			Name: *githubUser.Name,
-		}
-		userJSON, err := json.Marshal(user)
 		if err != nil {
 			write500(w, err)
 			return
@@ -81,27 +68,25 @@ func issueSession() http.Handler {
 			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
 			return
 		}
-		token := uuid.New().String()
-		userRecord := &store.Record{
-			// Would be nice to manually invalidate a token once a new one is issued
-			// but that would need some querying capability the store does not have.
-			Key:    token,
-			Value:  userJSON,
-			Expiry: 30 * 24 * time.Hour,
-		}
-		err = userStore.Write(userRecord)
+
+		acc, err := auth.DefaultAuth.Generate(*githubUser.Email, auth.Metadata(
+			map[string]string{
+				"email": *githubUser.Email,
+				"name":  *githubUser.Name,
+			},
+		))
 		if err != nil {
 			write500(w, err)
 			return
 		}
+
 		// Include the minted session in a query parameter so the frontend can save it.
 		// Although with https query paramteres are encrypted, this is still not the most ideal
 		// way to do it. Will suffice for now.
-		expire := time.Now().AddDate(0, 0, 1)
 		http.SetCookie(w, &http.Cookie{
 			Name:    "micro_token",
-			Value:   token,
-			Expires: expire,
+			Value:   acc.Token,
+			Expires: acc.Expiry,
 			Path:    "/",
 		})
 		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/services", http.StatusFound)
@@ -225,14 +210,8 @@ func tracesHandler(service web.Service) func(http.ResponseWriter, *http.Request)
 }
 
 func isLoggedIn(token string) error {
-	userRecord, err := userStore.Read(token)
-	if err != nil {
-		return err
-	}
-	if len(userRecord) == 0 {
-		return errors.New("Not logged in")
-	}
-	return nil
+	_, err := auth.DefaultAuth.Validate(token)
+	return err
 }
 
 func userHandler(w http.ResponseWriter, req *http.Request) {
@@ -245,22 +224,17 @@ func userHandler(w http.ResponseWriter, req *http.Request) {
 		write400(w, errors.New("Token missing"))
 		return
 	}
-	userRecord, err := userStore.Read(token)
+
+	acc, err := auth.DefaultAuth.Validate(token)
 	if err != nil {
-		write500(w, err)
+		write400(w, err)
 		return
 	}
-	if len(userRecord) == 0 {
-		write400(w, errors.New("Not found"))
-		return
-	}
-	user := &User{}
-	err = json.Unmarshal(userRecord[0].Value, user)
-	if err != nil {
-		write500(w, err)
-		return
-	}
-	writeJSON(w, user)
+
+	writeJSON(w, &User{
+		Name:  acc.Metadata["name"],
+		Email: acc.Metadata["email"],
+	})
 }
 
 func main() {
