@@ -1,0 +1,32 @@
+platforms:
+- name: "Micro"
+  domain: "micro.mu"
+  access: "cloudflare"
+  kv: "cloudflare"
+  regions:
+  - provider: do
+    region: lon1
+    control:
+    - api
+    - bot
+    resource:
+    - cockroachdb
+    network:
+    - registry
+    - web
+    - store
+  - provider: azure
+    region: uksouth
+    control: []
+    resource: []
+    network: []
+- name: "somewhere"
+  domain: "nowhere.com"
+  access: "cloudflare"
+  kv: "cloudflare"
+  regions:
+  - provider: azure
+    region: uksouth
+    control: []
+    resource: []
+    network: []

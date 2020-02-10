@@ -177,8 +177,6 @@ github.com/golang/protobuf v1.3.0/go.mod h1:Qd/q+1AKNOZr9uGQzbzCmRO6sUih6GTPZv6a
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/golang/protobuf v1.3.2 h1:6nsPYzhq5kReh6QImI3k5qWzO4PEbvbIW2cwSfR/6xs=
 github.com/golang/protobuf v1.3.2/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
-github.com/golang/protobuf v1.3.3 h1:gyjaxf+svBWX08ZjK86iN9geUJF0H6gp2IRKX6Nf6/I=
-github.com/golang/protobuf v1.3.3/go.mod h1:vzj43D7+SQXF/4pzW/hwtAqwc6iTitCiVSaWz5lYuqw=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
 github.com/google/btree v1.0.0 h1:0udJVsspx3VBr5FwtLhQQtuAsVc79tTq0ocGIPAU6qo=
@@ -307,8 +305,6 @@ github.com/micro/cli/v2 v2.1.2-0.20200203150404-894195727d9c h1:oohy8v2QQeXfDe9/
 github.com/micro/cli/v2 v2.1.2-0.20200203150404-894195727d9c/go.mod h1:EguNh6DAoWKm9nmk+k/Rg0H3lQnDxqzu5x5srOtGtYg=
 github.com/micro/go-micro/v2 v2.0.1-0.20200207205803-ef537270add3 h1:gqwsIF3qVBkSi30WQYPCYCnLUph7ehDFGu/YgIrRfZo=
 github.com/micro/go-micro/v2 v2.0.1-0.20200207205803-ef537270add3/go.mod h1:CDPVByZzOp1RNrJfNxEGgNOJ11wEw8NoHfADo8M3+LM=
-github.com/micro/go-micro/v2 v2.0.1-0.20200210082628-4401c12e6c9c h1:WruXwRK83QlKl45yrXEiNJRfaDFH3fmO08zIWibCAfY=
-github.com/micro/go-micro/v2 v2.0.1-0.20200210082628-4401c12e6c9c/go.mod h1:CDPVByZzOp1RNrJfNxEGgNOJ11wEw8NoHfADo8M3+LM=
 github.com/micro/go-micro/v2 v2.0.1-0.20200210153841-8ea84ac3ebca h1:th3ci59p1tf4pkGGrLfgPst1lhJduhLyJ7nC3gCnYQE=
 github.com/micro/go-micro/v2 v2.0.1-0.20200210153841-8ea84ac3ebca/go.mod h1:CDPVByZzOp1RNrJfNxEGgNOJ11wEw8NoHfADo8M3+LM=
 github.com/micro/mdns v0.3.0 h1:bYycYe+98AXR3s8Nq5qvt6C573uFTDPIYzJemWON0QE=
