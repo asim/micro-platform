@@ -14,7 +14,10 @@
       >
       {{ serviceName }}
     </mat-card-title>
-    <mat-tab-group>
+    <mat-tab-group
+      [selectedIndex]="selected"
+      (selectedIndexChange)="tabChange($event)"
+    >
       <mat-tab style="padding-top: 1em;" label="Endpoints">
         <br />
         <form style="margin-left: 1.5em;" class="example-form">
@@ -62,59 +65,61 @@
             <div *ngFor="let log of logs">{{ log.message }}</div></pre>
       </mat-tab>
       <mat-tab label="Stats">
-        <br />
-        <div style="display:flex; flex-direction:column;">
-          <div style="flex-grow:1; height:300px; position:relative">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="requestRates.data"
-              [options]="requestRates.options"
-              [chartType]="requestRates.lineChartType"
-            ></canvas>
+        <ng-template matTabContent>
+          <br />
+          <div style="display:flex; flex-direction:column;">
+            <div style="flex-grow:1; height:300px; position:relative">
+              <canvas
+                baseChart
+                width="400"
+                height="400"
+                [datasets]="requestRates.data"
+                [options]="requestRates.options"
+                [chartType]="requestRates.lineChartType"
+              ></canvas>
+            </div>
+            <div style="flex-grow:1; height:300px; position:relative">
+              <canvas
+                baseChart
+                width="400"
+                height="400"
+                [datasets]="memoryRates.data"
+                [options]="memoryRates.options"
+                [chartType]="memoryRates.lineChartType"
+              ></canvas>
+            </div>
+            <div style="flex-grow:1; height:300px; position:relative">
+              <canvas
+                baseChart
+                width="400"
+                height="400"
+                [datasets]="errorRates.data"
+                [options]="errorRates.options"
+                [chartType]="errorRates.lineChartType"
+              ></canvas>
+            </div>
+            <div style="flex-grow:1; height:300px; position:relative">
+              <canvas
+                baseChart
+                width="400"
+                height="400"
+                [datasets]="concurrencyRates.data"
+                [options]="concurrencyRates.options"
+                [chartType]="concurrencyRates.lineChartType"
+              ></canvas>
+            </div>
+            <div style="flex-grow:1; height:300px; position:relative">
+              <canvas
+                baseChart
+                width="400"
+                height="400"
+                [datasets]="gcRates.data"
+                [options]="gcRates.options"
+                [chartType]="gcRates.lineChartType"
+              ></canvas>
+            </div>
           </div>
-          <div style="flex-grow:1; height:300px; position:relative">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="memoryRates.data"
-              [options]="memoryRates.options"
-              [chartType]="memoryRates.lineChartType"
-            ></canvas>
-          </div>
-          <div style="flex-grow:1; height:300px; position:relative">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="errorRates.data"
-              [options]="errorRates.options"
-              [chartType]="errorRates.lineChartType"
-            ></canvas>
-          </div>
-          <div style="flex-grow:1; height:300px; position:relative">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="concurrencyRates.data"
-              [options]="concurrencyRates.options"
-              [chartType]="concurrencyRates.lineChartType"
-            ></canvas>
-          </div>
-          <div style="flex-grow:1; height:300px; position:relative">
-            <canvas
-              baseChart
-              width="400"
-              height="400"
-              [datasets]="gcRates.data"
-              [options]="gcRates.options"
-              [chartType]="gcRates.lineChartType"
-            ></canvas>
-          </div>
-        </div>
+        </ng-template>
       </mat-tab>
       <mat-tab label="Nodes">
         <br />

@@ -2,7 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from "@angular/core";
 import { ServiceService } from "../service.service";
 import * as types from "../types";
 import { ActivatedRoute } from "@angular/router";
-import {FormControl} from '@angular/forms';
+import { Subject } from 'rxjs';
 import * as _ from "lodash";
 
 @Component({
@@ -15,8 +15,6 @@ import * as _ from "lodash";
   encapsulation: ViewEncapsulation.None
 })
 export class ServiceComponent implements OnInit {
-  //@ViewChild(MatPaginator) paginator: MatPaginator;
-
   services: types.Service[];
   logs: types.LogRecord[];
   stats: types.DebugSnapshot[];
@@ -26,6 +24,9 @@ export class ServiceComponent implements OnInit {
   serviceName: string;
   endpointQuery: string;
   intervalId: any;
+
+  selected = 0;
+  tabValueChange = new Subject<number>();
   
   public pageSize = 10;
   public currentPage = 0;
@@ -70,20 +71,33 @@ export class ServiceComponent implements OnInit {
       this.ses.logs(this.serviceName).then(logs => {
         this.logs = logs;
       });
-      this.ses.stats(this.serviceName).then(stats => {
-        this.stats = stats;
-        this.processStats();
-      });
       this.ses.trace(this.serviceName).then(spans => {
         this.processTraces(spans);
       });
       this.intervalId = setInterval(() => {
+        if (this.selected !== 2) {
+          return
+        }
         this.ses.stats(this.serviceName).then(stats => {
           this.stats = stats;
           this.processStats();
         });
       }, 5000);
+      this.tabValueChange.subscribe(index => {
+        if (index !== 2) {
+          return
+        }
+        this.ses.stats(this.serviceName).then(stats => {
+          this.stats = stats;
+          this.processStats();
+        });
+      })
     });
+  }
+
+  tabChange($event: number) {
+    this.selected = $event;
+    this.tabValueChange.next(this.selected)
   }
 
   ngOnDestroy() {
