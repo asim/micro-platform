@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/dumb-init /bin/sh
 
 set -x
 set -e
@@ -6,11 +6,8 @@ set -e
 APP=$1
 
 echo "Running $APP"
-
-# go to source
-cd $APP && ./$APP &
-cd ..
+./platform $APP &
 
 # start the platform
 echo "Running platform"
-./platform
+./platform scheduler

@@ -1,3 +1,6 @@
 .terraform
 *tfstate*
 *kubeconfig*
+platform
+api/api
+web/web
