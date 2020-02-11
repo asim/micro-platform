@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package go.micro.platform;
+
+service Platform {}
