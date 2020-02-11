@@ -24,6 +24,7 @@ export class ServiceComponent implements OnInit {
   serviceName: string;
   endpointQuery: string;
   intervalId: any;
+  refresh = true;
 
   selected = 0;
   tabValueChange = new Subject<number>();
@@ -75,7 +76,7 @@ export class ServiceComponent implements OnInit {
         this.processTraces(spans);
       });
       this.intervalId = setInterval(() => {
-        if (this.selected !== 2) {
+        if (this.selected !== 2 || !this.refresh) {
           return
         }
         this.ses.stats(this.serviceName).then(stats => {
@@ -84,7 +85,7 @@ export class ServiceComponent implements OnInit {
         });
       }, 5000);
       this.tabValueChange.subscribe(index => {
-        if (index !== 2) {
+        if (index !== 2 || !this.refresh) {
           return
         }
         this.ses.stats(this.serviceName).then(stats => {

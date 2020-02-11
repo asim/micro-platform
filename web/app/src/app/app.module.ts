@@ -26,7 +26,8 @@ import {
   MatFormFieldModule,
   MatInputModule,
   MatExpansionModule,
-  MatProgressBarModule
+  MatProgressBarModule,
+  MatCheckboxModule,
 } from "@angular/material";
 import { MatPaginatorModule } from "@angular/material/paginator";
 import { MatListModule } from "@angular/material";
@@ -108,7 +109,8 @@ export function getHighlightLanguages() {
     ClipboardModule,
     HighlightModule,
     Ng2GoogleChartsModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatCheckboxModule
   ],
   providers: [
     CookieService,
