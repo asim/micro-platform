@@ -178,8 +178,8 @@ ${indent}}`;
         let leftPad = 1;
         let rightPad = 1;
         if (lastEnd - firstStart < 1000) {
-          leftPad = (lastEnd - firstStart) / 2;
-          rightPad = (lastEnd - firstStart) / 2;
+          leftPad = (1000 - (lastEnd - firstStart)) / 2;
+          rightPad = (1000 - (lastEnd - firstStart)) / 2;
         }
         const minDate = new Date(firstStart - leftPad);
         const maxDate = new Date(lastEnd + rightPad);
