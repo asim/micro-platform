@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/micro/platform/web/handlers/auth"
+	"github.com/micro/platform/web/handlers/github"
 	"github.com/micro/platform/web/handlers/services"
 
 	"github.com/micro/go-micro/v2/web"
@@ -17,6 +18,7 @@ func main() {
 	)
 
 	auth.RegisterHandlers(service)
+	github.RegisterHandlers(service)
 	services.RegisterHandlers(service)
 
 	service.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
