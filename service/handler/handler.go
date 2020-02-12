@@ -9,7 +9,7 @@ import (
 	"github.com/micro/go-micro/v2/store"
 	"github.com/micro/go-micro/v2/util/log"
 
-	registry "github.com/micro/go-micro/v2/registry/service/proto"
+	api "github.com/micro/platform/api/proto"
 	pb "github.com/micro/platform/service/proto"
 )
 
@@ -27,9 +27,9 @@ func NewHandler(srv micro.Service) *Handler {
 	}
 
 	err := micro.RegisterSubscriber(
-		"go.micro.registry.events",
+		"go.micro.platform.events",
 		srv.Server(),
-		h.HandleRegistryEvent,
+		h.HandleAPIEvent,
 		server.SubscriberQueue("queue.events"),
 	)
 	if err != nil {
@@ -39,16 +39,16 @@ func NewHandler(srv micro.Service) *Handler {
 	return h
 }
 
-var eventTypeMap = map[registry.EventType]string{
-	registry.EventType_Create: "deployment.created",
-	registry.EventType_Update: "deployment.updated",
-	registry.EventType_Delete: "deployment.deleted",
+var eventTypeMap = map[api.EventType]string{
+	api.EventType_Create: "deployment.created",
+	api.EventType_Update: "deployment.updated",
+	api.EventType_Delete: "deployment.deleted",
 }
 
-// HandleRegistryEvent such as service created, updated or deleted. It reformats
+// HandleAPIEvent such as service created, updated or deleted. It reformats
 // the request to match the proto and then passes it off to the handler to process
 // as it would any other request, ensuring there is no duplicate logic.
-func (h *Handler) HandleRegistryEvent(ctx context.Context, event *registry.Event) error {
+func (h *Handler) HandleAPIEvent(ctx context.Context, event *api.Event) error {
 	req := &pb.CreateEventRequest{
 		Event: &pb.Event{
 			Type: eventTypeMap[event.Type],
