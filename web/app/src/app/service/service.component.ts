@@ -126,6 +126,23 @@ ${indent}}`;
 
   // Stats/ Chart related things
 
+  prettyTime(ms: number): string {
+    if (ms < 1000) {
+      return Math.floor(ms) + "ms";
+    }
+    return (ms / 1000).toFixed(3) + "s";
+  }
+
+  traceDuration(spans: (String | Date)[][]): string {
+    const durations = spans.slice(1).map(span => {
+      return (
+        (span[3] as Date).getMilliseconds() -
+        (span[2] as Date).getMilliseconds()
+      );
+    });
+    return this.prettyTime(durations.reduce((a, b) => a + b, 0));
+  }
+
   processTraces(spans: types.Span[]) {
     if (!spans) {
       return;
@@ -137,9 +154,9 @@ ${indent}}`;
         spanGroup.map((d, index) => {
           let start = d.started / 1000000;
           let end = (d.started + d.duration) / 1000000;
-          let name = "-> " + d.name;
+          let name = "Handle: " + d.name + " " + this.prettyTime(end - start);
           if (d.type == 1) {
-            name = d.name + " ->";
+            name = "Call: " + d.name + " " + this.prettyTime(end - start);
           }
           return ["", name, new Date(start), new Date(end)];
         }),
@@ -158,11 +175,11 @@ ${indent}}`;
         const lastEnd = (spansToDisplay[
           spansToDisplay.length - 1
         ][3] as Date).getTime();
-        let leftPad = 1
-        let rightPad = 1
+        let leftPad = 1;
+        let rightPad = 1;
         if (lastEnd - firstStart < 1000) {
-          leftPad = (lastEnd - firstStart) / 2
-          rightPad = (lastEnd - firstStart) / 2
+          leftPad = (lastEnd - firstStart) / 2;
+          rightPad = (lastEnd - firstStart) / 2;
         }
         const minDate = new Date(firstStart - leftPad);
         const maxDate = new Date(lastEnd + rightPad);
@@ -174,7 +191,7 @@ ${indent}}`;
       let traceData = {
         // Display related things
         traceId: spanGroup[0].trace,
-        divHeight: h,
+        divHeight: h + 20,
         // Chart related options
         chartType: "Timeline",
 
@@ -193,7 +210,6 @@ ${indent}}`;
           }
         }
       };
-      console.log("yo", traceData);
       traceDatas.push(traceData);
     });
     this.traceDatas = _.orderBy(traceDatas, td => td.dataTable.length, [
