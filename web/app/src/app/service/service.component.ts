@@ -134,19 +134,29 @@ ${indent}}`;
     let traceDatas: any[] = [];
     groupedSpans.forEach(spanGroup => {
       const spansToDisplay = _.orderBy(
-        spanGroup.map(d => {
+        spanGroup.map((d, index) => {
+          let start = d.started / 1000000
+          let end = (d.started + d.duration) / 1000000
+          let name = d.name + " <-"
+          if (d.type == 1) {
+            name = d.name + " ->"
+          }
           return [
-            d.name,
-            new Date(d.started / 1000000),
-            new Date((d.started + d.duration) / 1000000)
+            "",
+            name,
+            new Date(start),
+            new Date(end)
           ];
         }),
         sp => {
           const row = sp as Date[];
-          return row[1];
+          return row[2];
         },
         ["asc"]
       );
+      spansToDisplay.forEach((v, i) => {
+        v[0] = "" + i
+      })
       const h = (spansToDisplay.length +1) * 40 + 40
       let traceData = {
         // Display related things
@@ -154,7 +164,8 @@ ${indent}}`;
         divHeight: h,
         // Chart related options
         chartType: "Timeline",
-        dataTable: ([["Name", "From", "To"]] as any[][]).concat(spansToDisplay),
+
+        dataTable: ([["Span", "Name", "From", "To"]] as any[][]).concat(spansToDisplay),
         options: {
           height: h,
           timeline: {
@@ -162,14 +173,15 @@ ${indent}}`;
           },
           hAxis: {
             format: 'yyyy-MM-dd HH:mm:ss.SSS',
-            minValue: new Date((spansToDisplay[0][1] as Date).getTime() - 500),
+            minValue: new Date((spansToDisplay[0][2] as Date).getTime() - 500),
             maxValue: new Date(
-              (spansToDisplay[spansToDisplay.length - 1][2] as Date).getTime() +
+              (spansToDisplay[spansToDisplay.length - 1][3] as Date).getTime() +
                 500
             )
           }
         }
       };
+      console.log("yo", traceData)
       traceDatas.push(traceData);
     });
     this.traceDatas = _.orderBy(traceDatas, td => td.dataTable.length, ['desc']);

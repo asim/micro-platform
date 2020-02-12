@@ -83,6 +83,7 @@ export interface Span {
   duration: number;
   // associated metadata
   metadata: Map<string, string>;
+  type: number;
 }
 
 export interface TraceSnapshot {
