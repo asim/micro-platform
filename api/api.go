@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/errors"
@@ -33,15 +32,15 @@ func main() {
 
 // Handler is an impementation of the platform api
 type Handler struct {
-	Runtime   runtime.Runtime
-	Publisher micro.Publisher
+	Runtime runtime.Runtime
+	Event   micro.Event
 }
 
 // NewHandler returns an initialized Handler
 func NewHandler(srv micro.Service) *Handler {
 	return &Handler{
-		Runtime:   runtime.DefaultRuntime,
-		Publisher: micro.NewPublisher(Topic, srv.Client()),
+		Runtime: runtime.DefaultRuntime,
+		Event:   micro.NewEvent(Topic, srv.Client()),
 	}
 }
 
@@ -51,11 +50,10 @@ func (h *Handler) CreateService(ctx context.Context, req *pb.CreateServiceReques
 		return errors.BadRequest("go.micro.api.platform", "service required")
 	}
 
-	go h.Publisher.Publish(ctx, &pb.Event{
+	go h.Event.Publish(ctx, &pb.Event{
 		Type:    pb.EventType_Create,
 		Service: req.Service,
 	})
-	fmt.Println("Published event")
 
 	return h.Runtime.Create(deserializeService(req.Service))
 }
@@ -89,7 +87,7 @@ func (h *Handler) UpdateService(ctx context.Context, req *pb.UpdateServiceReques
 		return errors.BadRequest("go.micro.api.platform", "service required")
 	}
 
-	go h.Publisher.Publish(ctx, &pb.Event{
+	go h.Event.Publish(ctx, &pb.Event{
 		Type:    pb.EventType_Update,
 		Service: req.Service,
 	})
@@ -103,7 +101,7 @@ func (h *Handler) DeleteService(ctx context.Context, req *pb.DeleteServiceReques
 		return errors.BadRequest("go.micro.api.platform", "service required")
 	}
 
-	go h.Publisher.Publish(ctx, &pb.Event{
+	go h.Event.Publish(ctx, &pb.Event{
 		Type:    pb.EventType_Delete,
 		Service: req.Service,
 	})
