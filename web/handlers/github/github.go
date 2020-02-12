@@ -2,22 +2,32 @@ package github
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"github.com/micro/go-micro/v2/web"
+	platform "github.com/micro/platform/service/proto"
 	"github.com/micro/platform/web/utils"
 )
 
+// Handler encapsulates the events handlers
+type Handler struct {
+	platform platform.PlatformService
+}
+
 // RegisterHandlers adds the GitHub webhook handlers to the service
 func RegisterHandlers(srv web.Service) error {
-	srv.HandleFunc("/v1/github/webhook", webhookHandler)
+	h := Handler{
+		platform: platform.NewPlatformService("go.micro.platform", srv.Options().Service.Client()),
+	}
+
+	srv.HandleFunc("/v1/github/webhook", h.WebhookHandler)
 	return nil
 }
 
-func webhookHandler(w http.ResponseWriter, req *http.Request) {
+// WebhookHandler processes the GitHub push webhooks
+func (h *Handler) WebhookHandler(w http.ResponseWriter, req *http.Request) {
 	// Extract the request body containing the webhook data
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -42,7 +52,21 @@ func webhookHandler(w http.ResponseWriter, req *http.Request) {
 	srvs = uniqueStrings(srvs)
 
 	// Create push events for the servies
-	fmt.Println(srvs)
+	for _, srv := range srvs {
+		_, err := h.platform.CreateEvent(req.Context(), &platform.CreateEventRequest{
+			Event: &platform.Event{
+				Type: "source.updated",
+				Resource: &platform.Resource{
+					Type: "service",
+					Name: srv,
+				},
+			},
+		})
+
+		if err != nil {
+			utils.Write500(w, err)
+		}
+	}
 }
 
 type commit struct {
