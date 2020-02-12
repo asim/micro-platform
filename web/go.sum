@@ -286,11 +286,13 @@ github.com/mholt/certmagic v0.8.3/go.mod h1:91uJzK5K8IWtYQqTi5R2tsxV1pCde+wdGfaR
 github.com/mholt/certmagic v0.9.1/go.mod h1:nu8jbsbtwK4205EDH/ZUMTKsfYpJA1Q7MKXHfgTihNw=
 github.com/micro/cli v0.2.0 h1:ut3rV5JWqZjsXIa2MvGF+qMUP8DAUTvHX9Br5gO4afA=
 github.com/micro/cli v0.2.0/go.mod h1:jRT9gmfVKWSS6pkKcXQ8YhUyj6bzwxK8Fp5b0Y7qNnk=
+github.com/micro/cli/v2 v2.1.1/go.mod h1:EguNh6DAoWKm9nmk+k/Rg0H3lQnDxqzu5x5srOtGtYg=
 github.com/micro/cli/v2 v2.1.2-0.20200203150404-894195727d9c h1:oohy8v2QQeXfDe9/BaM0b+5wETzoMiemOs3fhPhnFTg=
 github.com/micro/cli/v2 v2.1.2-0.20200203150404-894195727d9c/go.mod h1:EguNh6DAoWKm9nmk+k/Rg0H3lQnDxqzu5x5srOtGtYg=
 github.com/micro/go-micro v1.16.0/go.mod h1:A0F58bHLh2m0LAI9QyhvmbN8c1cxhAZo3cM6s+iDsrM=
 github.com/micro/go-micro v1.18.0 h1:gP70EZVHpJuUIT0YWth192JmlIci+qMOEByHm83XE9E=
 github.com/micro/go-micro v1.18.0/go.mod h1:klwUJL1gkdY1MHFyz+fFJXn52dKcty4hoe95Mp571AA=
+github.com/micro/go-micro/v2 v2.0.0/go.mod h1:v7QP5UhKRt37ixjJe8DouWmg0/eE6dltr5h0idJ9BpE=
 github.com/micro/go-micro/v2 v2.0.1-0.20200210153841-8ea84ac3ebca h1:th3ci59p1tf4pkGGrLfgPst1lhJduhLyJ7nC3gCnYQE=
 github.com/micro/go-micro/v2 v2.0.1-0.20200210153841-8ea84ac3ebca/go.mod h1:CDPVByZzOp1RNrJfNxEGgNOJ11wEw8NoHfADo8M3+LM=
 github.com/micro/mdns v0.3.0 h1:bYycYe+98AXR3s8Nq5qvt6C573uFTDPIYzJemWON0QE=
