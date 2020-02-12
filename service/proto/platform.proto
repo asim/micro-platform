@@ -2,4 +2,33 @@ syntax = "proto3";
 
 package go.micro.platform;
 
-service Platform {}
+service Platform {
+    rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {}
+    rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
+}
+
+message CreateEventRequest {
+    Event event = 1;
+}
+
+message CreateEventResponse {}
+
+message ListEventsRequest {
+    Resource resource = 1;
+}
+
+message ListEventsResponse {
+    repeated Event events = 1;
+}
+
+message Event {
+    string type = 1;
+    int64 timestamp = 2;
+    map<string,string> metadata = 3;
+    Resource resource = 4;
+}
+
+message Resource {
+    string type = 1;
+    string name = 2;
+}

@@ -15,7 +15,8 @@ func main() {
 
 	service.Init()
 
-	pb.RegisterPlatformHandler(service.Server(), new(handler.Platform))
+	h := handler.NewHandler(service)
+	pb.RegisterPlatformHandler(service.Server(), h)
 
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
