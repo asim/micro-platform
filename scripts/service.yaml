@@ -2,24 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
-  name: platform-api
+  name: platform-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: platform-api
+      name: platform-service
   template:
     metadata:
       labels:
-        name: platform-api
+        name: platform-service
     spec:
       containers:
-      - name: platform-api
+      - name: platform-service
         args:
-        - api
+        - service
         env:
-        - name: MICRO_RUNTIME
-          value: "service"
         - name: MICRO_SERVER_ADDRESS
           value: "0.0.0.0:8080"
         - name: MICRO_BROKER
@@ -39,6 +37,11 @@ spec:
             secretKeyRef:
               name: micro-keypair
               key: public
+        - name: MICRO_AUTH_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: micro-keypair
+              key: private
         image: micro/platform
         imagePullPolicy: Always
         ports:
