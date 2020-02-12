@@ -32,7 +32,7 @@ func (h *Handler) ListEvents(ctx context.Context, req *pb.ListEventsRequest, rsp
 	// Use a prefix to scope to the resource (if one was provided)
 	var prefix string
 	if req.Resource != nil {
-		prefix = fmt.Sprintf("%v.%v", req.Resource.Type, req.Resource.Name)
+		prefix = fmt.Sprintf("%v.%v.", req.Resource.Type, req.Resource.Name)
 	}
 
 	// Filter and decode the records
