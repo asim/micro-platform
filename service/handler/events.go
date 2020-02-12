@@ -7,32 +7,22 @@ import (
 	"strings"
 	"time"
 
-	"github.com/micro/go-micro/v2/broker"
 	"github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/store"
-	"github.com/micro/go-micro/v2/util/log"
 	pb "github.com/micro/platform/service/proto"
 )
 
-// EventTypes are the valid event types
-var EventTypes = []string{
-	"source.updated",
-	"deployment.created",
-	"deployment.updated",
-	"deployment.deleted",
-}
-
 // ListEvents returns recent events, if a resource is provided then this is scoped to their events
 func (h *Handler) ListEvents(ctx context.Context, req *pb.ListEventsRequest, rsp *pb.ListEventsResponse) error {
-	records, err := h.store.List()
+	records, err := h.Store.List()
 	if err != nil {
 		return errors.InternalServerError("go.micro.platform", "unable to read from store")
 	}
 
 	// Use a prefix to scope to the resource (if one was provided)
 	var prefix string
-	if req.Resource != nil {
-		prefix = fmt.Sprintf("%v.%v.", req.Resource.Type, req.Resource.Name)
+	if req.Service != nil {
+		prefix = fmt.Sprintf("%v.", req.Service.Name)
 	}
 
 	// Filter and decode the records
@@ -57,9 +47,8 @@ func (h *Handler) ListEvents(ctx context.Context, req *pb.ListEventsRequest, rsp
 			Type:      e.Type,
 			Timestamp: e.Timestamp.Unix(),
 			Metadata:  e.Metadata,
-			Resource: &pb.Resource{
-				Type: e.ResourceType,
-				Name: e.ResourceName,
+			Service: &pb.Service{
+				Name: e.ServiceName,
 			},
 		}
 	}
@@ -73,35 +62,23 @@ func (h *Handler) CreateEvent(ctx context.Context, req *pb.CreateEventRequest, r
 	if req.Event == nil {
 		return errors.BadRequest("go.micro.platform", "missing event")
 	}
-	if req.Event.Resource == nil {
-		return errors.BadRequest("go.micro.platform", "missing event resource")
-	}
-	if req.Event.Resource.Name == "" || req.Event.Resource.Type == "" {
-		return errors.BadRequest("go.micro.platform", "invalid event resource")
-	}
-
-	var isValidEvent bool
-	for _, t := range EventTypes {
-		if t == req.Event.Type {
-			isValidEvent = true
-			break
-		}
-	}
-	if !isValidEvent {
+	if req.Event.Type == pb.EventType_Unknown {
 		return errors.BadRequest("go.micro.platform", "invalid event type")
+	}
+	if req.Event.Service == nil || req.Event.Service.Name == "" {
+		return errors.BadRequest("go.micro.platform", "invalid event service")
 	}
 
 	// Construct the event
 	event := Event{
-		Type:         req.Event.Type,
-		Timestamp:    time.Now(),
-		Metadata:     req.Event.Metadata,
-		ResourceType: req.Event.Resource.Type,
-		ResourceName: req.Event.Resource.Name,
+		Type:        req.Event.Type,
+		Timestamp:   time.Now(),
+		Metadata:    req.Event.Metadata,
+		ServiceName: req.Event.Service.Name,
 	}
 
 	// Write to the store
-	err := h.store.Write(&store.Record{
+	err := h.Store.Write(&store.Record{
 		Key:   event.Key(),
 		Value: event.Bytes(),
 	})
@@ -109,35 +86,20 @@ func (h *Handler) CreateEvent(ctx context.Context, req *pb.CreateEventRequest, r
 		return errors.InternalServerError("go.micro.platform", "unable to write to store")
 	}
 
-	// Publish on the message broker. This is non-critical so any errors
-	// will be logged but not returned to the user as we don't want them to
-	// retry the request
-	bytes, err := json.Marshal(req.Event)
-	if err != nil {
-		log.Errorf("Error marshaling JSON: %v", err)
-		return nil
-	}
-	err = h.broker.Publish("go.micro.platform.event.created", &broker.Message{Body: bytes})
-	if err != nil {
-		log.Errorf("Error publishing to broker: %v", err)
-	}
-
 	return nil
 }
 
 // Event is the store representation of an event
 type Event struct {
-	Type      string
-	Timestamp time.Time
-	Metadata  map[string]string
-
-	ResourceType string
-	ResourceName string
+	Type        pb.EventType
+	Timestamp   time.Time
+	Metadata    map[string]string
+	ServiceName string
 }
 
 // Key to be used in the store
 func (e *Event) Key() string {
-	return fmt.Sprintf("%v.%v.%v", e.ResourceType, e.ResourceName, e.Timestamp.Unix())
+	return fmt.Sprintf("%v.%v", e.ServiceName, e.Timestamp.Unix())
 }
 
 // Bytes is the JSON encoded event

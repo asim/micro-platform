@@ -5,6 +5,12 @@ package go.micro.platform;
 service Platform {
     rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {}
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
+    
+    rpc CreateService(CreateServiceRequest) returns (CreateServiceResponse) {};
+    rpc ReadService(ReadServiceRequest) returns (ReadServiceResponse) {};
+    rpc UpdateService(UpdateServiceRequest) returns (UpdateServiceResponse) {};
+    rpc DeleteService(DeleteServiceRequest) returns (DeleteServiceResponse) {};
+    rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {};
 }
 
 message CreateEventRequest {
@@ -14,21 +20,64 @@ message CreateEventRequest {
 message CreateEventResponse {}
 
 message ListEventsRequest {
-    Resource resource = 1;
+    Service service = 1;
 }
 
 message ListEventsResponse {
     repeated Event events = 1;
 }
 
-message Event {
-    string type = 1;
-    int64 timestamp = 2;
-    map<string,string> metadata = 3;
-    Resource resource = 4;
+enum EventType {
+    Unknown = 0;
+    DepoymentCreated = 1;
+    DepoymentDeleted = 2;
+    DepoymentUpdated = 3;
+    SourceUpdated = 4;
 }
 
-message Resource {
-    string type = 1;
-    string name = 2;
+message Event {
+    EventType type = 1;
+    int64 timestamp = 2;
+    map<string,string> metadata = 3;
+    Service service = 4;
+}
+
+message CreateServiceRequest {
+    Service service = 1;
+}
+
+message CreateServiceResponse {}
+
+message ReadServiceRequest {
+    Service service = 1;
+}
+
+message ReadServiceResponse {
+    repeated Service services = 1;
+}
+
+message UpdateServiceRequest {
+    Service service = 1;
+}
+
+message UpdateServiceResponse {}
+
+message DeleteServiceRequest {
+    Service service = 1;
+}
+
+message DeleteServiceResponse {}
+
+message ListServicesRequest {}
+
+message ListServicesResponse {
+    repeated Service services = 1;
+}
+
+message Service {
+    string name = 1;
+    string version = 2;
+    string source = 3;
+    string type = 4;
+    map<string,string> metadata = 5;
 }

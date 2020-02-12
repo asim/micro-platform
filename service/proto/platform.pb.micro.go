@@ -36,6 +36,11 @@ var _ server.Option
 type PlatformService interface {
 	CreateEvent(ctx context.Context, in *CreateEventRequest, opts ...client.CallOption) (*CreateEventResponse, error)
 	ListEvents(ctx context.Context, in *ListEventsRequest, opts ...client.CallOption) (*ListEventsResponse, error)
+	CreateService(ctx context.Context, in *CreateServiceRequest, opts ...client.CallOption) (*CreateServiceResponse, error)
+	ReadService(ctx context.Context, in *ReadServiceRequest, opts ...client.CallOption) (*ReadServiceResponse, error)
+	UpdateService(ctx context.Context, in *UpdateServiceRequest, opts ...client.CallOption) (*UpdateServiceResponse, error)
+	DeleteService(ctx context.Context, in *DeleteServiceRequest, opts ...client.CallOption) (*DeleteServiceResponse, error)
+	ListServices(ctx context.Context, in *ListServicesRequest, opts ...client.CallOption) (*ListServicesResponse, error)
 }
 
 type platformService struct {
@@ -70,17 +75,77 @@ func (c *platformService) ListEvents(ctx context.Context, in *ListEventsRequest,
 	return out, nil
 }
 
+func (c *platformService) CreateService(ctx context.Context, in *CreateServiceRequest, opts ...client.CallOption) (*CreateServiceResponse, error) {
+	req := c.c.NewRequest(c.name, "Platform.CreateService", in)
+	out := new(CreateServiceResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *platformService) ReadService(ctx context.Context, in *ReadServiceRequest, opts ...client.CallOption) (*ReadServiceResponse, error) {
+	req := c.c.NewRequest(c.name, "Platform.ReadService", in)
+	out := new(ReadServiceResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *platformService) UpdateService(ctx context.Context, in *UpdateServiceRequest, opts ...client.CallOption) (*UpdateServiceResponse, error) {
+	req := c.c.NewRequest(c.name, "Platform.UpdateService", in)
+	out := new(UpdateServiceResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *platformService) DeleteService(ctx context.Context, in *DeleteServiceRequest, opts ...client.CallOption) (*DeleteServiceResponse, error) {
+	req := c.c.NewRequest(c.name, "Platform.DeleteService", in)
+	out := new(DeleteServiceResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *platformService) ListServices(ctx context.Context, in *ListServicesRequest, opts ...client.CallOption) (*ListServicesResponse, error) {
+	req := c.c.NewRequest(c.name, "Platform.ListServices", in)
+	out := new(ListServicesResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Platform service
 
 type PlatformHandler interface {
 	CreateEvent(context.Context, *CreateEventRequest, *CreateEventResponse) error
 	ListEvents(context.Context, *ListEventsRequest, *ListEventsResponse) error
+	CreateService(context.Context, *CreateServiceRequest, *CreateServiceResponse) error
+	ReadService(context.Context, *ReadServiceRequest, *ReadServiceResponse) error
+	UpdateService(context.Context, *UpdateServiceRequest, *UpdateServiceResponse) error
+	DeleteService(context.Context, *DeleteServiceRequest, *DeleteServiceResponse) error
+	ListServices(context.Context, *ListServicesRequest, *ListServicesResponse) error
 }
 
 func RegisterPlatformHandler(s server.Server, hdlr PlatformHandler, opts ...server.HandlerOption) error {
 	type platform interface {
 		CreateEvent(ctx context.Context, in *CreateEventRequest, out *CreateEventResponse) error
 		ListEvents(ctx context.Context, in *ListEventsRequest, out *ListEventsResponse) error
+		CreateService(ctx context.Context, in *CreateServiceRequest, out *CreateServiceResponse) error
+		ReadService(ctx context.Context, in *ReadServiceRequest, out *ReadServiceResponse) error
+		UpdateService(ctx context.Context, in *UpdateServiceRequest, out *UpdateServiceResponse) error
+		DeleteService(ctx context.Context, in *DeleteServiceRequest, out *DeleteServiceResponse) error
+		ListServices(ctx context.Context, in *ListServicesRequest, out *ListServicesResponse) error
 	}
 	type Platform struct {
 		platform
@@ -99,4 +164,24 @@ func (h *platformHandler) CreateEvent(ctx context.Context, in *CreateEventReques
 
 func (h *platformHandler) ListEvents(ctx context.Context, in *ListEventsRequest, out *ListEventsResponse) error {
 	return h.PlatformHandler.ListEvents(ctx, in, out)
+}
+
+func (h *platformHandler) CreateService(ctx context.Context, in *CreateServiceRequest, out *CreateServiceResponse) error {
+	return h.PlatformHandler.CreateService(ctx, in, out)
+}
+
+func (h *platformHandler) ReadService(ctx context.Context, in *ReadServiceRequest, out *ReadServiceResponse) error {
+	return h.PlatformHandler.ReadService(ctx, in, out)
+}
+
+func (h *platformHandler) UpdateService(ctx context.Context, in *UpdateServiceRequest, out *UpdateServiceResponse) error {
+	return h.PlatformHandler.UpdateService(ctx, in, out)
+}
+
+func (h *platformHandler) DeleteService(ctx context.Context, in *DeleteServiceRequest, out *DeleteServiceResponse) error {
+	return h.PlatformHandler.DeleteService(ctx, in, out)
+}
+
+func (h *platformHandler) ListServices(ctx context.Context, in *ListServicesRequest, out *ListServicesResponse) error {
+	return h.PlatformHandler.ListServices(ctx, in, out)
 }

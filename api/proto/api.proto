@@ -49,14 +49,3 @@ message Service {
     string type = 4;
     map<string,string> metadata = 5;
 }
-
-enum EventType {
-    Create = 0;
-    Delete = 1;
-    Update = 2;
-}
-
-message Event {
-    EventType type = 1;
-    Service service = 2;
-}

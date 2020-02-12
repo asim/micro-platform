@@ -2,35 +2,40 @@ package handler
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/micro/go-micro/v2"
-	"github.com/micro/go-micro/v2/broker"
+	"github.com/micro/go-micro/v2/runtime"
 	"github.com/micro/go-micro/v2/server"
 	"github.com/micro/go-micro/v2/store"
 	"github.com/micro/go-micro/v2/util/log"
 
-	api "github.com/micro/platform/api/proto"
 	pb "github.com/micro/platform/service/proto"
 )
 
+// Topic aysnc messages are published to
+var Topic = "go.micro.platform.events"
+
 // Handler implements the platform service interface
 type Handler struct {
-	store  store.Store
-	broker broker.Broker
+	Store   store.Store
+	Event   micro.Event
+	Runtime runtime.Runtime
 }
 
 // NewHandler returns an initialized Handler
 func NewHandler(srv micro.Service) *Handler {
 	h := &Handler{
-		store:  store.DefaultStore,
-		broker: srv.Server().Options().Broker,
+		Store:   store.DefaultStore,
+		Runtime: runtime.DefaultRuntime,
+		Event:   micro.NewEvent(Topic, srv.Client()),
 	}
 
 	err := micro.RegisterSubscriber(
-		"go.micro.platform.events",
+		Topic,
 		srv.Server(),
-		h.HandleAPIEvent,
-		server.SubscriberQueue("queue.events"),
+		h.HandleEvent,
+		server.SubscriberQueue("queue.platform"),
 	)
 	if err != nil {
 		log.Errorf("Error subscribing to registry: %v", err)
@@ -39,25 +44,11 @@ func NewHandler(srv micro.Service) *Handler {
 	return h
 }
 
-var eventTypeMap = map[api.EventType]string{
-	api.EventType_Create: "deployment.created",
-	api.EventType_Update: "deployment.updated",
-	api.EventType_Delete: "deployment.deleted",
-}
-
-// HandleAPIEvent such as service created, updated or deleted. It reformats
+// HandleEvent such as service created, updated or deleted. It reformats
 // the request to match the proto and then passes it off to the handler to process
 // as it would any other request, ensuring there is no duplicate logic.
-func (h *Handler) HandleAPIEvent(ctx context.Context, event *api.Event) error {
-	req := &pb.CreateEventRequest{
-		Event: &pb.Event{
-			Type: eventTypeMap[event.Type],
-			Resource: &pb.Resource{
-				Type: "service",
-				Name: event.Service.Name,
-			},
-		},
-	}
-
+func (h *Handler) HandleEvent(ctx context.Context, event *pb.Event) error {
+	fmt.Println("MESSAGE RECIEVED")
+	req := &pb.CreateEventRequest{Event: event}
 	return h.CreateEvent(ctx, req, &pb.CreateEventResponse{})
 }
