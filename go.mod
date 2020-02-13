@@ -9,7 +9,3 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.6.2
 )
-
-replace github.com/micro/go-micro/v2 => /home/crufter/code/src/github.com/micro/go-micro
-
-replace github.com/micro/micro/v2 => /home/crufter/code/src/github.com/micro/micro
