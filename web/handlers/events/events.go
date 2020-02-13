@@ -29,7 +29,7 @@ func (h *Handler) EventsHandler(w http.ResponseWriter, req *http.Request) {
 	// construct the request to the platform service
 	var eReq platform.ListEventsRequest
 	if srvName := req.URL.Query().Get("service"); len(srvName) > 0 {
-		eReq.Resource = &platform.Resource{Name: srvName, Type: "service"}
+		eReq.Service = &platform.Service{Name: srvName, Type: "service"}
 	}
 
 	// execute the request and handle any errors
