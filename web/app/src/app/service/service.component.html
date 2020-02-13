@@ -63,7 +63,24 @@
                   <mat-tab label="Call">
                     <ng-template matTabContent>
                       <br />
-                      asd
+                      <div fxLayout="row" fxLayoutGap="1em">
+                        <div fxFlex="calc(50% - 0.5em)">
+                          Request<br /><br />
+                          <ngx-monaco-editor style="height: 25em"
+                            [options]="coptions"
+                            [(ngModel)]="endpoint.requestJSON"
+                          ></ngx-monaco-editor>
+                        </div>
+                        <div fxFlex="calc(50% - 0.5em)">
+                          Response<br /><br />
+                          <ngx-monaco-editor style="height: 25em"
+                            [options]="coptions"
+                            [(ngModel)]="endpoint.responseJSON"
+                          ></ngx-monaco-editor>
+                        </div>
+                      </div>
+                      <br />
+                      <button mat-raised-button (click)="callEndpoint(service, endpoint)" color="primary">Call</button>
                     </ng-template>
                   </mat-tab>
                 </mat-tab-group>
@@ -156,8 +173,7 @@
             <a href="#" (click)="show(traceData)"
               >{{ prettyId(traceData.traceId) }} ({{
                 traceData.dataTable.length - 1
-              }}) &#8212;
-              {{ traceData.dataTable[1][2] | date: "short" }}</a
+              }}) &#8212; {{ traceData.dataTable[1][2] | date: "short" }}</a
             ><br /><br />
             <div
               *ngIf="traceData.show"

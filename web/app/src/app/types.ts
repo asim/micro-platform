@@ -16,6 +16,9 @@ export interface Endpoint {
   metadata: Map<string, string>;
   title: string; // does not exist yet
   description: string; // does not exist yet
+  //
+  requestJSON: string;
+  responseJSON: string;
 }
 
 export interface Node {

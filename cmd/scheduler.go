@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/micro/platform/internal/scheduler"
+	"github.com/micro/platform/scheduler"
 	"github.com/spf13/cobra"
 )
 
