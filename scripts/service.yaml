@@ -26,6 +26,8 @@ spec:
           value: "nats"
         - name: MICRO_STORE
           value: "service"
+        - name: MICRO_STORE_ADDRESS
+          value: micro-store:8002
         - name: MICRO_BROKER_ADDRESS
           value: "nats-cluster"
         - name: MICRO_PROXY
