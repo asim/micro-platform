@@ -55,9 +55,8 @@ func (h *Handler) WebhookHandler(w http.ResponseWriter, req *http.Request) {
 	for _, srv := range srvs {
 		_, err := h.platform.CreateEvent(req.Context(), &platform.CreateEventRequest{
 			Event: &platform.Event{
-				Type: "source.updated",
-				Resource: &platform.Resource{
-					Type: "service",
+				Type: platform.EventType_SourceUpdated,
+				Service: &platform.Service{
 					Name: srv,
 				},
 			},
