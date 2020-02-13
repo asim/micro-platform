@@ -24,6 +24,8 @@ spec:
           value: "0.0.0.0:8080"
         - name: MICRO_BROKER
           value: "nats"
+        - name: MICRO_STORE
+          value: "service"
         - name: MICRO_BROKER_ADDRESS
           value: "nats-cluster"
         - name: MICRO_PROXY
