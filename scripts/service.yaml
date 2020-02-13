@@ -18,6 +18,8 @@ spec:
         args:
         - service
         env:
+        - name: MICRO_RUNTIME
+          value: "service"
         - name: MICRO_SERVER_ADDRESS
           value: "0.0.0.0:8080"
         - name: MICRO_BROKER
@@ -30,18 +32,6 @@ spec:
           value: "etcd"
         - name: MICRO_REGISTRY_ADDRESS
           value: "etcd-cluster-client"
-        - name: MICRO_AUTH
-          value: "jwt"
-        - name: MICRO_AUTH_PUBLIC_KEY
-          valueFrom:
-            secretKeyRef:
-              name: micro-keypair
-              key: public
-        - name: MICRO_AUTH_PRIVATE_KEY
-          valueFrom:
-            secretKeyRef:
-              name: micro-keypair
-              key: private
         image: micro/platform
         imagePullPolicy: Always
         ports:
