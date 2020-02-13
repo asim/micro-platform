@@ -10,12 +10,9 @@ jobs:
      steps:
        - uses: actions/checkout@v2
          name: Check out repository
-       - name: Extract Branch name
-         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-         id: extract_branch
-       - uses: zenato/docker-action@master
+       - uses: elgohr/Publish-Docker-Github-Action@2.12
+         name: Build and Push Docker Image
          with:
+           name: micro/services
            username: ${{ secrets.DOCKER_USERNAME }}
            password: ${{ secrets.DOCKER_PASSWORD }}
-           repository: micro/services
-           tag: ${{ steps.extract_branch.outputs.branch }}
