@@ -124,22 +124,22 @@
             </div>
             <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
               <canvas
-                *ngIf="memoryRates.data.length > 0"
-                baseChart
-                [colors]="memoryRates.chartColors"
-                [datasets]="memoryRates.data"
-                [options]="memoryRates.options"
-                [chartType]="memoryRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
-              <canvas
                 *ngIf="errorRates.data.length > 0"
                 baseChart
                 [colors]="errorRates.chartColors"
                 [datasets]="errorRates.data"
                 [options]="errorRates.options"
                 [chartType]="errorRates.lineChartType"
+              ></canvas>
+            </div>
+            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
+              <canvas
+                *ngIf="memoryRates.data.length > 0"
+                baseChart
+                [colors]="memoryRates.chartColors"
+                [datasets]="memoryRates.data"
+                [options]="memoryRates.options"
+                [chartType]="memoryRates.lineChartType"
               ></canvas>
             </div>
             <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
