@@ -5,7 +5,7 @@ import (
 
 	"github.com/micro/go-micro/v2/web"
 	platform "github.com/micro/platform/service/proto"
-	"github.com/micro/platform/web/util"
+	utils "github.com/micro/platform/web/util"
 )
 
 // RegisterHandlers adds the GitHub oauth handlers to the servie
@@ -26,6 +26,10 @@ type Handler struct {
 // EventsHandler returns all recent events, or the events scoped to the service
 // requested using the "service" URL query param.
 func (h *Handler) EventsHandler(w http.ResponseWriter, req *http.Request) {
+	utils.SetupResponse(&w, req)
+	if req.Method == "OPTIONS" {
+		return
+	}
 	// construct the request to the platform service
 	var eReq platform.ListEventsRequest
 	if srvName := req.URL.Query().Get("service"); len(srvName) > 0 {

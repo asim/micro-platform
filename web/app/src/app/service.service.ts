@@ -91,7 +91,26 @@ export class ServiceService {
         .toPromise()
         .then(response => {
           resolve(JSON.stringify(response, null, "  "));
-        }).catch(e => {
+        })
+        .catch(e => {
+          resolve(e);
+        });
+    });
+  }
+
+  events(service: string): Promise<types.Event[]> {
+    return new Promise<types.Event[]>((resolve, reject) => {
+      return this.http
+        .post<types.Event[]>(environment.backendUrl + "/v1/events", {
+          service: {
+            name: service
+          }
+        })
+        .toPromise()
+        .then(events => {
+          resolve(events);
+        })
+        .catch(e => {
           resolve(e);
         });
     });

@@ -190,9 +190,7 @@
             <div fxLayout="row">
               <div style="width: 25%">
                 <a href="#" (click)="show(traceData)"
-                  >{{ prettyId(traceData.traceId) }} ({{
-                    traceData.dataTable.length - 1
-                  }})
+                  >{{ prettyId(traceData.traceId) }}
                 </a>
               </div>
               <div style="width: 25%">
@@ -210,7 +208,7 @@
               style="width: 100%;"
               [ngStyle]="{ 'height.px': traceData.divHeight }"
             >
-              <br />Full trace ID: {{ traceData.traceId }}<br />
+              <br />Trace ID: {{ traceData.traceId }}<br />
               <google-chart [data]="traceData"></google-chart>
             </div>
           </ng-container>

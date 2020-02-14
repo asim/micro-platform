@@ -1,3 +1,5 @@
+import { HttpEventType } from '@angular/common/http'
+
 export interface User {
   name: string;
   email: string;
@@ -92,4 +94,20 @@ export interface Span {
 export interface TraceSnapshot {
   service: DebugService;
   spans: Span[];
+}
+
+export interface EventService {
+  name: string;
+  version: string;
+  source: string;
+  type: string;
+  metadata: Map<string, string>;
+}
+
+// Platform event
+export interface Event {
+  type: HttpEventType;
+  timestamp: number;
+  metadata: Map<string, string>;
+  service: EventService; 
 }
