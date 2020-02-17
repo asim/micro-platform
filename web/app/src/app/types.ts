@@ -106,8 +106,8 @@ export interface EventService {
 
 // Platform event
 export interface Event {
-  type: string;
+  type: number;
   timestamp: number;
-metadata: Map<string, string>;
-  service: EventService; 
+  metadata: Map<string, string>;
+  service: EventService;
 }
