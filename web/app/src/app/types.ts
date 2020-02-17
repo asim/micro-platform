@@ -1,5 +1,3 @@
-import { HttpEventType } from '@angular/common/http'
-
 export interface User {
   name: string;
   email: string;
@@ -108,8 +106,8 @@ export interface EventService {
 
 // Platform event
 export interface Event {
-  type: HttpEventType;
+  type: string;
   timestamp: number;
-  metadata: Map<string, string>;
+metadata: Map<string, string>;
   service: EventService; 
 }

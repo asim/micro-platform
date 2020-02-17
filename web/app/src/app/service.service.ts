@@ -3,6 +3,7 @@ import * as types from "./types";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../environments/environment";
 import { UserService } from "./user.service";
+import * as _ from "lodash";
 
 export interface RPCRequest {
   service: string;
@@ -98,17 +99,17 @@ export class ServiceService {
     });
   }
 
-  events(service: string): Promise<types.Event[]> {
+  events(service?: string): Promise<types.Event[]> {
+    const qObj = {} as any;
+    if (service) {
+      qObj.service = service;
+    }
     return new Promise<types.Event[]>((resolve, reject) => {
       return this.http
-        .post<types.Event[]>(environment.backendUrl + "/v1/events", {
-          service: {
-            name: service
-          }
-        })
+        .post<types.Event[]>(environment.backendUrl + "/v1/events", qObj)
         .toPromise()
         .then(events => {
-          resolve(events);
+          resolve(_.orderBy(events, e => e.timestamp, ["desc"]));
         })
         .catch(e => {
           resolve(e);

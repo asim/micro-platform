@@ -7,6 +7,7 @@ import { AuthGuard } from "./auth.guard";
 import { WelcomeComponent } from "./welcome/welcome.component";
 import { NotInvitedComponent } from "./not-invited/not-invited.component";
 import { SettingsComponent } from "./settings/settings.component";
+import { EventsComponent } from "./events/events.component";
 
 const routes: Routes = [
   {
@@ -31,6 +32,11 @@ const routes: Routes = [
   {
     path: "settings/:id",
     component: SettingsComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: "events",
+    component: EventsComponent,
     canActivate: [AuthGuard]
   },
   { path: "services", component: ServicesComponent, canActivate: [AuthGuard] }
