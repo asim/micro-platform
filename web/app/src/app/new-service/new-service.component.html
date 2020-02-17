@@ -4,7 +4,12 @@
       <a routerLink="/services">services</a> &gt; go.micro.srv.
 
       <mat-form-field style="padding-top: 0em; margin-top: 0em; width: 9em;">
-        <input autofocus matInput [(ngModel)]="serviceName" (ngModelChange)="newCode()" />
+        <input
+          matInputAutofocus
+          matInput
+          [(ngModel)]="serviceName"
+          (ngModelChange)="newCode()"
+        />
       </mat-form-field>
     </mat-card-title>
   </mat-card>
@@ -13,7 +18,8 @@
       New service
     </mat-card-title>
     <mat-card-subtitle>
-      Copypaste the following commands into your terminal:
+      <a routerLink="/settings/token">After logging in</a>, copypaste the
+      following commands into your terminal:
     </mat-card-subtitle>
     <pre
       style="margin-top: 0.5em;"

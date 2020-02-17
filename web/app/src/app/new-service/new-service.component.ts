@@ -81,10 +81,8 @@ export class NewServiceComponent implements OnInit {
 
   newCode() {
     this.code =
-      `micro login ` +
-      this.us.token() +
-      `
-git clone --no-checkout https://github.com/micro/services
+      `# Don't forget to log in here: https://micro.mu/platform/settings/tokens
+git clone https://github.com/micro/services
 
 cd services
 micro new ` +
@@ -94,6 +92,9 @@ cd ` +
       this.serviceName +
       `
 
+make build
+
+git config --local core.hooksPath .githooks
 git add .
 git commit -m "Initializing ` +
       this.serviceName +
