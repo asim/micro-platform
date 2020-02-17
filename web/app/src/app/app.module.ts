@@ -55,6 +55,7 @@ import { NotInvitedComponent } from "./not-invited/not-invited.component";
 
 import { Ng2GoogleChartsModule } from "ng2-google-charts";
 import { MonacoEditorModule } from 'ngx-monaco-editor';
+import { SettingsComponent } from './settings/settings.component';
 
 /**
  * Import specific languages to avoid importing everything
@@ -81,7 +82,8 @@ export function getHighlightLanguages() {
     NewServiceComponent,
     WelcomeComponent,
     LogUserInComponent,
-    NotInvitedComponent
+    NotInvitedComponent,
+    SettingsComponent
   ],
   imports: [
     BrowserModule,

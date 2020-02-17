@@ -1,0 +1,44 @@
+<div style="padding-left: 1em; margin: auto;">
+  <mat-card class="mat-card-flat">
+    <mat-card-title>settings > tokens</mat-card-title>
+    <div fxLayout="row" fxLayoutAlign="space-between" style="margin-top: 2em;">
+      <div fxFlex="23%">
+        <mat-toolbar style="font-size:1em;">
+          <mat-toolbar-row>
+            <a routerLink="/settings/tokens"><span>> Tokens</span></a>
+          </mat-toolbar-row>
+        </mat-toolbar>
+      </div>
+
+      <div fxFlex="75%">
+        <p>
+          Use the copy button to generate your login command:
+          <br />
+        </p>
+
+        <div fxLayout="row">
+          <div fxFlex="1 1">
+            <div
+              ngxClipboard
+              cbContent="micro login {{ token }}"
+              style="height: 1.9em;padding-left: 1em; padding-top: 0.4em; overflow: hidden; background: black; color: white;"
+            >
+              micro login [your-token-will-be-generated-when-clicking-copy]
+            </div>
+          </div>
+          <div style="padding-right: 0.5em;"></div>
+        </div>
+
+        <button
+          style="margin-top: 0.5em;"
+          color="primary"
+          ngxClipboard
+          cbContent="micro login {{ token }}"
+          mat-raised-button
+        >
+          Copy
+        </button>
+      </div>
+    </div>
+  </mat-card>
+</div>

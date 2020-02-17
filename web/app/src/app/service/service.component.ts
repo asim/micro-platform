@@ -46,6 +46,20 @@ export class ServiceComponent implements OnInit {
     return false;
   }
 
+  metadata(node: types.Node) {
+    let serialised = "No metadata.";
+    if (!node.metadata) {
+      return serialised;
+    }
+    serialised = "";
+    const v = JSON.parse(JSON.stringify(node.metadata))
+    console.log(v)
+    for (var key in v) {
+      serialised += key + ": " + node.metadata[key] + "\n";
+    }
+    return serialised;
+  }
+
   prettyId(id: string) {
     return id.substring(0, 8);
   }

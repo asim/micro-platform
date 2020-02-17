@@ -27,6 +27,8 @@ export interface Node {
   id: string;
   address: string;
   metadata: Map<string, string>;
+  // @TODO come up with a way to wrap all types in conenience interfaces
+  show?: boolean;
 }
 
 // ... slightly different version of Service...

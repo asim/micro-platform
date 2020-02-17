@@ -1,12 +1,12 @@
 import { NgModule } from "@angular/core";
 import { Routes, RouterModule } from "@angular/router";
-import { LoginComponent } from "./login/login.component";
 import { ServicesComponent } from "./services/services.component";
 import { ServiceComponent } from "./service/service.component";
 import { NewServiceComponent } from "./new-service/new-service.component";
 import { AuthGuard } from "./auth.guard";
 import { WelcomeComponent } from "./welcome/welcome.component";
 import { NotInvitedComponent } from "./not-invited/not-invited.component";
+import { SettingsComponent } from "./settings/settings.component";
 
 const routes: Routes = [
   {
@@ -26,6 +26,11 @@ const routes: Routes = [
   {
     path: "service/:id",
     component: ServiceComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: "settings/:id",
+    component: SettingsComponent,
     canActivate: [AuthGuard]
   },
   { path: "services", component: ServicesComponent, canActivate: [AuthGuard] }
