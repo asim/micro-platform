@@ -438,6 +438,25 @@ ${indent}}`;
           })
       };
     });
+    this.uptime.data = nodes.map(node => {
+      return {
+        label: node,
+        name: node,
+        type: "line",
+        pointRadius: 0,
+        fill: false,
+        lineTension: 0,
+        borderWidth: 2,
+        data: this.stats
+          .filter(stat => stat.service.node.id == node)
+          .map((stat, i) => {
+            return {
+              x: new Date(stat.timestamp * 1000),
+              y: stat.uptime ? stat.uptime : 0
+            };
+          })
+      };
+    });
   }
 
   // config options taken from https://www.chartjs.org/samples/latest/scales/time/financial.html
@@ -530,6 +549,7 @@ ${indent}}`;
   errorRates = this.options("Errors per second", "errors/second");
   concurrencyRates = this.options("Number of goroutines", "goroutines");
   gcRates = this.options("Garbage collection time", "garbage collection (nanoseconds/seconds)");
+  uptime = this.options("Uptime", "uptime (seconds)");
 
   // code editor
   coptions = {

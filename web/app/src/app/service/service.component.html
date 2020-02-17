@@ -107,7 +107,7 @@
           <br />
           <div style="text-align: center">
             <mat-checkbox class="example-margin" [(ngModel)]="refresh"
-              >Keep refreshing</mat-checkbox
+              >Refresh</mat-checkbox
             >
           </div>
           <br />
@@ -162,6 +162,16 @@
                 [chartType]="gcRates.lineChartType"
               ></canvas>
             </div>
+            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
+              <canvas
+                *ngIf="uptime.data.length > 0"
+                baseChart
+                [colors]="uptime.chartColors"
+                [datasets]="uptime.data"
+                [options]="uptime.options"
+                [chartType]="uptime.lineChartType"
+              ></canvas>
+            </div>
           </div>
         </ng-template>
       </mat-tab>
@@ -176,7 +186,8 @@
             <div style="width: 50%">
               <b style="font-weight: 700;">Address</b>
             </div>
-          </div><br />
+          </div>
+          <br />
           <ng-container *ngFor="let node of services[0].nodes">
             <div fxLayout="row">
               <div style="width: 50%">
@@ -187,9 +198,9 @@
               </div>
             </div>
             <div style="width: 100%; padding-top: 1em; margin-bottom: 1em;">
-              <pre style="padding: 1em; background: #f3f3f3;"
-                >{{ metadata(node) }}</pre
-              >
+              <pre style="padding: 1em; background: #f3f3f3;">{{
+                metadata(node)
+              }}</pre>
             </div>
           </ng-container>
         </ng-template>
@@ -210,7 +221,8 @@
             <div style="width: 25%">
               <b style="font-weight: 700;">Duration</b>
             </div>
-          </div><br />
+          </div>
+          <br />
           <ng-container *ngFor="let traceData of traceDatasPart">
             <div fxLayout="row">
               <div style="width: 25%">
