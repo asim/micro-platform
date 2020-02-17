@@ -11,11 +11,12 @@
       <mat-card-title
         style="display: flex; align-items: center; font-size: 1.25em;"
       >
-        <a routerLink="/service/{{ event.service.name }}">{{
-          event.service.name
-        }}:</a>
-        &nbsp;{{ eventTypeToString(event) }}
-        &nbsp;<span style="color: #555">{{ event.timestamp * 1000 | dateAgo }}</span>
+        <a routerLink="/service/{{ event.service.name }}"
+          >{{ event.service.name }}:</a
+        >
+        &nbsp;{{ eventTypeToString(event) }} &nbsp;<span style="color: #555">{{
+          event.timestamp * 1000 | dateAgo
+        }}</span>
       </mat-card-title>
     </mat-card>
     <br />
