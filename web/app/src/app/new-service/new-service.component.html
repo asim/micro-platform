@@ -1,38 +1,28 @@
 <div style="padding-left: 1em; margin: auto;">
   <mat-card class="mat-card-flat">
     <mat-card-title>
-      <a routerLink="/services">services</a> &gt; new
+      <a routerLink="/services">services</a> &gt; go.micro.srv.
+
+      <mat-form-field style="padding-top: 0em; margin-top: 0em; width: 9em;">
+        <input autofocus matInput [(ngModel)]="serviceName" (ngModelChange)="newCode()" />
+      </mat-form-field>
     </mat-card-title>
   </mat-card>
-  <mat-card>
+  <mat-card style="padding-top: 0; margin-top: 0;" class="mat-card-flat">
     <mat-card-title>
       New service
     </mat-card-title>
     <mat-card-subtitle>
-      Running a new service on the micro platform
+      Copypaste the following commands into your terminal:
     </mat-card-subtitle>
-    <p>
-      Step into the folder containing your micro service and issue the following
-      command:
-    </p>
     <pre
       style="margin-top: 0.5em;"
-    ><code #inputTarget [highlight]="code" [lineNumbers]="false"></code></pre>
+    ><code #inputTarget [highlight]="code" [languages]="languages" [lineNumbers]="false"></code></pre>
     <br /><br />
-    Then, deploy your service to the global M30 network using the following
-    command:<br />
-    <pre
-      style="margin-top: 0.5em;"
-    ><code #inputTarget highlight="micro run --platform" [lineNumbers]="false"></code></pre>
-    <br />
-    <p>
-      This page will redirect you to your service once it's up and running.
-    </p>
-    <p *ngIf="false">
-      <br />
-      We are waiting for your service to come up.<br /><br />
-      Progress:<br />
-      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-    </p>
+    {{ this.stepLabels[this.step] }}<br /><br />
+    <mat-progress-bar
+      mode="determinate"
+      value="{{ progressPercentage }}"
+    ></mat-progress-bar>
   </mat-card>
 </div>

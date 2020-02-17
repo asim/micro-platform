@@ -6,7 +6,7 @@ mat-sidenav-content {
   height: 100%;
 }
 
-*[ng-reflect-router-link] {
+.hover {
   cursor: pointer;
 }
 

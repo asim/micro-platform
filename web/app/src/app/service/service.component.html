@@ -63,7 +63,32 @@
                   <mat-tab label="Call">
                     <ng-template matTabContent>
                       <br />
-                      asd
+                      <div fxLayout="row" fxLayoutGap="1em">
+                        <div fxFlex="calc(50% - 0.5em)">
+                          Request<br /><br />
+                          <ngx-monaco-editor
+                            style="height: 25em"
+                            [options]="coptions"
+                            [(ngModel)]="endpoint.requestJSON"
+                          ></ngx-monaco-editor>
+                        </div>
+                        <div fxFlex="calc(50% - 0.5em)">
+                          Response<br /><br />
+                          <ngx-monaco-editor
+                            style="height: 25em"
+                            [options]="coptions"
+                            [(ngModel)]="endpoint.responseJSON"
+                          ></ngx-monaco-editor>
+                        </div>
+                      </div>
+                      <br />
+                      <button
+                        mat-raised-button
+                        (click)="callEndpoint(service, endpoint)"
+                        color="primary"
+                      >
+                        Call
+                      </button>
                     </ng-template>
                   </mat-tab>
                 </mat-tab-group>
@@ -86,57 +111,52 @@
             >
           </div>
           <br />
-          <div style="display:flex; flex-direction:column;">
-            <div style="flex-grow:1; height:300px; position:relative">
+          <div fxLayout="row wrap" fxLayoutAlign="space-between">
+            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
               <canvas
                 *ngIf="requestRates.data.length > 0"
                 baseChart
-                width="400"
-                height="400"
+                [colors]="requestRates.chartColors"
                 [datasets]="requestRates.data"
                 [options]="requestRates.options"
                 [chartType]="requestRates.lineChartType"
               ></canvas>
             </div>
-            <div style="flex-grow:1; height:300px; position:relative">
-              <canvas
-                *ngIf="memoryRates.data.length > 0"
-                baseChart
-                width="400"
-                height="400"
-                [datasets]="memoryRates.data"
-                [options]="memoryRates.options"
-                [chartType]="memoryRates.lineChartType"
-              ></canvas>
-            </div>
-            <div style="flex-grow:1; height:300px; position:relative">
+            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
               <canvas
                 *ngIf="errorRates.data.length > 0"
                 baseChart
-                width="400"
-                height="400"
+                [colors]="errorRates.chartColors"
                 [datasets]="errorRates.data"
                 [options]="errorRates.options"
                 [chartType]="errorRates.lineChartType"
               ></canvas>
             </div>
-            <div style="flex-grow:1; height:300px; position:relative">
+            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
+              <canvas
+                *ngIf="memoryRates.data.length > 0"
+                baseChart
+                [colors]="memoryRates.chartColors"
+                [datasets]="memoryRates.data"
+                [options]="memoryRates.options"
+                [chartType]="memoryRates.lineChartType"
+              ></canvas>
+            </div>
+            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
               <canvas
                 *ngIf="concurrencyRates.data.length > 0"
                 baseChart
-                width="400"
-                height="400"
+                [colors]="concurrencyRates.chartColors"
                 [datasets]="concurrencyRates.data"
                 [options]="concurrencyRates.options"
                 [chartType]="concurrencyRates.lineChartType"
               ></canvas>
             </div>
-            <div style="flex-grow:1; height:300px; position:relative">
+            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
               <canvas
                 *ngIf="gcRates.data.length > 0"
                 baseChart
-                width="400"
-                height="400"
+                [colors]="gcRates.chartColors"
                 [datasets]="gcRates.data"
                 [options]="gcRates.options"
                 [chartType]="gcRates.lineChartType"
@@ -152,19 +172,43 @@
       <mat-tab label="Trace">
         <ng-template matTabContent>
           <br />
+          <div fxLayout="row">
+            <div style="width: 25%">
+              <b style="font-weight: 700;">ID</b>
+            </div>
+            <div style="width: 25%">
+              <b style="font-weight: 700;">Name</b>
+            </div>
+            <div style="width: 25%">
+              <b style="font-weight: 700;">Time</b>
+            </div>
+            <div style="width: 25%">
+              <b style="font-weight: 700;">Duration</b>
+            </div>
+          </div>
           <ng-container *ngFor="let traceData of traceDatasPart">
-            <a href="#" (click)="show(traceData)"
-              >{{ prettyId(traceData.traceId) }} ({{
-                traceData.dataTable.length - 1
-              }}) &#8212;
-              {{ traceData.dataTable[1][2] | date: "short" }}</a
-            ><br /><br />
+            <div fxLayout="row">
+              <div style="width: 25%">
+                <a href="#" (click)="show(traceData)"
+                  >{{ prettyId(traceData.traceId) }}
+                </a>
+              </div>
+              <div style="width: 25%">
+                {{ getEndpointName(services[0], traceData.dataTable) }}
+              </div>
+              <div style="width: 25%">
+                {{ traceData.dataTable[1][2] | date: "short" }}
+              </div>
+              <div style="width: 25%">
+                {{ traceDuration(traceData.dataTable) }}
+              </div>
+            </div>
             <div
               *ngIf="traceData.show"
               style="width: 100%;"
               [ngStyle]="{ 'height.px': traceData.divHeight }"
             >
-              <br />
+              <br />Trace ID: {{ traceData.traceId }}<br />
               <google-chart [data]="traceData"></google-chart>
             </div>
           </ng-container>

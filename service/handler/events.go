@@ -16,7 +16,7 @@ import (
 func (h *Handler) ListEvents(ctx context.Context, req *pb.ListEventsRequest, rsp *pb.ListEventsResponse) error {
 	records, err := h.Store.List()
 	if err != nil {
-		return errors.InternalServerError("go.micro.platform", "unable to read from store")
+		return errors.InternalServerError("go.micro.platform", "unable to read from store: %v", err)
 	}
 
 	// Use a prefix to scope to the resource (if one was provided)

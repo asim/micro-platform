@@ -4,6 +4,14 @@ import { HttpClient } from "@angular/common/http";
 import { environment } from "../environments/environment";
 import { UserService } from "./user.service";
 
+export interface RPCRequest {
+  service: string;
+  endpoint: string;
+  method?: string;
+  address?: string;
+  request: any;
+}
+
 @Injectable({
   providedIn: "root"
 })
@@ -72,6 +80,38 @@ export class ServiceService {
         .toPromise()
         .then(servs => {
           resolve(servs as types.Span[]);
+        });
+    });
+  }
+
+  call(rpc: RPCRequest): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      return this.http
+        .post<string>(environment.backendUrl + "/v1/service/call", rpc)
+        .toPromise()
+        .then(response => {
+          resolve(JSON.stringify(response, null, "  "));
+        })
+        .catch(e => {
+          resolve(e);
+        });
+    });
+  }
+
+  events(service: string): Promise<types.Event[]> {
+    return new Promise<types.Event[]>((resolve, reject) => {
+      return this.http
+        .post<types.Event[]>(environment.backendUrl + "/v1/events", {
+          service: {
+            name: service
+          }
+        })
+        .toPromise()
+        .then(events => {
+          resolve(events);
+        })
+        .catch(e => {
+          resolve(e);
         });
     });
   }

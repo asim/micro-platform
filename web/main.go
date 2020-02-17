@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/micro/platform/web/handlers/auth"
-	"github.com/micro/platform/web/handlers/events"
-	"github.com/micro/platform/web/handlers/github"
-	"github.com/micro/platform/web/handlers/services"
+	"github.com/micro/platform/web/handler/auth"
+	"github.com/micro/platform/web/handler/events"
+	"github.com/micro/platform/web/handler/github"
+	"github.com/micro/platform/web/handler/services"
 
 	"github.com/micro/go-micro/v2/web"
 )

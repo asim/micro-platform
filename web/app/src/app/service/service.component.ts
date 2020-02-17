@@ -4,6 +4,8 @@ import * as types from "../types";
 import { ActivatedRoute } from "@angular/router";
 import { Subject } from "rxjs";
 import * as _ from "lodash";
+import { DiffEditorModel } from "ngx-monaco-editor";
+import { environment } from "../../environments/environment";
 
 @Component({
   selector: "app-service",
@@ -68,6 +70,11 @@ export class ServiceComponent implements OnInit {
       this.serviceName = <string>p["id"];
       this.ses.list().then(servs => {
         this.services = servs.filter(s => s.name == this.serviceName);
+        this.services.forEach(service => {
+          service.endpoints.forEach(endpoint => {
+            endpoint.requestJSON = this.valueToJson(endpoint.request, 1);
+          });
+        });
       });
       this.ses.logs(this.serviceName).then(logs => {
         this.logs = logs;
@@ -114,14 +121,64 @@ export class ServiceComponent implements OnInit {
     const fieldSeparator = `,\n`;
 
     if (input.values) {
-      return `${indent}${input.type} ${input.name} {
+      return `${indent}${input.type} ${indentLevel == 1 ? "" : input.name} {
 ${input.values
   .map(field => this.valueToString(field, indentLevel + 1))
   .join(fieldSeparator)}
 ${indent}}`;
+    } else if (indentLevel == 1) {
+      return `${indent}${input.name} {}`;
     }
 
     return `${indent}${input.type} ${input.name}`;
+  }
+
+  // This is admittedly a horrible temporary implementation
+  valueToJson(input: types.Value, indentLevel: number): string {
+    const typeToDefault = (type: string): string => {
+      switch (type) {
+        case "string":
+          return '""';
+        case "int":
+        case "int32":
+        case "int64":
+          return "0";
+        case "bool":
+          return "false";
+        default:
+          return "{}";
+      }
+    };
+
+    if (!input) return "";
+
+    const indent = Array(indentLevel).join("    ");
+    const fieldSeparator = `,\n`;
+    if (input.values) {
+      return `${indent}${indentLevel == 1 ? "{" : '"' + input.name + '": {'}
+${input.values
+  .map(field => this.valueToJson(field, indentLevel + 1))
+  .join(fieldSeparator)}
+${indent}}`;
+    } else if (indentLevel == 1) {
+      return `{}`;
+    }
+
+    return `${indent}"${input.name}": ${typeToDefault(input.type)}`;
+  }
+
+  callEndpoint(service: types.Service, endpoint: types.Endpoint) {
+    this.ses
+      .call({
+        endpoint: endpoint.name,
+        service: service.name,
+        address: service.nodes[0].address,
+        method: "POST",
+        request: endpoint.requestJSON
+      })
+      .then(rsp => {
+        endpoint.responseJSON = rsp;
+      });
   }
 
   // Stats/ Chart related things
@@ -135,12 +192,18 @@ ${indent}}`;
 
   traceDuration(spans: (String | Date)[][]): string {
     const durations = spans.slice(1).map(span => {
-      return (
-        (span[3] as Date).getMilliseconds() -
-        (span[2] as Date).getMilliseconds()
-      );
+      return (span[3] as Date).getTime() - (span[2] as Date).getTime();
     });
+
     return this.prettyTime(durations.reduce((a, b) => a + b, 0));
+  }
+
+  getEndpointName(service: types.Service, spans: (String | Date)[][]): string {
+    return (spans.slice(1).filter(span => {
+      return (span[1] as string).includes(service.name);
+    })[0][1] as string)
+      .split(":")[1]
+      .split(" ")[1];
   }
 
   processTraces(spans: types.Span[]) {
@@ -236,12 +299,12 @@ ${indent}}`;
     this.requestRates.data = nodes.map(node => {
       return {
         label: node,
+        name: node,
         type: "line",
         pointRadius: 0,
         fill: false,
         lineTension: 0,
         borderWidth: 2,
-        fillcolor: "rgba(220,220,220,0.8)",
         data: this.stats
           .filter(stat => stat.service.node.id == node)
           .map((stat, i) => {
@@ -337,6 +400,7 @@ ${indent}}`;
     this.gcRates.data = nodes.map(node => {
       return {
         label: node,
+        name: node,
         type: "line",
         pointRadius: 0,
         fill: false,
@@ -420,6 +484,26 @@ ${indent}}`;
         }
       },
       data: [],
+      chartColors: [
+        {
+          // first color
+          backgroundColor: "rgba(10,24,225,0.6)",
+          borderColor: "rgba(10,24,225,0.6)",
+          pointBackgroundColor: "rgba(10,24,225,0.6)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgba(10,24,225,0.6)"
+        },
+        {
+          // second color
+          backgroundColor: "rgba(10,24,225,0.6)",
+          borderColor: "rgba(10,24,225,0.6)",
+          pointBackgroundColor: "rgba(10,24,225,0.6)",
+          pointBorderColor: "#fff",
+          pointHoverBackgroundColor: "#fff",
+          pointHoverBorderColor: "rgba(10,24,225,0.6)"
+        }
+      ],
       lineChartType: "line"
     };
   }
@@ -428,4 +512,12 @@ ${indent}}`;
   errorRates = this.options("errors/second");
   concurrencyRates = this.options("goroutines");
   gcRates = this.options("garbage collection (nanoseconds/seconds)");
+
+  // code editor
+  coptions = {
+    theme: "vs-dark",
+    language: "json"
+  };
+
+  code: string = "{}";
 }
