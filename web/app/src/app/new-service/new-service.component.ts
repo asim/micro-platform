@@ -49,7 +49,7 @@ export class NewServiceComponent implements OnInit {
   checkEvents() {
     this.isOnGithub =
       this.events.filter(e => {
-        return e.service.name == "go.micro.srv." + this.serviceName;
+        return e.service.name == this.serviceName;
       }).length > 0;
     if (this.isOnGithub && this.step < 1) {
       this.step = 1;
@@ -60,7 +60,7 @@ export class NewServiceComponent implements OnInit {
   checkServices() {
     this.isInRegistry =
       this.services.filter(e => {
-        return e.name == this.serviceName;
+        return e.name == "go.micro.srv." + this.serviceName;
       }).length > 0;
     if (this.isInRegistry && this.step < 2) {
       this.step = 2;
