@@ -2,7 +2,7 @@
   <mat-spinner
     [diameter]="70"
     style="margin: auto;"
-  *ngIf="!services"
+    *ngIf="!services"
   ></mat-spinner>
 </div>
 <div *ngIf="services" style="margin: auto;">
@@ -144,73 +144,7 @@
             >
           </div>
           <br />
-          <div
- 
-            fxLayout.lt-md="column wrap"
-            fxLayout="row wrap"
-            fxLayoutAlign="space-between"
-          >
-            <div style="margin-bottom: 2em;">
-              <canvas fxFlex.lt-md="100%" fxFlex="48%"
-                *ngIf="requestRates.data.length > 0"
-                baseChart
-                [colors]="requestRates.chartColors"
-                [datasets]="requestRates.data"
-                [options]="requestRates.options"
-                [chartType]="requestRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; ">
-              <canvas
-                *ngIf="errorRates.data.length > 0"
-                baseChart
-                [colors]="errorRates.chartColors"
-                [datasets]="errorRates.data"
-                [options]="errorRates.options"
-                [chartType]="errorRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; ">
-              <canvas
-                *ngIf="memoryRates.data.length > 0"
-                baseChart
-                [colors]="memoryRates.chartColors"
-                [datasets]="memoryRates.data"
-                [options]="memoryRates.options"
-                [chartType]="memoryRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; ">
-              <canvas
-                *ngIf="concurrencyRates.data.length > 0"
-                baseChart
-                [colors]="concurrencyRates.chartColors"
-                [datasets]="concurrencyRates.data"
-                [options]="concurrencyRates.options"
-                [chartType]="concurrencyRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; ">
-              <canvas
-                *ngIf="gcRates.data.length > 0"
-                baseChart
-                [colors]="gcRates.chartColors"
-                [datasets]="gcRates.data"
-                [options]="gcRates.options"
-                [chartType]="gcRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em;">
-              <canvas
-                *ngIf="uptime.data.length > 0"
-                baseChart
-                [colors]="uptime.chartColors"
-                [datasets]="uptime.data"
-                [options]="uptime.options"
-                [chartType]="uptime.lineChartType"
-              ></canvas>
-            </div>
-          </div>
+          <app-stat-charts [stats]="stats"></app-stat-charts>
         </ng-template>
       </mat-tab>
       <mat-tab label="Nodes">
@@ -246,56 +180,10 @@
       <mat-tab label="Trace">
         <ng-template matTabContent>
           <br />
-          <div fxLayout="row">
-            <div style="width: 25%">
-              <b style="font-weight: 700;">ID</b>
-            </div>
-            <div style="width: 25%">
-              <b style="font-weight: 700;">Name</b>
-            </div>
-            <div style="width: 25%">
-              <b style="font-weight: 700;">Time</b>
-            </div>
-            <div style="width: 25%">
-              <b style="font-weight: 700;">Duration</b>
-            </div>
-          </div>
-          <br />
-          <ng-container *ngFor="let traceData of traceDatasPart">
-            <div fxLayout="row">
-              <div style="width: 25%">
-                <a href="#" (click)="show(traceData)"
-                  >{{ prettyId(traceData.traceId) }}
-                </a>
-              </div>
-              <div style="width: 25%">
-                {{ getEndpointName(services[0], traceData.dataTable) }}
-              </div>
-              <div style="width: 25%">
-                {{ traceData.dataTable[1][2] | date: "short" }}
-              </div>
-              <div style="width: 25%">
-                {{ traceDuration(traceData.dataTable) }}
-              </div>
-            </div>
-            <div
-              *ngIf="traceData.show"
-              style="width: 100%;"
-              [ngStyle]="{ 'height.px': traceData.divHeight }"
-            >
-              <br />Trace ID: {{ traceData.traceId }}<br />
-              <google-chart [data]="traceData"></google-chart>
-            </div>
-          </ng-container>
-          <mat-paginator
-            #paginator
-            [length]="length"
-            [pageIndex]="currentPage"
-            [pageSize]="pageSize"
-            [pageSizeOptions]="[5, 10, 25, 100]"
-            (page)="handlePage($event)"
-          >
-          </mat-paginator>
+          <app-trace-list
+            [serviceName]="services[0].name"
+            [spans]="traceSpans"
+          ></app-trace-list>
         </ng-template>
       </mat-tab>
     </mat-tab-group>

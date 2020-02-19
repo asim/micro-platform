@@ -3,27 +3,7 @@
     <mat-card-title>
       events
     </mat-card-title>
-    <mat-card
-      class="mat-card-flat"
-      *ngFor="let event of events"
-      style="margin-bottom: 1em; background: #f5f5f5;"
-    >
-      <mat-card-title style="align-items: center; font-size: 1.25em;">
-        <div fxLayout.lt-md="column" fxLayout="row">
-          <div>
-            <a routerLink="/service/{{ event.service.name }}"
-              >{{ event.service.name }}:</a
-            > &nbsp;
-          </div>
-          <div>
-           {{ eventTypeToString(event) }} &nbsp;<span
-              style="color: #555"
-              >{{ event.timestamp * 1000 | dateAgo }}</span
-            >
-          </div>
-        </div>
-      </mat-card-title>
-    </mat-card>
+    <app-events-list [events]="events"></app-events-list>
     <br />
   </mat-card>
 </div>
