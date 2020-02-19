@@ -24,10 +24,12 @@ infrastructure automation, account management, billing, alerting, etc.
 
 The platform layers on the existing open source tools and there's a clear separation of concerns.
 
-<img src="images/architecture.png" />
-
-Ultimately the breakdown is
+The breakdown is as follows:
 
 - Platform - Hosted product and commercially licensed (Micro as a Service)
 - Micro - Runtime for services - Open source Apache 2.0 licensed
 - Go Micro - Framework for development - Open source Apache 2.0 licensed
+
+<img src="images/architecture.png" />
+
+
