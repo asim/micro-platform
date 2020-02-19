@@ -55,3 +55,9 @@ The platform builds on the runtime. It's a fully managed solution that provides 
 and run it across muliple cloud providers and regions globally. Where the runtime focuses on one addressable 
 environment, the platform extends into multiple independent environments and namespaces that can be managed in one place.
 
+There is overlap between the runtime and platform but primarily the point of differentation is that Micro serves 
+as an open source runtime environment for microservices and the Platform is a commercial product that provides 
+**Micro as a Service**. The platform extends the functionality of Micro to include automation, alerting, billing, 
+account management, gitops workflow, k8s native deployment and a web dashboard.
+
+
