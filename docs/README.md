@@ -5,12 +5,4 @@ This serves as the location for any platform documentation related to further de
 # Contents
 
 - [architecture](architecture.md) - platform composition
-
-## Configuration
-
-A few things we need
-
-- GitHub team ID
-- GitHub oauth credentials
-- GitHub webhook for platform
-
+- [configuration](configuration.md) - platform configuration
