@@ -15,35 +15,34 @@ infrastructure automation, account management, billing, alerting, etc.
 - **Alerting** - Event notification and alerting via email/sms/slack
 - **Billing** - Metered billing of services used
 - **Dashboard** - A full UX experience via a web dashboard
-- **Multi-Cloud** - Ability to manage and deploy services across multiple clouds and regions
 - **GitOps** - Source to Running via GitHub actions
 - **K8s Native** - Built to run on Kubernetes
+- **Multi-Cloud** - Ability to manage and deploy services across multiple clouds and regions
 - More soon...
 
 ## Design
 
-The platform layers on the existing open source tools and there's a clear separation of concerns.
+The platform layers on the existing open source tools and there's a clear separation of concerns. The breakdown 
+is as follows:
 
-The breakdown is as follows:
+- Platform - Micro as a Service. Fully managed platform - Hosted product and commercially licensed
+- Runtime - [Micro](https://github.com/micro/micro) is a runtime for services - Open source Apache 2.0 licensed
+- Framework - [Go Micro](https://github.com/micro/go-micro) is a framework for microservices development - Open source Apache 2.0 licensed
 
-- Platform - Hosted product and commercially licensed (Micro as a Service)
-- Micro - Runtime for services - Open source Apache 2.0 licensed
-- Go Micro - Framework for development - Open source Apache 2.0 licensed
-
-### Diagram
+## Diagram
 
 The interaction between these layers is clearly delineated. Every layer builds on the next with only 
 one way interaction. Platform => Runtime => Framework.
 
 <img src="images/architecture.png" />
 
-### Framework
+## Framework
 
 The framework is geared towards developers writing services and primarily focused on Go development. It provides 
 abstractions for the underlying infrastructure and is Apache 2.0 licensed as a completely open pluggable standalone 
 framework.
 
-### Runtime
+## Runtime
 
 The micro runtime builds on the framework to provide service level abstractions for each concern. It provides a 
 runtime agnostic layer thats gRPC based so that we can build on it. It's effectively a programmable foundation. 
