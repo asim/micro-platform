@@ -17,6 +17,7 @@ infrastructure automation, account management, billing, alerting, etc.
 - **Dashboard** - A full UX experience via a web dashboard
 - **Multi-Cloud** - Ability to manage and deploy services across multiple clouds and regions
 - **GitOps** - Source to Running via GitHub actions
+- **K8s Native** - Built to run on Kubernetes
 - More soon...
 
 ## Design
