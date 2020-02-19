@@ -60,4 +60,26 @@ as an open source runtime environment for microservices and the Platform is a co
 **Micro as a Service**. The platform extends the functionality of Micro to include automation, alerting, billing, 
 account management, gitops workflow, k8s native deployment and a web dashboard.
 
+## Configuration
+
+The platform acts as configuration of a micro runtime and should do so for all entrypoints including the CLI.
+
+Our `micro` cli is driven by the same config as the rest of the tools. In the case of environment related changes 
+this should be driven by a platform plugin or the platform cli binary itself. This is currently a WIP.
+
+Assuming we want to configure the remote environment
+
+```
+# will configure a local ~/.micro file interactively
+platform init
+```
+
+The contents of ~/.micro
+
+```
+
+MICRO_PROXY_ADDRESS=proxy.micro.mu
+MICRO_AUTH_TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkw
+...
+```
 
