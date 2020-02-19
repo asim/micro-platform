@@ -334,6 +334,8 @@ github.com/micro/platform v0.0.0-20200212111641-948d2fb6c0d2 h1:VBOjfU1cLtd5Fxoq
 github.com/micro/platform v0.0.0-20200212111641-948d2fb6c0d2/go.mod h1:W6J5vB4AOaWBw/DEFiYgZ22ZEdl4lBP2b0An50nhNek=
 github.com/micro/platform v0.0.0-20200213142542-9c44c2fa3723 h1:XVBkZtnhmL/F/UM4+tDAGhJNQThrNyCE/aSbO22XeEg=
 github.com/micro/platform/api v0.0.0-20200212114434-2748659fe83e/go.mod h1:4Bq3ROqSBgHk+HP41w+2N2eOqeLY7snX2JGXtaAIhqY=
+github.com/micro/platform/service v0.0.0-20200218180659-0998d5f0d0d3 h1:EdUctRxMLrzqZSdQka0XNWiPWp9F8qtOrXKhhtNvrq4=
+github.com/micro/platform/service v0.0.0-20200218180659-0998d5f0d0d3/go.mod h1:iuImhaVNXPlNWcY/N60souTxxF/lf7Xy6A9q6Liie4E=
 github.com/micro/protoc-gen-micro v1.0.0/go.mod h1:C8ij4DJhapBmypcT00AXdb0cZ675/3PqUO02buWWqbE=
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.3/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
@@ -687,6 +689,7 @@ google.golang.org/api v0.14.0/go.mod h1:iLdEw5Ide6rF15KTC1Kkl0iskquN2gFfn9o9XIsb
 google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
 google.golang.org/appengine v1.4.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
 google.golang.org/appengine v1.5.0/go.mod h1:xpcJRLb0r/rnEns0DIKYYv+WjYCduHsrkT7/EB5XEv4=
+google.golang.org/appengine v1.6.1 h1:QzqyMA1tlu6CgqCDUtU9V+ZKhLFT2dkJuANu5QaxI3I=
 google.golang.org/appengine v1.6.1/go.mod h1:i06prIuMbXzDqacNJfV5OdTW448YApPu5ww/cMBSeb0=
 google.golang.org/genproto v0.0.0-20180817151627-c66870c02cf8/go.mod h1:JiN7NxoALGmiZfu7CAH4rXhgtRTLTxftemlI0sWmxmc=
 google.golang.org/genproto v0.0.0-20180831171423-11092d34479b/go.mod h1:JiN7NxoALGmiZfu7CAH4rXhgtRTLTxftemlI0sWmxmc=

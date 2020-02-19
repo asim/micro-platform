@@ -1,17 +1,33 @@
 # Platform
 
-The micro platform is a self hosted platform for microservices development.
+The micro platform is a fully managed platform for microservices development.
 
 ## Overview
 
-Our goal is to provide an fully automated solution to manage a serverless platform for microservices. 
-This project serves as the entry point for that, leveraging the [Micro](https://github.com/micro/micro) 
-runtime to do so along with extra dashboards and automation to run on any cloud platform. The 
-platform is built as a kubernetes native deployment.
+The platform provides **Micro as a Service** as a commercial product and fully managed solution. 
+This repository serves as the entrypoint and single location for all platform related source 
+code and documentation. The platform builds on the [Micro](https://github.com/micro/micro) 
+runtime and includes the features defined below.
+
+## Features
+
+The features which will be included in the platform
+
+- **Cloud Automation** - Full terraform automation to bootstrap platform
+- **Account Management** - GitHub account management via teams
+- **Alerting** - Event notification and alerting via email/sms/slack
+- **Billing** - Metered billing of services used
+- **Dashboard** - A full UX experience via a web dashboard
+- **Multi-Cloud** - Ability to manage and deploy services across multiple clouds and regions
+- **GitOps** - Source to Running via GitHub actions
+- **K8s Native** - Built to run on Kubernetes
+- More soon...
 
 ## Usage
 
 Coming soon...
+
+See the [docs](docs) for more info.
 
 ## LICENSE
 
