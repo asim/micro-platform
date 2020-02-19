@@ -33,6 +33,8 @@ enum EventType {
     DepoymentDeleted = 2;
     DepoymentUpdated = 3;
     SourceUpdated = 4;
+    BuildStarted = 5;
+    BuildFinished = 6;
 }
 
 message Event {

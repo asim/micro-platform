@@ -8,7 +8,7 @@ import (
 
 	"github.com/micro/go-micro/v2/web"
 	platform "github.com/micro/platform/service/proto"
-	"github.com/micro/platform/web/util"
+	utils "github.com/micro/platform/web/util"
 )
 
 // Handler encapsulates the events handlers
@@ -23,7 +23,41 @@ func RegisterHandlers(srv web.Service) error {
 	}
 
 	srv.HandleFunc("/v1/github/webhook", h.WebhookHandler)
+	srv.HandleFunc("/v1/github/build-started", h.BuildStartedHandler)
+	srv.HandleFunc("/v1/github/build-finished", h.BuildFinishedHandler)
 	return nil
+}
+
+// BuildStartedHandler process the github webhook for a docker build starting
+func (h *Handler) BuildStartedHandler(w http.ResponseWriter, req *http.Request) {
+	_, err := h.platform.CreateEvent(req.Context(), &platform.CreateEventRequest{
+		Event: &platform.Event{
+			Type: platform.EventType_BuildStarted,
+			Service: &platform.Service{
+				Name: "TODO",
+			},
+		},
+	})
+
+	if err != nil {
+		utils.Write500(w, err)
+	}
+}
+
+// BuildFinishedHandler process the github webhook for a docker build starting
+func (h *Handler) BuildFinishedHandler(w http.ResponseWriter, req *http.Request) {
+	_, err := h.platform.CreateEvent(req.Context(), &platform.CreateEventRequest{
+		Event: &platform.Event{
+			Type: platform.EventType_BuildFinished,
+			Service: &platform.Service{
+				Name: "TODO",
+			},
+		},
+	})
+
+	if err != nil {
+		utils.Write500(w, err)
+	}
 }
 
 // WebhookHandler processes the GitHub push webhooks
