@@ -17,7 +17,7 @@ import (
 	logproto "github.com/micro/micro/v2/debug/log/proto"
 	statsproto "github.com/micro/micro/v2/debug/stats/proto"
 	traceproto "github.com/micro/micro/v2/debug/trace/proto"
-	"github.com/micro/platform/web/util"
+	utils "github.com/micro/platform/web/util"
 )
 
 // RegisterHandlers adds the service handlers to the service
@@ -251,12 +251,17 @@ func statsHandler(service web.Service) func(http.ResponseWriter, *http.Request) 
 			return
 		}
 		client := service.Options().Service.Client()
-		request := client.NewRequest("go.micro.debug", "Stats.Read", &statsproto.ReadRequest{
+		preq := &statsproto.ReadRequest{
 			Service: &statsproto.Service{
 				Name: serviceName,
 			},
 			Past: true,
-		})
+		}
+		version := req.URL.Query().Get("version")
+		if len(version) > 0 {
+			preq.Service.Version = version
+		}
+		request := client.NewRequest("go.micro.debug", "Stats.Read", preq)
 		rsp := &statsproto.ReadResponse{}
 		if err := client.Call(req.Context(), request, rsp); err != nil {
 			utils.Write500(w, err)

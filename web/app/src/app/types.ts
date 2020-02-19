@@ -1,5 +1,3 @@
-import { HttpEventType } from '@angular/common/http'
-
 export interface User {
   name: string;
   email: string;
@@ -27,6 +25,8 @@ export interface Node {
   id: string;
   address: string;
   metadata: Map<string, string>;
+  // @TODO come up with a way to wrap all types in conenience interfaces
+  show?: boolean;
 }
 
 // ... slightly different version of Service...
@@ -106,8 +106,8 @@ export interface EventService {
 
 // Platform event
 export interface Event {
-  type: HttpEventType;
+  type: number;
   timestamp: number;
   metadata: Map<string, string>;
-  service: EventService; 
+  service: EventService;
 }

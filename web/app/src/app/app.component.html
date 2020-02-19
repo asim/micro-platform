@@ -1,20 +1,39 @@
-<div style="width:80%; margin: auto;">
-  <mat-toolbar style="padding: 1em; background-color: white">
-    <mat-toolbar-row>
+<div
+  ngStyle.lt-md="width: 95%; height: 100%; margin: auto;"
+  ngStyle.lt-lg="width: 75%; height: 100%; margin: auto;"
+  style="width: 60%; height: 100%; margin: auto;"
+>
+  <mat-toolbar style="padding: 1em; padding-left: 0em; background-color: white">
+    <mat-toolbar-row
+      style="padding-bottom: 0; padding-left: 0.5em; padding-right: 0.5em;"
+    >
       <button mat-icon-button (click)="sidenav.toggle()" fxHide.gt-sm>
         <mat-icon>menu</mat-icon>&nbsp;&nbsp;&nbsp;
       </button>
-      <img class="hover" routerLink="/" style="width: 50px" src="./assets/logo.png" />
-      <span id="logo" class="hover" routerLink="/"
-        >&nbsp; Micro</span
-      >
+      <img
+        class="hover"
+        routerLink="/"
+        style="width: 50px"
+        src="./assets/logo.png"
+      />
+      <span id="logo" class="hover" routerLink="/">&nbsp; Micro</span>
       <span class="menu-spacer"></span>
       <div style="padding-top: 4px;" fxShow="true" fxHide.lt-md>
         <!-- The following menu items will be hidden on both SM and XS screen sizes -->
         <a routerLink="/services" mat-button>Services</a>
+        <a routerLink="/events" mat-button>Events</a>
         <a href="https://micro.mu/community" mat-button>Community</a>
 
         <mat-menu #menu="matMenu">
+          <button
+            class="tokens"
+            id="tokens"
+            style="padding-left: 3em; padding-right: 3em; text-align: center;"
+            mat-menu-item
+            routerLink="/settings/tokens"
+          >
+            Settings
+          </button>
           <button
             class="logout"
             id="logout"
@@ -56,15 +75,30 @@
     </mat-toolbar-row>
   </mat-toolbar>
 
-  <mat-sidenav-container style="height: 100%" fxFlexFill>
-    <mat-sidenav style="width: 30%" #sidenav>
+  <mat-sidenav-container>
+    <mat-sidenav style="width: 66%;" #sidenav>
       <mat-nav-list>
         <div><a (click)="sidenav.toggle()" mat-list-item>Close</a></div>
-        <div><a (click)="sidenav.toggle()" routerLink="/services" mat-button>Services</a></div>
+        <div>
+          <a (click)="sidenav.toggle()" routerLink="/services" mat-button
+            >Services</a
+          >
+        </div>
+        <div>
+          <a (click)="sidenav.toggle()" routerLink="/events" mat-button
+            >Events</a
+          >
+        </div>
         <div><a href="https://micro.mu/community" mat-button>Community</a></div>
+        <div *ngIf="user && user.name">
+          <a routerLink="/settings/tokens" (click)="sidenav.toggle()" mat-button>Settings</a>
+        </div>
+        <div *ngIf="user && user.name">
+          <a (click)="us.logout()" mat-button>Sign out</a>
+        </div>
       </mat-nav-list>
     </mat-sidenav>
-    <mat-sidenav-content style="padding: 1em; background: white;" fxFlexFill>
+    <mat-sidenav-content style="background: white;" fxFlexFill>
       <simple-notifications></simple-notifications>
       <router-outlet></router-outlet>
     </mat-sidenav-content>

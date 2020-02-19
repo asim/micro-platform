@@ -55,6 +55,15 @@ import { NotInvitedComponent } from "./not-invited/not-invited.component";
 
 import { Ng2GoogleChartsModule } from "ng2-google-charts";
 import { MonacoEditorModule } from 'ngx-monaco-editor';
+import { SettingsComponent } from './settings/settings.component';
+import { EventsComponent } from './events/events.component';
+import { DateAgoPipe } from './dateago.pipe';
+import { EventsListComponent } from './events-list/events-list.component';
+import { StatChartsComponent } from './stat-charts/stat-charts.component';
+import { TraceListComponent } from './trace-list/trace-list.component';
+import { EndpointListComponent } from './endpoint-list/endpoint-list.component';
+import { LogsComponent } from './logs/logs.component';
+import { NodesComponent } from './nodes/nodes.component';
 
 /**
  * Import specific languages to avoid importing everything
@@ -81,7 +90,16 @@ export function getHighlightLanguages() {
     NewServiceComponent,
     WelcomeComponent,
     LogUserInComponent,
-    NotInvitedComponent
+    NotInvitedComponent,
+    SettingsComponent,
+    EventsComponent,
+    DateAgoPipe,
+    EventsListComponent,
+    StatChartsComponent,
+    TraceListComponent,
+    EndpointListComponent,
+    LogsComponent,
+    NodesComponent
   ],
   imports: [
     BrowserModule,

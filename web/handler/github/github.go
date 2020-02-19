@@ -94,6 +94,10 @@ func uniqueStrings(input []string) []string {
 	m := make(map[string]bool)
 
 	for _, val := range input {
+		// skip anything starting with dot
+		if strings.HasPrefix(val, ".") {
+			continue
+		}
 		if _, ok := m[val]; !ok {
 			m[val] = true
 			u = append(u, val)

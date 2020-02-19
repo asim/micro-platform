@@ -5,15 +5,44 @@
     *ngIf="!services"
   ></mat-spinner>
 </div>
-<div *ngIf="services" style="padding-left: 1em; margin: auto;">
-  <mat-card class="mat-card-flat">
-    <mat-card-title>
-      <a routerLink="/services">services</a>&nbsp; &gt;
-      <mat-icon style="color: green; vertical-align: middle;"
-        >fiber_manual_record</mat-icon
-      >
-      {{ serviceName }}
+<div *ngIf="services" style="margin: auto;">
+  <mat-card style="margin-top: 0em; padding-top: 0em;" class="mat-card-flat">
+    <mat-card-title
+      fxLayout="row"
+      fxLayout.lt-md="column"
+      style="align-items: center;"
+    >
+      <div>
+        <a routerLink="/services"
+          >services <span fxHide.lt-md>&gt; &nbsp;</span></a
+        >
+      </div>
+      <div>
+        <mat-icon style="color: green; vertical-align: middle;"
+          >fiber_manual_record</mat-icon
+        >
+        &nbsp;{{ serviceName }} &nbsp;
+      </div>
+      <div>
+        <!-- The ngStyle background color is a horrible hack due to mat-chips not
+        supporting dynamically the selected property. -->
+        <mat-chip-list selectable="false" aria-label="Versions">
+          <mat-chip
+            selectable="false"
+            (click)="versionSelected(service)"
+            *ngFor="let service of services"
+            [ngStyle]="
+              selectedVersion == service.version && {
+                'background-color': '#673ab7',
+                color: 'white'
+              }
+            "
+            >{{ service.version }}</mat-chip
+          >
+        </mat-chip-list>
+      </div>
     </mat-card-title>
+
     <mat-tab-group
       animationDuration="0ms"
       [selectedIndex]="selected"
@@ -21,206 +50,47 @@
     >
       <mat-tab style="padding-top: 1em;" label="Endpoints">
         <br />
-        <form style="margin-left: 1.5em;" class="example-form">
-          <mat-form-field class="example-full-width">
-            <input
-              name="query"
-              matInput
-              [(ngModel)]="endpointQuery"
-              placeholder="Search endpoints"
-            />
-          </mat-form-field>
-        </form>
-        <ng-container *ngFor="let service of services">
-          <div
-            *ngFor="
-              let endpoint of service.endpoints | search: 'name':endpointQuery
-            "
-          >
-            <div>
-              <mat-expansion-panel class="mat-elevation-z0">
-                <mat-expansion-panel-header>
-                  <mat-panel-title>
-                    {{ endpoint.name }}
-                  </mat-panel-title>
-                  <mat-panel-description>
-                    {{ endpoint.title }}
-                  </mat-panel-description>
-                </mat-expansion-panel-header>
-                <mat-tab-group animationDuration="0ms">
-                  <mat-tab label="Definition">
-                    <ng-template matTabContent>
-                      <br />
-                      <pre style="padding: 1em; background: #f6f6f6;">{{
-                        valueToString(endpoint.request, 1)
-                      }}</pre>
-                      <br />
-                      <pre style="padding: 1em; background: #f6f6f6;">{{
-                        valueToString(endpoint.response, 1)
-                      }}</pre>
-                    </ng-template>
-                  </mat-tab>
-                  <mat-tab label="Call">
-                    <ng-template matTabContent>
-                      <br />
-                      <div fxLayout="row" fxLayoutGap="1em">
-                        <div fxFlex="calc(50% - 0.5em)">
-                          Request<br /><br />
-                          <ngx-monaco-editor
-                            style="height: 25em"
-                            [options]="coptions"
-                            [(ngModel)]="endpoint.requestJSON"
-                          ></ngx-monaco-editor>
-                        </div>
-                        <div fxFlex="calc(50% - 0.5em)">
-                          Response<br /><br />
-                          <ngx-monaco-editor
-                            style="height: 25em"
-                            [options]="coptions"
-                            [(ngModel)]="endpoint.responseJSON"
-                          ></ngx-monaco-editor>
-                        </div>
-                      </div>
-                      <br />
-                      <button
-                        mat-raised-button
-                        (click)="callEndpoint(service, endpoint)"
-                        color="primary"
-                      >
-                        Call
-                      </button>
-                    </ng-template>
-                  </mat-tab>
-                </mat-tab-group>
-              </mat-expansion-panel>
-            </div>
-            <br />
-          </div>
-        </ng-container>
+        <app-endpoint-list
+          [services]="services"
+          [endpointQuery]="endpointQuery"
+          [selectedVersion]="selectedVersion"
+        ></app-endpoint-list>
       </mat-tab>
       <mat-tab label="Logs">
-        <pre>
-            <div *ngFor="let log of logs">{{ log.message }}</div></pre>
+        <app-logs [logs]="logs"></app-logs>
       </mat-tab>
       <mat-tab label="Stats">
         <ng-template matTabContent>
           <br />
           <div style="text-align: center">
             <mat-checkbox class="example-margin" [(ngModel)]="refresh"
-              >Keep refreshing</mat-checkbox
+              >Refresh</mat-checkbox
             >
           </div>
           <br />
-          <div fxLayout="row wrap" fxLayoutAlign="space-between">
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
-              <canvas
-                *ngIf="requestRates.data.length > 0"
-                baseChart
-                [colors]="requestRates.chartColors"
-                [datasets]="requestRates.data"
-                [options]="requestRates.options"
-                [chartType]="requestRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
-              <canvas
-                *ngIf="errorRates.data.length > 0"
-                baseChart
-                [colors]="errorRates.chartColors"
-                [datasets]="errorRates.data"
-                [options]="errorRates.options"
-                [chartType]="errorRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
-              <canvas
-                *ngIf="memoryRates.data.length > 0"
-                baseChart
-                [colors]="memoryRates.chartColors"
-                [datasets]="memoryRates.data"
-                [options]="memoryRates.options"
-                [chartType]="memoryRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
-              <canvas
-                *ngIf="concurrencyRates.data.length > 0"
-                baseChart
-                [colors]="concurrencyRates.chartColors"
-                [datasets]="concurrencyRates.data"
-                [options]="concurrencyRates.options"
-                [chartType]="concurrencyRates.lineChartType"
-              ></canvas>
-            </div>
-            <div fxFlex="48%" style="margin-bottom: 2em; height:300px;">
-              <canvas
-                *ngIf="gcRates.data.length > 0"
-                baseChart
-                [colors]="gcRates.chartColors"
-                [datasets]="gcRates.data"
-                [options]="gcRates.options"
-                [chartType]="gcRates.lineChartType"
-              ></canvas>
-            </div>
-          </div>
+          <app-stat-charts [stats]="stats"></app-stat-charts>
         </ng-template>
       </mat-tab>
       <mat-tab label="Nodes">
         <br />
-        Nodes coming soon.
+        <ng-template matTabContent>
+          <br />
+          <app-nodes [services]="services"></app-nodes>
+        </ng-template>
       </mat-tab>
       <mat-tab label="Trace">
         <ng-template matTabContent>
           <br />
-          <div fxLayout="row">
-            <div style="width: 25%">
-              <b style="font-weight: 700;">ID</b>
-            </div>
-            <div style="width: 25%">
-              <b style="font-weight: 700;">Name</b>
-            </div>
-            <div style="width: 25%">
-              <b style="font-weight: 700;">Time</b>
-            </div>
-            <div style="width: 25%">
-              <b style="font-weight: 700;">Duration</b>
-            </div>
-          </div>
-          <ng-container *ngFor="let traceData of traceDatasPart">
-            <div fxLayout="row">
-              <div style="width: 25%">
-                <a href="#" (click)="show(traceData)"
-                  >{{ prettyId(traceData.traceId) }}
-                </a>
-              </div>
-              <div style="width: 25%">
-                {{ getEndpointName(services[0], traceData.dataTable) }}
-              </div>
-              <div style="width: 25%">
-                {{ traceData.dataTable[1][2] | date: "short" }}
-              </div>
-              <div style="width: 25%">
-                {{ traceDuration(traceData.dataTable) }}
-              </div>
-            </div>
-            <div
-              *ngIf="traceData.show"
-              style="width: 100%;"
-              [ngStyle]="{ 'height.px': traceData.divHeight }"
-            >
-              <br />Trace ID: {{ traceData.traceId }}<br />
-              <google-chart [data]="traceData"></google-chart>
-            </div>
-          </ng-container>
-          <mat-paginator
-            #paginator
-            [length]="length"
-            [pageIndex]="currentPage"
-            [pageSize]="pageSize"
-            [pageSizeOptions]="[5, 10, 25, 100]"
-            (page)="handlePage($event)"
-          >
-          </mat-paginator>
+          <app-trace-list
+            [serviceName]="services[0].name"
+            [spans]="traceSpans"
+          ></app-trace-list>
+        </ng-template>
+      </mat-tab>
+      <mat-tab label="Events">
+        <ng-template matTabContent>
+          <br />
+          <app-events-list [events]="events"></app-events-list>
         </ng-template>
       </mat-tab>
     </mat-tab-group>
