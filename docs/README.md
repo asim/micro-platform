@@ -4,7 +4,7 @@ This serves as the location for any platform documentation related to further de
 
 # Contents
 
-- [architecture](#architecture.md) - platform composition
+- [architecture](architecture.md) - platform composition
 
 ## Configuration
 
