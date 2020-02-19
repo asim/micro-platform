@@ -3,7 +3,6 @@ package infrastructure
 import (
 	"fmt"
 	"math/rand"
-	"os"
 	"testing"
 	"time"
 )
@@ -11,16 +10,21 @@ import (
 func TestTerraformModule(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	path := fmt.Sprintf("/tmp/test-module-%d", rand.Int31())
-	if err := os.MkdirAll(path, 0o777); err != nil {
-		t.Fatal(err)
-	}
-	defer os.RemoveAll(path)
 	testModule := &TerraformModule{
-		ID:   fmt.Sprintf("test-module-%d", rand.Int31()),
-		Name: "test",
-		Path: path,
+		ID:     fmt.Sprintf("test-module-%d", rand.Int31()),
+		Name:   "test",
+		Path:   path,
+		Source: "./network",
+		DryRun: true,
 	}
+	defer testModule.Finalise()
 	if err := testModule.Validate(); err != nil {
-		t.Fatal(err)
+		t.Error(err)
+	}
+	if err := testModule.Plan(); err != nil {
+		t.Error(err)
+	}
+	if err := testModule.Apply(); err != nil {
+		t.Error(err)
 	}
 }

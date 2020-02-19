@@ -5,14 +5,17 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
+	"text/template"
 
 	"github.com/pkg/errors"
 )
 
-// TerraformModule is a task that applies a terraform module
+// TerraformModule is a task that fetches and applies a terraform module
 type TerraformModule struct {
 	// ID is a persistent unique ID for the name of the stored state
 	ID string
@@ -20,21 +23,76 @@ type TerraformModule struct {
 	Name string
 	// Path is the path to the module. It's set to working directory for terraform
 	Path string
-	// Source is a terraform module source.
-	// See https://www.terraform.io/docs/modules/sources.html
+	// Source is a net.URL to the module
 	Source string
 	// Any environment variables to pass to terraform
 	Env map[string]string
 	// Any terraform variables
 	Variables map[string]string
+	// Dry-run
+	DryRun bool
 }
 
-// Validate Runs terraform init and terraform plan
+// Validate attempts to fetch terraform code then runs terraform init and terraform validate
 func (t *TerraformModule) Validate() error {
+	if err := os.MkdirAll(t.Path, 0o777); err != nil {
+		return err
+	}
+
+	u, err := url.Parse(t.Source)
+	if err != nil {
+		return err
+	}
+	switch u.Scheme {
+	case "http":
+		fallthrough
+	case "https":
+		return errors.New("TODO: Download and extract " + u.String() + " to " + t.Path)
+	case "git":
+		return errors.New("TODO: Clone " + u.String() + " to " + t.Path)
+	default:
+		if len(u.Scheme) == 0 {
+			fmt.Fprintf(os.Stderr, "[%s] No source scheme provided, assuming path to directory\n", t.Name)
+			if _, err := os.Stat(u.Path); err != nil {
+				return err
+			}
+			if err := filepath.Walk(u.Path, t.filecopy); err != nil {
+				return errors.Wrap(err, "filepath.Walk failed")
+			}
+		} else {
+			return errors.New("Module " + t.Name + " Scheme " + u.Scheme + " not supported")
+		}
+	}
+
+	// Set up remote state
+	if err := t.generateBackendConfig(); err != nil {
+		return err
+	}
+
+	// Initialise terraform and validate the syntax is correct
 	if err := t.execTerraform(context.Background(), "init"); err != nil {
 		return err
 	}
+	return t.execTerraform(context.Background(), "validate")
+}
+
+// Plan runs terraform plan
+func (t *TerraformModule) Plan() error {
 	return t.execTerraform(context.Background(), "plan")
+}
+
+// Apply runs terraform apply
+func (t *TerraformModule) Apply() error {
+	if t.DryRun {
+		_, err := fmt.Fprintf(os.Stderr, "[%s] Dry run enabled, skipping apply\n", t.Name)
+		return err
+	}
+	return t.execTerraform(context.Background(), "apply", "-auto-approve")
+}
+
+// Finalise removes the directory
+func (t *TerraformModule) Finalise() error {
+	return os.RemoveAll(t.Path)
 }
 
 func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) error {
@@ -57,6 +115,14 @@ func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) err
 		return errors.Wrap(err, "StderrPipe failed")
 	}
 
+	// Wait so we don't truncate output from the underlying terraform binary
+	ioWait := make(chan struct{})
+	defer func() {
+		// wait for the buffered readers/writers to finish
+		<-ioWait
+		<-ioWait
+	}()
+
 	for _, ioPair := range []struct {
 		in  io.ReadCloser
 		out *os.File
@@ -64,15 +130,15 @@ func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) err
 		{in: stdout, out: os.Stdout},
 		{in: stderr, out: os.Stderr},
 	} {
-		go func(name string, in io.ReadCloser, out *os.File) {
+		go func(name string, in io.ReadCloser, out *os.File, done chan<- struct{}) {
 			r := bufio.NewReader(in)
 			defer in.Close()
+			defer func() { done <- struct{}{} }()
 			for {
 				s, err := r.ReadString('\n')
-				s = strings.TrimSpace(s)
 				if err == nil || err == io.EOF {
-					if len(s) != 0 {
-						fmt.Fprintf(out, "[%s] %s\n", name, s)
+					if len(strings.TrimSpace(s)) != 0 {
+						fmt.Fprintf(out, "[%s] %s", name, s)
 					}
 					if err == io.EOF {
 						return
@@ -82,7 +148,7 @@ func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) err
 					return
 				}
 			}
-		}(t.Name, ioPair.in, ioPair.out)
+		}(t.Name, ioPair.in, ioPair.out, ioWait)
 	}
 	if err := tf.Start(); err != nil {
 		return errors.Wrap(err, "Couldn't execute terraform")
@@ -90,3 +156,74 @@ func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) err
 
 	return tf.Wait()
 }
+
+func (t *TerraformModule) filecopy(path string, fi os.FileInfo, err error) error {
+	if strings.HasPrefix(path, "./") {
+		// skip root directory
+	} else if fi.IsDir() {
+		if err := os.MkdirAll(filepath.Join(t.Path, t.cleanPath(path)), fi.Mode()); err != nil {
+			return err
+		}
+	} else if fi.Mode().IsRegular() {
+		src, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer src.Close()
+		dest, err := os.OpenFile(filepath.Join(t.Path, t.cleanPath(path)), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, fi.Mode())
+		if err != nil {
+			return err
+		}
+		if _, err := io.Copy(dest, src); err != nil {
+			return err
+		}
+		// Explicitly check dest.Close(), as the OS can sometimes error on closing
+		// a writable file (eg EBADF, EINTR, EIO) and defer() would swallow it
+		if err := dest.Close(); err != nil {
+			return err
+		}
+	} else {
+		fmt.Fprintf(os.Stderr, "[%s] Encountered non regular file or directory: %s\n", t.Name, path)
+	}
+	return nil
+}
+
+func (t *TerraformModule) cleanPath(in string) string {
+	prefix := strings.TrimPrefix(t.Source, "./")
+	return strings.TrimPrefix(in, prefix+"/")
+}
+
+func (t *TerraformModule) generateBackendConfig() error {
+	backend := template.Must(template.New("tfBackend").Parse(tfS3BackendTemplate))
+	f, err := os.OpenFile(filepath.Join(t.Path, "backend-config.tf"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
+	}
+	if err := backend.Execute(f, struct {
+		Key    string
+		Region string
+	}{
+		Key: t.ID,
+		Region: func() string {
+			if r := os.Getenv("AWS_REGION"); len(r) != 0 {
+				return r
+			}
+			return "eu-west-2"
+		}(),
+	}); err != nil {
+		f.Close()
+		return err
+	}
+
+	return f.Close()
+}
+
+const tfS3BackendTemplate = `terraform {
+  backend "s3" {
+    bucket         = "micro-platform-terraform-state"
+    dynamodb_table = "micro-platform-terraform-lock"
+    key            = "{{.Key}}"
+    region         = "{{.Region}}"
+  }
+}
+`
