@@ -13,18 +13,19 @@ import { Router } from "@angular/router";
 export class NewServiceComponent implements OnInit {
   serviceName = "";
   code: string = "";
+  runCode: string = "";
   intervalId: any;
   events: types.Event[] = [];
   services: types.Service[] = [];
   step = 0;
   stepLabels = [
     "We are waiting for you to push your service...",
-    "Found your service on GitHub. Deploying now...",
+    "Found your service on GitHub. Waiting for build to start...",
+    "Build is in progress...",
+    "Build finished. Waiting for you to start your service",
     "Ready to roll! Redirecting you to your service page..."
   ];
-  isOnGithub = false;
-  isInRegistry = false;
-  progressPercentage = 33;
+  progressPercentage = 0;
 
   constructor(
     private us: UserService,
@@ -34,6 +35,7 @@ export class NewServiceComponent implements OnInit {
 
   ngOnInit() {
     this.newCode();
+    this.newRunCode();
     this.intervalId = setInterval(() => {
       this.ses.events(this.serviceName).then(events => {
         this.events = events;
@@ -47,27 +49,39 @@ export class NewServiceComponent implements OnInit {
   }
 
   checkEvents() {
-    this.isOnGithub =
-      this.events.filter(e => {
-        return e.service.name == this.serviceName;
-      }).length > 0;
-    if (this.isOnGithub && this.step < 1) {
-      this.step = 1;
-      this.progressPercentage = 66;
-    }
+    this.events.forEach(e => {
+      if (e.service.name != this.serviceName) {
+        return;
+      }
+      // source updated
+      if (e.type == 4 && this.step < 1) {
+        this.step = 1;
+        this.progressPercentage = 25;
+      }
+      // build started
+      if (e.type == 5 && this.step < 2) {
+        this.step = 2;
+        this.progressPercentage = 50;
+      }
+      // build finished
+      if (e.type == 6 && this.step < 3) {
+        this.step = 3;
+        this.progressPercentage = 75;
+      }
+    });
   }
 
   checkServices() {
-    this.isInRegistry =
+    const inRegistry =
       this.services.filter(e => {
         return e.name == "go.micro.srv." + this.serviceName;
       }).length > 0;
-    if (this.isInRegistry && this.step < 2) {
-      this.step = 2;
+    if (inRegistry && this.step < 4) {
+      this.step = 4;
       this.progressPercentage = 100;
       setTimeout(() => {
         this.router.navigate(["/service/" + this.serviceName]);
-      }, 2000);
+      }, 3000);
     }
   }
 
@@ -103,5 +117,9 @@ git push
 
 micro run --platform ` +
       this.serviceName;
+  }
+
+  newRunCode() {
+    this.runCode = `micro run --platform ` + this.serviceName 
   }
 }

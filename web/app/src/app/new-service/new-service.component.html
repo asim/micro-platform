@@ -1,5 +1,8 @@
 <div style="margin: auto;">
-  <mat-card style="margin-bottom: 0; padding-bottom: 0; margin-top: 0em; padding-top: 0em;" class="mat-card-flat">
+  <mat-card
+    style="margin-bottom: 0; padding-bottom: 0; margin-top: 0em; padding-top: 0em;"
+    class="mat-card-flat"
+  >
     <mat-card-title>
       <a routerLink="/services">services</a> &gt; go.micro.srv.
 
@@ -7,6 +10,7 @@
         <input
           matInputAutofocus
           matInput
+          [attr.disabled]="step > 0 ? 'disabled' : null"
           [(ngModel)]="serviceName"
           (ngModelChange)="newCode()"
         />
@@ -17,13 +21,18 @@
     <mat-card-title>
       New service
     </mat-card-title>
-    <mat-card-subtitle>
+    <mat-card-subtitle *ngIf="step == 0">
       <a routerLink="/settings/token">After logging in</a>, copypaste the
       following commands into your terminal:
     </mat-card-subtitle>
     <pre
+      *ngIf="step == 0"
       style="margin-top: 0.5em;"
     ><code #inputTarget [highlight]="code" [languages]="languages" [lineNumbers]="false"></code></pre>
+    <pre
+      *ngIf="step == 1"
+      style="margin-top: 0.5em;"
+    ><code #inputTarget [highlight]="runCode" [languages]="languages" [lineNumbers]="false"></code></pre>
     <br /><br />
     {{ this.stepLabels[this.step] }}<br /><br />
     <mat-progress-bar

@@ -19,3 +19,7 @@
     </div>
   </mat-card-title>
 </mat-card>
+
+<div *ngIf="!events || events.length == 0">
+  No events.
+</div>

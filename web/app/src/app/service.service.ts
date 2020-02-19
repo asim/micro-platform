@@ -100,13 +100,13 @@ export class ServiceService {
   }
 
   events(service?: string): Promise<types.Event[]> {
-    const qObj = {} as any;
-    if (service) {
-      qObj.service = service;
-    }
+
+    const serviceQuery = service ? "?service=" + service : '';
     return new Promise<types.Event[]>((resolve, reject) => {
       return this.http
-        .post<types.Event[]>(environment.backendUrl + "/v1/events", qObj)
+        .get<types.Event[]>(
+          environment.backendUrl + "/v1/events" + serviceQuery
+        )
         .toPromise()
         .then(events => {
           resolve(_.orderBy(events, e => e.timestamp, ["desc"]));
