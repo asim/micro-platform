@@ -10,7 +10,7 @@
         <input
           matInputAutofocus
           matInput
-          [attr.disabled]="step > 0 ? 'disabled' : null"
+          [disabled]="step > 0"
           [(ngModel)]="serviceName"
           (ngModelChange)="newCode()"
         />
@@ -25,15 +25,18 @@
       <a routerLink="/settings/token">After logging in</a>, copypaste the
       following commands into your terminal:
     </mat-card-subtitle>
+    <mat-card-subtitle *ngIf="step == 3">
+      Start your service with the following command:
+    </mat-card-subtitle>
     <pre
       *ngIf="step == 0"
       style="margin-top: 0.5em;"
     ><code #inputTarget [highlight]="code" [languages]="languages" [lineNumbers]="false"></code></pre>
     <pre
-      *ngIf="step == 1"
+      *ngIf="step == 3"
       style="margin-top: 0.5em;"
     ><code #inputTarget [highlight]="runCode" [languages]="languages" [lineNumbers]="false"></code></pre>
-    <br /><br />
+    <br />
     {{ this.stepLabels[this.step] }}<br /><br />
     <mat-progress-bar
       mode="determinate"

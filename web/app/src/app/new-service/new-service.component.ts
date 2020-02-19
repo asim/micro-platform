@@ -11,21 +11,21 @@ import { Router } from "@angular/router";
   encapsulation: ViewEncapsulation.None
 })
 export class NewServiceComponent implements OnInit {
-  serviceName = "";
+  serviceName = "asdasd";
   code: string = "";
   runCode: string = "";
   intervalId: any;
   events: types.Event[] = [];
   services: types.Service[] = [];
   step = 0;
+  progressPercentage = 0;
   stepLabels = [
     "We are waiting for you to push your service...",
-    "Found your service on GitHub. Waiting for build to start...",
-    "Build is in progress...",
-    "Build finished. Waiting for you to start your service",
+    "Found your service on GitHub. Waiting for the build to start...",
+    "Build is in progress. This might take a few minutes...",
+    "Build finished. Waiting for you to start your service...",
     "Ready to roll! Redirecting you to your service page..."
   ];
-  progressPercentage = 0;
 
   constructor(
     private us: UserService,
@@ -113,13 +113,10 @@ git add .
 git commit -m "Initializing ` +
       this.serviceName +
       `"
-git push
-
-micro run --platform ` +
-      this.serviceName;
+git push`;
   }
 
   newRunCode() {
-    this.runCode = `micro run --platform ` + this.serviceName 
+    this.runCode = `micro run --platform ` + this.serviceName;
   }
 }
