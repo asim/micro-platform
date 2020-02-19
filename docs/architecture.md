@@ -30,6 +30,29 @@ The breakdown is as follows:
 - Micro - Runtime for services - Open source Apache 2.0 licensed
 - Go Micro - Framework for development - Open source Apache 2.0 licensed
 
+### Diagram
+
+The interaction between these layers is clearly delineated. Every layer builds on the next with only 
+one way interaction. Platform => Runtime => Framework.
+
 <img src="images/architecture.png" />
 
+### Framework
+
+The framework is geared towards developers writing services and primarily focused on Go development. It provides 
+abstractions for the underlying infrastructure and is Apache 2.0 licensed as a completely open pluggable standalone 
+framework.
+
+### Runtime
+
+The micro runtime builds on the framework to provide service level abstractions for each concern. It provides a 
+runtime agnostic layer thats gRPC based so that we can build on it. It's effectively a programmable foundation. 
+By using the framework it becomes pluggable and agnostic of infrastructure. The framework should not reference 
+the runtime.
+
+## Platform
+
+The platform builds on the runtime. It's a fully managed solution that provides automation to bootstrap the runtime 
+and run it across muliple cloud providers and regions globally. Where the runtime focuses on one addressable 
+environment, the platform extends into multiple independent environments and namespaces that can be managed in one place.
 
