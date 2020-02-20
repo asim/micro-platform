@@ -18,9 +18,9 @@ The features which will be included in the platform
 - **Alerting** - Event notification and alerting via email/sms/slack
 - **Billing** - Metered billing of services used
 - **Dashboard** - A full UX experience via a web dashboard
-- **Multi-Cloud** - Ability to manage and deploy services across multiple clouds and regions
 - **GitOps** - Source to Running via GitHub actions
 - **K8s Native** - Built to run on Kubernetes
+- **Multi-Cloud** - Ability to manage and deploy services across multiple clouds and regions
 - More soon...
 
 ## Usage

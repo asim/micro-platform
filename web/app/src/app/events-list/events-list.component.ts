@@ -26,6 +26,7 @@ const eventTypesNice = {
 })
 export class EventsListComponent implements OnInit {
   @Input() events: types.Event[];
+  query: string = "";
 
   constructor() {}
 

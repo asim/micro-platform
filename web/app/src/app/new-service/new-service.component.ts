@@ -11,12 +11,14 @@ import { Router } from "@angular/router";
   encapsulation: ViewEncapsulation.None
 })
 export class NewServiceComponent implements OnInit {
-  serviceName = "asdasd";
+  serviceName = "";
   code: string = "";
   runCode: string = "";
   intervalId: any;
+  lastKeypress = new Date();
   events: types.Event[] = [];
   services: types.Service[] = [];
+  lastInput;
   step = 0;
   progressPercentage = 0;
   stepLabels = [
@@ -34,6 +36,7 @@ export class NewServiceComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.lastKeypress.setDate(this.lastKeypress.getDate() + 14);
     this.newCode();
     this.newRunCode();
     this.intervalId = setInterval(() => {
@@ -48,7 +51,17 @@ export class NewServiceComponent implements OnInit {
     }, 3000);
   }
 
+  keyPress(event: any) {
+    this.lastKeypress = new Date();
+  }
+
   checkEvents() {
+    if (
+      !this.serviceName ||
+      new Date().getTime() - this.lastKeypress.getTime() < 3000
+    ) {
+      return;
+    }
     this.events.forEach(e => {
       if (e.service.name != this.serviceName) {
         return;
@@ -72,6 +85,12 @@ export class NewServiceComponent implements OnInit {
   }
 
   checkServices() {
+    if (
+      !this.serviceName ||
+      new Date().getTime() - this.lastKeypress.getTime() < 2000
+    ) {
+      return;
+    }
     const inRegistry =
       this.services.filter(e => {
         return e.name == "go.micro.srv." + this.serviceName;
@@ -91,12 +110,17 @@ export class NewServiceComponent implements OnInit {
     }
   }
 
+  regen() {
+    this.newCode();
+    this.newRunCode();
+  }
+
   languages = ["bash"];
 
   newCode() {
     this.code =
       `# Don't forget to log in here: https://micro.mu/platform/settings/tokens
-git clone git@github.com:micro/services.git
+git clone https://github.com/micro/services.git
 
 cd services
 micro new ` +
