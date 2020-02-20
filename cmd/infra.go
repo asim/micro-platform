@@ -15,8 +15,8 @@ var (
 var infraCmd = &cobra.Command{
 	Use:   "infra",
 	Short: "Manage the platform's infrastructure'",
-	Long: `Manage the platform's infrastructure. Based on a configuration file
-stuff happens.`,
+	Long: `Manage the platform's infrastructure. Based on a configuration file,
+a complete platform can be created across multiple cloud providers`,
 }
 
 func init() {

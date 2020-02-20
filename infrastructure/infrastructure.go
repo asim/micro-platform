@@ -45,8 +45,8 @@ func (p *Platform) Steps() ([]Step, error) {
 	// 2: Set up KV namespace
 	steps = append(steps, Step{
 		&TerraformModule{
-			ID:     p.Name + "-kv",
-			Name:   p.Name + "-kv",
+			ID:     p.Name + "-global-kv",
+			Name:   p.Name + "-global-kv",
 			Source: "./infrastructure/kv/" + p.Kv,
 			Path:   fmt.Sprintf("/tmp/%s-%d", p.Name+"-kv", dirSuffix),
 		},
@@ -64,6 +64,21 @@ func (p *Platform) Steps() ([]Step, error) {
 		})
 
 		// 2.2 Create shared resources
+		vars := make(map[string]string)
+		if r.Provider == "aws" {
+			vars["in_aws"] = "true"
+		} else {
+			vars["in_aws"] = "false"
+		}
+		steps = append(steps, Step{
+			&TerraformModule{
+				ID:        p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
+				Name:      p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
+				Source:    "./infrastructure/resource",
+				Path:      fmt.Sprintf("/tmp/%s-%s-%s-resource-%d", p.Name, r.Region, r.Provider, dirSuffix),
+				Variables: vars,
+			},
+		})
 	}
 
 	return steps, nil

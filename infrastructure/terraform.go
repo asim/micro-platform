@@ -158,8 +158,8 @@ func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) err
 }
 
 func (t *TerraformModule) filecopy(path string, fi os.FileInfo, err error) error {
-	if strings.HasPrefix(path, "./") {
-		// skip root directory
+	if strings.HasPrefix(path, "./") || strings.Contains(path, "tfstate") || strings.Contains(path, ".terraform") {
+		// skip
 	} else if fi.IsDir() {
 		if err := os.MkdirAll(filepath.Join(t.Path, t.cleanPath(path)), fi.Mode()); err != nil {
 			return err
@@ -189,8 +189,8 @@ func (t *TerraformModule) filecopy(path string, fi os.FileInfo, err error) error
 }
 
 func (t *TerraformModule) cleanPath(in string) string {
-	prefix := strings.TrimPrefix(t.Source, "./")
-	return strings.TrimPrefix(in, prefix+"/")
+	prefix := strings.TrimPrefix(t.Source, "."+string([]rune{filepath.Separator}))
+	return strings.TrimPrefix(in, prefix+string([]rune{filepath.Separator}))
 }
 
 func (t *TerraformModule) generateBackendConfig() error {

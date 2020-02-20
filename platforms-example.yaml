@@ -1,5 +1,5 @@
 platforms:
-- name: "Micro"
+- name: "micro"
   domain: "micro.mu"
   gslb: "cloudflare"
   kv: "cloudflare"
