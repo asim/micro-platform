@@ -13,6 +13,7 @@
           [disabled]="step > 0"
           [(ngModel)]="serviceName"
           (ngModelChange)="regen()"
+          (keypress)="keyPress($event)" 
         />
       </mat-form-field>
     </mat-card-title>
