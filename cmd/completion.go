@@ -21,7 +21,7 @@ source <(platform completion bash)`,
 var completionBashCmd = &cobra.Command{
 	Use:   "bash",
 	Short: "Generates bash completion",
-	Long: `Generates Bash completion
+	Long: `Generates GNU Bash completion
 
 To use, run:
 

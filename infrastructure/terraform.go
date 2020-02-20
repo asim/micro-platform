@@ -29,6 +29,8 @@ type TerraformModule struct {
 	Env map[string]string
 	// Any terraform variables
 	Variables map[string]string
+	// Any remote states to import key = state name, value = remote state ID
+	RemoteStates map[string]string
 	// Dry-run
 	DryRun bool
 }
@@ -64,10 +66,12 @@ func (t *TerraformModule) Validate() error {
 		}
 	}
 
-	// Set up remote state
+	// Set up remote state storage
 	if err := t.generateBackendConfig(); err != nil {
 		return err
 	}
+
+	// import any remote states
 
 	// Initialise terraform and validate the syntax is correct
 	if err := t.execTerraform(context.Background(), "init"); err != nil {
@@ -88,6 +92,15 @@ func (t *TerraformModule) Apply() error {
 		return err
 	}
 	return t.execTerraform(context.Background(), "apply", "-auto-approve")
+}
+
+// Destroy runs terraform apply
+func (t *TerraformModule) Destroy() error {
+	if t.DryRun {
+		_, err := fmt.Fprintf(os.Stderr, "[%s] Dry run enabled, skipping destroy\n", t.Name)
+		return err
+	}
+	return t.execTerraform(context.Background(), "destroy", "-auto-approve")
 }
 
 // Finalise removes the directory
@@ -158,7 +171,10 @@ func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) err
 }
 
 func (t *TerraformModule) filecopy(path string, fi os.FileInfo, err error) error {
-	if strings.HasPrefix(path, "./") || strings.Contains(path, "tfstate") || strings.Contains(path, ".terraform") {
+	if strings.HasPrefix(path, "./") ||
+		strings.Contains(path, "tfstate") ||
+		strings.Contains(path, ".terraform") ||
+		strings.Contains(path, ".git") {
 		// skip
 	} else if fi.IsDir() {
 		if err := os.MkdirAll(filepath.Join(t.Path, t.cleanPath(path)), fi.Mode()); err != nil {
@@ -226,4 +242,16 @@ const tfS3BackendTemplate = `terraform {
     region         = "{{.Region}}"
   }
 }
+`
+const tfS3RemoteStateTemplate = `data "terraform_remote_state" "{{.RemoteStateName}}" {
+  backend = "s3"
+
+  config = {
+    bucket         = "micro-platform-terraform-state"
+    dynamodb_table = "micro-platform-terraform-lock"
+    key            = "{{.Key}}"
+    region         = "{{.Region}}"
+  }
+}
+
 `

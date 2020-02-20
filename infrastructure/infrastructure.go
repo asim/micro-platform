@@ -4,6 +4,7 @@ package infrastructure
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type Task interface {
 	Plan() error
 	Apply() error
 	Finalise() error
+	Destroy() error
 }
 
 // Step is a list of parallisable tasks
@@ -40,7 +42,7 @@ func (p *Platform) Steps() ([]Step, error) {
 	dirSuffix := rand.Int31()
 	var steps []Step
 	// 1: Ensure Remote state is available
-	steps = append(steps, Step{&Noop{ID: p.Name + "-Check-Remote-State", Name: p.Name + "-Check-Remote-State"}})
+	steps = append(steps, Step{&Noop{ID: p.Name + "-check-remote-state", Name: p.Name + "-Check-Remote-State"}})
 
 	// 2: Set up KV namespace
 	steps = append(steps, Step{
@@ -63,13 +65,29 @@ func (p *Platform) Steps() ([]Step, error) {
 			},
 		})
 
-		// 2.2 Create shared resources
+		// 2.2 Grab Kubernetes config from the configured cluster
 		vars := make(map[string]string)
+		vars["kubernetes"] = r.Provider
+		vars["args"] = fmt.Sprintf(`["%s", "%s"]`, p.Name+"-"+r.Region+"-"+r.Provider+"-k8s", "eu-west-2")
+		steps = append(steps, Step{
+			&TerraformModule{
+				ID:        p.Name + "-" + r.Region + "-" + r.Provider + "-kubeconfig",
+				Name:      p.Name + "-" + r.Region + "-" + r.Provider + "-kubeconfig",
+				Source:    "./infrastructure/kubernetes/kubeconfig",
+				Path:      fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d", p.Name, r.Region, r.Provider, dirSuffix),
+				Variables: vars,
+			},
+		})
+
+		// 2.3 Create shared resources
+		vars = make(map[string]string)
+		env := make(map[string]string)
 		if r.Provider == "aws" {
 			vars["in_aws"] = "true"
 		} else {
 			vars["in_aws"] = "false"
 		}
+		env["KUBECONFIG"] = fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d/kubeconfig", p.Name, r.Region, r.Provider, dirSuffix)
 		steps = append(steps, Step{
 			&TerraformModule{
 				ID:        p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
@@ -77,6 +95,7 @@ func (p *Platform) Steps() ([]Step, error) {
 				Source:    "./infrastructure/resource",
 				Path:      fmt.Sprintf("/tmp/%s-%s-%s-resource-%d", p.Name, r.Region, r.Provider, dirSuffix),
 				Variables: vars,
+				Env:       env,
 			},
 		})
 	}
@@ -92,9 +111,6 @@ func ExecutePlan(steps []Step) error {
 			if err := t.Validate(); err != nil {
 				return err
 			}
-			if err := t.Plan(); err != nil {
-				return err
-			}
 		}
 	}
 	return nil
@@ -108,11 +124,57 @@ func ExecuteApply(steps []Step) error {
 			if err := t.Validate(); err != nil {
 				return err
 			}
-			if err := t.Plan(); err != nil {
-				return err
-			}
 			if err := t.Apply(); err != nil {
 				return err
+			}
+		}
+	}
+	return nil
+}
+
+// ExecuteDestroy destroys steps
+func ExecuteDestroy(steps []Step) error {
+	// Find any kubeconfig steps; we need them to destroy the resources
+	for _, s := range steps {
+		for _, task := range s {
+			switch t := task.(type) {
+			case *TerraformModule:
+				if strings.Contains(t.Source, "kubeconfig") {
+					defer t.Finalise()
+					if err := t.Validate(); err != nil {
+						return err
+					}
+					if err := t.Apply(); err != nil {
+						return err
+					}
+					t.Variables["kubernetes"] = "none"
+					defer t.Destroy()
+				}
+			}
+		}
+	}
+	for i := len(steps) - 1; i >= 0; i-- {
+		for _, task := range steps[i] {
+			switch t := task.(type) {
+			case *TerraformModule:
+				// Skip any kubeconfig steps
+				if !strings.Contains(t.Source, "kubeconfig") {
+					defer t.Finalise()
+					if err := t.Validate(); err != nil {
+						return err
+					}
+					if err := t.Destroy(); err != nil {
+						return err
+					}
+				}
+			default:
+				defer t.Finalise()
+				if err := t.Validate(); err != nil {
+					return err
+				}
+				if err := t.Destroy(); err != nil {
+					return err
+				}
 			}
 		}
 	}

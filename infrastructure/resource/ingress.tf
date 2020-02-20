@@ -106,7 +106,8 @@ resource "kubernetes_role" "nginx_ingress" {
       "pods",
       "secrets",
       "namespaces",
-      "endpoints"
+      "endpoints",
+      "secrets"
     ]
     verbs = ["get"]
   }
@@ -154,6 +155,7 @@ resource "kubernetes_cluster_role_binding" "nginx_ingress" {
   subject {
     kind = "ServiceAccount"
     name = kubernetes_service_account.nginx_ingress.metadata.0.name
+    namespace = kubernetes_namespace.resource.id
   }
 }
 
@@ -173,6 +175,7 @@ resource "kubernetes_deployment" "nginx_ingress" {
         labels = local.ingress_nginx_labels
       }
       spec {
+        automount_service_account_token = true
         termination_grace_period_seconds = 300
         service_account_name             = kubernetes_service_account.nginx_ingress.metadata.0.name
         container {
@@ -257,7 +260,6 @@ resource "kubernetes_deployment" "nginx_ingress" {
 }
 
 resource "kubernetes_service" "nginx_ingress" {
-  count = var.in_aws ? 1 : 0
   metadata {
     name      = "ingress-nginx"
     namespace = kubernetes_namespace.resource.id
@@ -288,5 +290,8 @@ resource "kubernetes_service" "nginx_ingress" {
       target_port = "https"
       protocol    = "TCP"
     }
+  }
+  lifecycle {
+    ignore_changes = [metadata.0.annotations]
   }
 }

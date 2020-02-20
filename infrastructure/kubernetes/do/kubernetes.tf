@@ -42,7 +42,12 @@ resource "digitalocean_kubernetes_cluster" "k8s_cluster" {
   }
 }
 
+output "cluster_name" {
+  value = digitalocean_kubernetes_cluster.k8s_cluster.name
+}
+
 # Output the Raw Kube config for later use
 output "kubeconfig" {
-  value = digitalocean_kubernetes_cluster.k8s_cluster.kube_config.0.raw_config
+  value     = digitalocean_kubernetes_cluster.k8s_cluster.kube_config.0.raw_config
+  sensitive = true
 }

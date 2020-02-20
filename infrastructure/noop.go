@@ -34,3 +34,9 @@ func (n *Noop) Finalise() error {
 	_, err := fmt.Fprintf(os.Stderr, "[%s] Finalising (no-op)\n", n.Name)
 	return err
 }
+
+// Destroy prints Destroying
+func (n *Noop) Destroy() error {
+	_, err := fmt.Fprintf(os.Stderr, "[%s] Destroying (no-op)\n", n.Name)
+	return err
+}
