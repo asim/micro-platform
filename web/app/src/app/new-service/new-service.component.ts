@@ -11,7 +11,7 @@ import { Router } from "@angular/router";
   encapsulation: ViewEncapsulation.None
 })
 export class NewServiceComponent implements OnInit {
-  serviceName = "asdasd";
+  serviceName = "asadasdasd";
   code: string = "";
   runCode: string = "";
   intervalId: any;
@@ -89,6 +89,11 @@ export class NewServiceComponent implements OnInit {
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
+  }
+
+  regen() {
+    this.newCode()
+    this.newRunCode()
   }
 
   languages = ["bash"];
