@@ -101,7 +101,7 @@ export class NewServiceComponent implements OnInit {
   newCode() {
     this.code =
       `# Don't forget to log in here: https://micro.mu/platform/settings/tokens
-git clone git@github.com:micro/services.git
+git clone https://github.com/micro/services.git
 
 cd services
 micro new ` +
