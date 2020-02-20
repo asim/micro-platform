@@ -8,6 +8,7 @@ import * as types from "../types";
   styleUrls: ["./events.component.css"]
 })
 export class EventsComponent implements OnInit {
+  query: string = "";
   events: types.Event[] = [];
 
   constructor(private ses: ServiceService) {}
