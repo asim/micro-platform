@@ -267,7 +267,7 @@ export class StatChartsComponent implements OnInit {
   memoryRates = this.options("Memory Usage", "memory usage (MB)");
   requestRates = this.options("Requests", "requests/second");
   errorRates = this.options("Errors", "errors/second");
-  concurrencyRates = this.options("Go Routines", "goroutines");
+  concurrencyRates = this.options("Goroutines", "goroutines");
   gcRates = this.options(
     "Garbage Collection",
     "garbage collection (nanoseconds/seconds)"
