@@ -20,7 +20,7 @@ export class NewServiceComponent implements OnInit {
   events: types.Event[] = [];
   services: types.Service[] = [];
   lastInput;
-  step = 3;
+  step = 0;
   progressPercentage = 0;
   stepLabels = [
     "We are waiting for you to push your service...",
