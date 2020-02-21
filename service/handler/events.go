@@ -21,8 +21,9 @@ func (h *Handler) ListEvents(ctx context.Context, req *pb.ListEventsRequest, rsp
 
 	// Use a prefix to scope to the resource (if one was provided)
 	var prefix string
-	if req.Service != nil {
-		prefix = fmt.Sprintf("%v.", req.Service.Name)
+	if req.Service != nil && len(req.Service.Name) > 0 {
+		comps := strings.Split(req.Service.Name, ".")
+		prefix = fmt.Sprintf("%v.", comps[len(comps)-1])
 	}
 
 	// Filter and decode the records
