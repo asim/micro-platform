@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"strings"
 	"time"
 
@@ -164,11 +165,12 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 	// generate an event per service which changed
 	for service, dir := range services {
 		// github.com/micro/services/helloworld
-		source := strings.TrimPrefix(ev.Url, "https://") + "/" + dir
+		source := path.Join(strings.TrimPrefix(ev.Url, "https://"), dir)
 
 		if _, err := h.platform.CreateEvent(ctx, &platform.CreateEventRequest{
 			Event: &platform.Event{
 				Type: event,
+				Timestamp: time.Now().Unix(),
 				Service: &platform.Service{
 					Name:    service,
 					Version: version,
@@ -190,9 +192,9 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 
 type event struct {
 	// The git url of the repo
-	Url string
+	Url string `json:"url"`
 	// The commits which occurred
-	Commits []commit
+	Commits []commit `json:"commits"`
 }
 
 // list of changes files
