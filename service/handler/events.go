@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/micro/go-micro/v2/errors"
@@ -37,6 +38,9 @@ func (h *Handler) ListEvents(ctx context.Context, req *pb.ListEventsRequest, rsp
 		}
 		rsp.Events = append(rsp.Events, e)
 	}
+
+	// sort the events
+	sort.Slice(rsp.Events, func(i, j int) bool { return rsp.Events[i].Timestamp > rsp.Events[j].Timestamp })
 
 	return nil
 }
