@@ -20,7 +20,7 @@ export class NewServiceComponent implements OnInit {
   events: types.Event[] = [];
   services: types.Service[] = [];
   lastInput;
-  step = 0;
+  step = 3;
   progressPercentage = 0;
   stepLabels = [
     "We are waiting for you to push your service...",
@@ -101,7 +101,7 @@ export class NewServiceComponent implements OnInit {
       this.step = 4;
       this.progressPercentage = 100;
       setTimeout(() => {
-        this.router.navigate(["/service/" + this.serviceName]);
+        this.router.navigate(["/service/go.micro.srv." + +this.serviceName]);
       }, 3000);
     }
   }
@@ -134,7 +134,9 @@ cd ` +
 make build
 # Push to GitHub
 git config --local core.hooksPath .githooks
-git add . && git commit -m "Initialising service ` + this.serviceName + `" && git push`;
+git add . && git commit -m "Initialising service ` +
+      this.serviceName +
+      `" && git push`;
   }
 
   newRunCode() {

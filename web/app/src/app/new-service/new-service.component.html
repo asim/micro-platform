@@ -31,34 +31,40 @@
       New service
     </mat-card-title>
 
-    <div *ngIf="step == 3">
-
-      <p style="font-weight: 700;">
-        Login in terminal: micro login $token
-        <a
-          style="cursor: pointer"
-          ngxClipboard
-          cbContent="micro login {{ token }}"
-          >(copy)</a
+    <div *ngIf="step == 3" style="vertical-align: center;">
+      <p>
+        <span style="font-weight: 700">Login in terminal:</span>
+        <code
+          >micro login $token
+          <button mat-stroked-button>
+            <mat-icon
+              class="inline-icon"
+              style="cursor: pointer"
+              ngxClipboard
+              cbContent="micro login {{ token }}"
+              >file_copy</mat-icon
+            >
+          </button></code
         >
       </p>
+
       <p>
         <a routerLink="/settings/tokens">After logging in</a>, start your
         service with the following command:
       </p>
-      
     </div>
     <div *ngIf="step == 0">
       <p>
         Create your service with the following commands:
       </p>
-
     </div>
-    <pre class="code-wrapper"
+    <pre
+      class="code-wrapper"
       *ngIf="step == 0"
       style="margin-top: 0.5em;"
     ><code [highlight]="code" [languages]="languages" [lineNumbers]="false"></code><mat-icon ngxClipboard cbContent="{{code}}" class="copy-icon">file_copy</mat-icon></pre>
-    <pre class="code-wrapper"
+    <pre
+      class="code-wrapper"
       *ngIf="step == 3"
       style="margin-top: 0.5em;"
     ><code [highlight]="runCode" [languages]="languages" [lineNumbers]="false"></code><mat-icon ngxClipboard cbContent="{{runCode}}" class="copy-icon">file_copy</mat-icon></pre>
