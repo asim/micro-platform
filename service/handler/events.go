@@ -76,7 +76,7 @@ type Event struct {
 
 // Key to be used in the store
 func (e *Event) Key() string {
-	return fmt.Sprintf("%v:%v", e.Service, e.Timestamp)
+	return fmt.Sprintf("%v:%v", e.Service.Name, e.Timestamp)
 }
 
 // Bytes is the JSON encoded event
