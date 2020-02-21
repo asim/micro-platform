@@ -1,8 +1,9 @@
-name: CI
+name: Build
 
 on:
   push:
-    branches-ignore: master
+    branches:
+    - master
 
 jobs:
   devel_docker_build:

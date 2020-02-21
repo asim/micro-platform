@@ -1,4 +1,4 @@
-name: PR Sanity Check
+name: Check
 
 on:
   pull_request:
