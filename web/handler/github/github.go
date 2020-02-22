@@ -165,11 +165,11 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 	// generate an event per service which changed
 	for service, dir := range services {
 		// github.com/micro/services/helloworld
-		source := path.Join(strings.TrimPrefix(ev.Url, "https://"), dir)
+		source := path.Join(strings.TrimPrefix(ev.Repository.Url, "https://"), dir)
 
 		if _, err := h.platform.CreateEvent(ctx, &platform.CreateEventRequest{
 			Event: &platform.Event{
-				Type: event,
+				Type:      event,
 				Timestamp: time.Now().Unix(),
 				Service: &platform.Service{
 					Name:    service,
@@ -191,10 +191,14 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 }
 
 type event struct {
-	// The git url of the repo
-	Url string `json:"url"`
+	Repo repo `json:"repository"`
 	// The commits which occurred
 	Commits []commit `json:"commits"`
+}
+
+type repo struct {
+	// The git url of the repo
+	Url string `json:"url"`
 }
 
 // list of changes files
