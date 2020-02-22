@@ -64,7 +64,9 @@ func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
 	// generate a pseudo event
 	event := &event{
 		// The source repo
-		Url: "https://github.com/" + req.Header.Get("X-Github-Repo"),
+		Repo: repo{
+			Url: "https://github.com/" + req.Header.Get("X-Github-Repo"),
+		},
 		// Single commit reference
 		Commits: []commit{
 			{
@@ -165,7 +167,7 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 	// generate an event per service which changed
 	for service, dir := range services {
 		// github.com/micro/services/helloworld
-		source := path.Join(strings.TrimPrefix(ev.Repository.Url, "https://"), dir)
+		source := path.Join(strings.TrimPrefix(ev.Repo.Url, "https://"), dir)
 
 		if _, err := h.platform.CreateEvent(ctx, &platform.CreateEventRequest{
 			Event: &platform.Event{
