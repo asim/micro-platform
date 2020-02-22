@@ -6,7 +6,7 @@
     <mat-card-title>
       <a routerLink="/services">Services</a> &gt; go.micro.srv.<span
         *ngIf="step > 0"
-        >{{ serviceName }}</span
+        >{{ alias }}</span
       >
 
       <mat-form-field
@@ -17,7 +17,7 @@
           matInputAutofocus
           matInput
           [disabled]="step > 0"
-          [(ngModel)]="serviceName"
+          [(ngModel)]="alias"
           (ngModelChange)="regen()"
           (keypress)="keyPress($event)"
         />

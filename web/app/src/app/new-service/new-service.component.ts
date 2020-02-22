@@ -11,6 +11,9 @@ import { Router } from "@angular/router";
   encapsulation: ViewEncapsulation.None
 })
 export class NewServiceComponent implements OnInit {
+  alias = "";
+  namespace = "go.micro";
+  serviceType = "srv";
   serviceName = "";
   code: string = "";
   runCode: string = "";
@@ -42,7 +45,8 @@ export class NewServiceComponent implements OnInit {
     this.newCode();
     this.newRunCode();
     this.intervalId = setInterval(() => {
-      this.ses.events(this.serviceName).then(events => {
+      this.ses.events(this.alias).then(events => {
+        this.serviceName = this.namespace + '.' + this.serviceType + '.' + this.alias;
         this.events = events;
         this.checkEvents();
       });
@@ -95,13 +99,13 @@ export class NewServiceComponent implements OnInit {
     }
     const inRegistry =
       this.services.filter(e => {
-        return e.name == "go.micro.srv." + this.serviceName;
+        return e.name == this.serviceName;
       }).length > 0;
     if (inRegistry && this.step < 4) {
       this.step = 4;
       this.progressPercentage = 100;
       setTimeout(() => {
-        this.router.navigate(["/service/go.micro.srv." + +this.serviceName]);
+        this.router.navigate(["/service/"+this.serviceName]);
       }, 3000);
     }
   }
@@ -113,6 +117,7 @@ export class NewServiceComponent implements OnInit {
   }
 
   regen() {
+    this.serviceName = this.namespace + '.' + this.serviceType + '.' + this.alias;
     this.newCode();
     this.newRunCode();
   }
@@ -125,21 +130,21 @@ export class NewServiceComponent implements OnInit {
 git clone https://github.com/micro/services && cd services
 # Create new service
 micro new ` +
-      this.serviceName +
+      this.alias +
       `
 cd ` +
-      this.serviceName +
+      this.alias +
       `
 # Build the service
 make build
 # Push to GitHub
 git config --local core.hooksPath .githooks
 git add . && git commit -m "Initialising service ` +
-      this.serviceName +
+      this.alias +
       `" && git push`;
   }
 
   newRunCode() {
-    this.runCode = `micro run --platform ` + this.serviceName;
+    this.runCode = `micro run --platform ` + this.alias;
   }
 }
