@@ -7,7 +7,7 @@ import (
 	"github.com/micro/go-micro/v2/runtime"
 	"github.com/micro/go-micro/v2/server"
 	"github.com/micro/go-micro/v2/store"
-	"github.com/micro/go-micro/v2/util/log"
+	log "github.com/micro/go-micro/v2/logger"
 
 	pb "github.com/micro/platform/service/proto"
 )

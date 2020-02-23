@@ -5,7 +5,7 @@ import (
 
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/errors"
-	"github.com/micro/go-micro/v2/util/log"
+	log "github.com/micro/go-micro/v2/logger"
 
 	pb "github.com/micro/platform/api/proto"
 	platform "github.com/micro/platform/service/proto"
