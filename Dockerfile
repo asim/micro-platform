@@ -4,7 +4,7 @@ RUN git clone https://github.com/Yelp/dumb-init.git
 WORKDIR /dumb-init
 RUN make
 
-FROM micro/go-micro as builder
+FROM golang:1.13-alpine as builder
 RUN apk --no-cache add make git gcc libtool musl-dev upx
 ENV GO111MODULE=on
 COPY . /platform
