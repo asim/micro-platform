@@ -6,7 +6,7 @@ on:
     - master
 
 jobs:
-  devel_docker_build:
+  build:
      runs-on: ubuntu-latest
      steps:
        - uses: actions/checkout@v2
