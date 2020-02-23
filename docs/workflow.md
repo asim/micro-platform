@@ -8,7 +8,7 @@ The workflow is the developer experience when using the platform. This document 
 aspects of the workflow from login to new service creation to rolling updates and debugging. 
 Anything related to the user experience is the workflow.
 
-Our expectations for the flow are
+Our expectations of what the platform provides in relation to the workflow:
 
 - Global deployments
 - Auto configuration
@@ -20,12 +20,12 @@ Our expectations for the flow are
 Defining the steps in the workflow. This is the all encompassing experience when joining a 
 company and gaining access to the source code and platform.
 
-- 1. [Onboarding](#onboarding) - First invite, signup, login and access
-- 2. [New Service](#new-service) - Creating your first service
-- 3. [Pushing Updates](#pushing-updates) - Rolling updates when source code changes
-- 4. [Debugging](#debugging) - Using the UI for debugging
-- 5. [Querying](#querying) - Querying the service from anywhere
-- 6. [Failure Cases](#failure-cases) - The failures that could occur and expected behaviours
+1. [Onboarding](#onboarding) - First invite, signup, login and access
+2. [New Service](#new-service) - Creating your first service
+3. [Pushing Updates](#pushing-updates) - Rolling updates when source code changes
+4. [Debugging](#debugging) - Using the UI for debugging
+5. [Querying](#querying) - Querying the service from anywhere
+6. [Failure Cases](#failure-cases) - The failures that could occur and expected behaviours
 
 Missing components in the flow
 
