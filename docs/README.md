@@ -6,3 +6,4 @@ This serves as the location for any platform documentation related to further de
 
 - [architecture](architecture.md) - platform composition
 - [configuration](configuration.md) - platform configuration
+- [workflow](workflow.md) - the user workflow
