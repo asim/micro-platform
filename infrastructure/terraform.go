@@ -13,6 +13,7 @@ import (
 	"text/template"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 // TerraformModule is a task that fetches and applies a terraform module
@@ -216,8 +217,10 @@ func (t *TerraformModule) generateBackendConfig() error {
 		return err
 	}
 	if err := backend.Execute(f, struct {
-		Key    string
-		Region string
+		Key         string
+		Region      string
+		StateBucket string
+		LockTable   string
 	}{
 		Key: t.ID,
 		Region: func() string {
@@ -226,6 +229,8 @@ func (t *TerraformModule) generateBackendConfig() error {
 			}
 			return "eu-west-2"
 		}(),
+		StateBucket: viper.GetString("aws-s3-bucket"),
+		LockTable:   viper.GetString("aws-dynamodb-table"),
 	}); err != nil {
 		f.Close()
 		return err
@@ -236,8 +241,8 @@ func (t *TerraformModule) generateBackendConfig() error {
 
 const tfS3BackendTemplate = `terraform {
   backend "s3" {
-    bucket         = "micro-platform-terraform-state"
-    dynamodb_table = "micro-platform-terraform-lock"
+    bucket         = "{{.StateBucket}}"
+    dynamodb_table = "{{.LockTable}}"
     key            = "{{.Key}}"
     region         = "{{.Region}}"
   }
@@ -247,8 +252,8 @@ const tfS3RemoteStateTemplate = `data "terraform_remote_state" "{{.RemoteStateNa
   backend = "s3"
 
   config = {
-    bucket         = "micro-platform-terraform-state"
-    dynamodb_table = "micro-platform-terraform-lock"
+    bucket         = "{{.StateBucket}}"
+    dynamodb_table = "{{.LockTable}}"
     key            = "{{.Key}}"
     region         = "{{.Region}}"
   }

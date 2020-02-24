@@ -3,14 +3,11 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/micro/platform/infrastructure"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-)
-
-var (
-	infraConfigFile string
 )
 
 // infraCmd represents the infrastructure command
@@ -20,6 +17,11 @@ var infraCmd = &cobra.Command{
 	Long: `Manage the platform's infrastructure. Based on a configuration file,
 a complete platform can be created across multiple cloud providers`,
 }
+
+// Flags for the infrastructure command
+var (
+	infraConfigFile string
+)
 
 func init() {
 	cobra.OnInitialize(infraConfig)
@@ -31,25 +33,42 @@ func init() {
 		"config-file",
 		"c",
 		"",
-		"Path to infrastructure definition file",
+		"Path to infrastructure definition file ($MICRO_CONFIG_FILE)",
 	)
-
-	infraCmd.MarkPersistentFlagRequired("config-file")
 	viper.BindPFlag("config-file", infraCmd.PersistentFlags().Lookup("config-file"))
 }
 
-// initConfig reads in config file and ENV variables if set.
+// infraConfig is run before every infra command, parsing config using viper
 func infraConfig() {
-	if infraConfigFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(infraConfigFile)
+	// Defaults - can be overwritten in the config file or env variables, but undocumented atm
+	viper.SetDefault("state-store", "aws")
+	viper.SetDefault("aws-s3-bucket", "micro-platform-terraform-state")
+	viper.SetDefault("aws-dynamodb-table", "micro-platform-terraform-state")
+
+	// Handle env variables, e.g. --config-file flag can be set with MICRO_CONFIG_FILE
+	viper.SetEnvPrefix("micro")
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.AutomaticEnv()
+
+	cfgfile := viper.Get("config-file")
+	if cfg, ok := cfgfile.(string); ok {
+		if cfg == "" {
+			infraCmd.Help()
+			fmt.Fprintf(os.Stderr, "\nError: Config file is a required flag\n")
+			os.Exit(1)
+		}
+		viper.SetConfigFile(cfg)
+	} else {
+		fmt.Fprintf(os.Stderr, "\nError: Config file flag malformed\n")
 	}
 
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
+	// Read in config
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	} else {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			fmt.Fprintf(os.Stderr, "Error: Config file not found: %s\n", viper.Get("config-file"))
+		}
 	}
 }
 
@@ -124,7 +143,7 @@ If you cancel this command, data loss may occur`,
 
 func validate() []infrastructure.Platform {
 	if viper.Get("platforms") == nil || len(viper.Get("platforms").([]interface{})) == 0 {
-		fmt.Fprintf(os.Stderr, "No platforms defined in config file\n")
+		fmt.Fprintf(os.Stderr, "No platforms defined in config file %s\n", viper.Get("config-file"))
 		os.Exit(1)
 	}
 	var platforms []infrastructure.Platform

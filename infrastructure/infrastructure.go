@@ -42,7 +42,7 @@ func (p *Platform) Steps() ([]Step, error) {
 	dirSuffix := rand.Int31()
 	var steps []Step
 	// 1: Ensure Remote state is available
-	steps = append(steps, Step{&Noop{ID: p.Name + "-check-remote-state", Name: p.Name + "-Check-Remote-State"}})
+	steps = append(steps, Step{&RemoteState{ID: p.Name + "-check-remote-state", Name: p.Name + "-check-remote-state"}})
 
 	// 2: Set up KV namespace
 	steps = append(steps, Step{
