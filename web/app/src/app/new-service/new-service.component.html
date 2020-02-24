@@ -20,7 +20,7 @@
           [disabled]="step > 0"
           [(ngModel)]="alias"
           (ngModelChange)="regen()"
-          (keypress)="keyPress($event)"
+          (keyup)="keyPress($event)"
           autocomplete="off"
         />
       </mat-form-field>

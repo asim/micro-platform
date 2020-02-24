@@ -1,8 +1,10 @@
 import { Component, OnInit, ViewEncapsulation } from "@angular/core";
+import { Location } from "@angular/common";
 import { UserService } from "../user.service";
 import { ServiceService } from "../service.service";
 import * as types from "../types";
-import { Router } from "@angular/router";
+import { Router, ActivatedRoute } from "@angular/router";
+import * as _ from "lodash";
 
 @Component({
   selector: "app-new-service",
@@ -46,14 +48,21 @@ export class NewServiceComponent implements OnInit {
   constructor(
     private us: UserService,
     private ses: ServiceService,
-    private router: Router
+    private router: Router,
+    private location: Location,
+    private activeRoute: ActivatedRoute
   ) {}
 
   ngOnInit() {
+    this.activeRoute.params.subscribe(p => {
+      const id = <string>p["id"];
+      if (id) {
+        this.alias = _.last(id.split("."));
+      }
+      this.regen();
+    });
+
     this.token = this.us.token();
-    this.lastKeypress.setDate(this.lastKeypress.getDate() + 14);
-    this.newCode();
-    this.newRunCode();
     this.serviceName =
       this.namespace + "." + this.serviceType + "." + this.alias;
 
@@ -66,19 +75,20 @@ export class NewServiceComponent implements OnInit {
         this.services = services;
         this.checkServices();
       });
-    }, 3000);
+    }, 1500);
+
     this.progressPercentage = this.percenTages[this.step];
-    this.startBuildTimer();
   }
 
   keyPress(event: any) {
     this.lastKeypress = new Date();
+    this.location.replaceState("/service/new/" + this.serviceName);
   }
 
   checkEvents() {
     if (
       !this.serviceName ||
-      new Date().getTime() - this.lastKeypress.getTime() < 3000
+      new Date().getTime() - this.lastKeypress.getTime() < 1500
     ) {
       return;
     }
@@ -95,6 +105,7 @@ export class NewServiceComponent implements OnInit {
       if (e.type == 5 && this.step < 2) {
         this.step = 2;
         this.progressPercentage = this.percenTages[2];
+        this.startBuildTimer(e);
       }
       // build finished
       if (e.type == 6 && this.step < 3) {
@@ -111,34 +122,48 @@ export class NewServiceComponent implements OnInit {
   }
 
   // the timer will only kick off after step 2
-  startBuildTimer() {
-    const intervalMs = 100;
+  startBuildTimer(e: types.Event) {
+    const intervalSecs = 0.1;
+    const secRange = this.maxBuildTimer - this.minBuildTimer;
+    const secsSinceBuild =
+      (new Date().getTime() - new Date(e.timestamp * 1000).getTime()) / 1000;
+    if (secsSinceBuild > secRange) {
+      this.buildTimer = this.minBuildTimer;
+      this.progressPercentage = this.progressPercentage[3];
+      return;
+    }
+
+    const ratio = secsSinceBuild / secRange;
+    this.buildTimer -= secRange * ratio;
+    const percentageRange = this.percenTages[3] - this.percenTages[2];
+    this.progressPercentage = this.percenTages[2] + percentageRange * ratio;
+
+    const percentageStep = secRange / intervalSecs;
     this.buildTimerIntervalId = setInterval(() => {
       if (this.step !== 2) {
         return;
       }
       // the numbers below will depend heavily on the interval parameter of
       // the setInterval function
-      const secs = intervalMs / 1000;
-      if (this.buildTimer - secs <= this.minBuildTimer) {
+
+      if (this.buildTimer - intervalSecs <= this.minBuildTimer) {
         this.buildTimer = this.minBuildTimer;
         this.stopBuildTimer();
         return;
       }
-      this.buildTimer -= secs;
-      const div = (this.maxBuildTimer - this.minBuildTimer) / secs;
+      this.buildTimer -= intervalSecs;
 
       // calculating how much to add based on the difference in percentage between
       // the third and second step.
       this.progressPercentage +=
-        (this.percenTages[3] - this.percenTages[2]) / div;
-    }, intervalMs);
+        (this.percenTages[3] - this.percenTages[2]) / percentageStep;
+    }, intervalSecs * 1000);
   }
 
   checkServices() {
     if (
       !this.serviceName ||
-      new Date().getTime() - this.lastKeypress.getTime() < 2000
+      new Date().getTime() - this.lastKeypress.getTime() < 1500
     ) {
       return;
     }
