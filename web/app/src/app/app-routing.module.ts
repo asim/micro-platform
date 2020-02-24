@@ -25,6 +25,11 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: "service/new/:id",
+    component: NewServiceComponent,
+    canActivate: [AuthGuard]
+  },
+  {
     path: "service/:id",
     component: ServiceComponent,
     canActivate: [AuthGuard]

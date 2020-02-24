@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/micro/go-micro/v2/errors"
 	"github.com/micro/go-micro/v2/store"
@@ -58,6 +59,9 @@ func (h *Handler) CreateEvent(ctx context.Context, req *pb.CreateEventRequest, r
 		return errors.BadRequest("go.micro.platform", "invalid event service")
 	}
 
+	if req.Event.Timestamp == 0 {
+		req.Event.Timestamp = time.Now().Unix()
+	}
 	// Construct the event
 	event := &Event{req.Event}
 
