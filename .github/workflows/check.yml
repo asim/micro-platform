@@ -1,4 +1,4 @@
-name: PR Sanity Check
+name: Check
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-
+    name: PR Check
     runs-on: ubuntu-latest
 
     steps:

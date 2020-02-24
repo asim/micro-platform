@@ -1,11 +1,13 @@
-name: CI
+name: Docker
 
 on:
   push:
-    branches-ignore: master
+    branches:
+    - master
 
 jobs:
-  devel_docker_build:
+  build:
+     name: Docker build
      runs-on: ubuntu-latest
      steps:
        - uses: actions/checkout@v2

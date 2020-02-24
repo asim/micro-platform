@@ -49,8 +49,8 @@ export class ServiceComponent implements OnInit {
             : this.services[0].version;
       });
       this.ses.events(this.serviceName).then(events => {
-        this.events = events
-      })
+        this.events = events;
+      });
       this.loadVersionData();
     });
   }
@@ -69,7 +69,7 @@ export class ServiceComponent implements OnInit {
       this.ses.stats(this.serviceName).then(stats => {
         this.stats = stats;
       });
-    }, 5000);
+    }, 2000);
     this.tabValueChange.subscribe(index => {
       if (index !== 2 || !this.refresh) {
         return;

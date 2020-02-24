@@ -40,8 +40,8 @@
   </div>
 </ng-container>
 <ng-container *ngFor="let traceData of traceDatasPart">
-  <div class="small">
-    <div fxHide.gt-sm fxLayoutAlign="space-between" fxLayout="row">
+  <div fxHide.gt-sm class="small">
+    <div fxLayoutAlign="space-between" fxLayout="row">
       <div fxFlex="30%">
         ID
       </div>
@@ -53,7 +53,7 @@
         </b>
       </div>
     </div>
-    <div fxHide.gt-sm fxLayoutAlign="space-between" fxLayout="row">
+    <div fxLayoutAlign="space-between" fxLayout="row">
       <div fxFlex="30%">
         Name
       </div>
@@ -61,7 +61,7 @@
         {{ getEndpointName(traceData.dataTable) }}
       </div>
     </div>
-    <div fxHide.gt-sm fxLayoutAlign="space-between" fxLayout="row">
+    <div fxLayoutAlign="space-between" fxLayout="row">
       <div fxFlex="30%">
         Time
       </div>
@@ -69,7 +69,7 @@
         {{ traceData.dataTable[1][2] | date: "short" }}
       </div>
     </div>
-    <div fxHide.gt-sm fxLayoutAlign="space-between" fxLayout="row">
+    <div fxLayoutAlign="space-between" fxLayout="row">
       <div fxFlex="30%">
         Duration
       </div>

@@ -2,13 +2,12 @@ package handler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/runtime"
 	"github.com/micro/go-micro/v2/server"
 	"github.com/micro/go-micro/v2/store"
-	"github.com/micro/go-micro/v2/util/log"
+	log "github.com/micro/go-micro/v2/logger"
 
 	pb "github.com/micro/platform/service/proto"
 )
@@ -48,7 +47,6 @@ func NewHandler(srv micro.Service) *Handler {
 // the request to match the proto and then passes it off to the handler to process
 // as it would any other request, ensuring there is no duplicate logic.
 func (h *Handler) HandleEvent(ctx context.Context, event *pb.Event) error {
-	fmt.Println("MESSAGE RECIEVED")
 	req := &pb.CreateEventRequest{Event: event}
 	return h.CreateEvent(ctx, req, &pb.CreateEventResponse{})
 }

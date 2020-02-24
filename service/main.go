@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/micro/go-micro/v2"
-	"github.com/micro/go-micro/v2/util/log"
+	log "github.com/micro/go-micro/v2/logger"
 
 	"github.com/micro/platform/service/handler"
 	pb "github.com/micro/platform/service/proto"

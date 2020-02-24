@@ -29,12 +29,13 @@ message ListEventsResponse {
 
 enum EventType {
     Unknown = 0;
-    DepoymentCreated = 1;
-    DepoymentDeleted = 2;
-    DepoymentUpdated = 3;
+    ServiceCreated = 1;
+    ServiceDeleted = 2;
+    ServiceUpdated = 3;
     SourceUpdated = 4;
     BuildStarted = 5;
     BuildFinished = 6;
+    BuildFailed = 7;
 }
 
 message Event {

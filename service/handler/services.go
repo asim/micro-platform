@@ -19,7 +19,7 @@ func (h *Handler) CreateService(ctx context.Context, req *pb.CreateServiceReques
 	}
 
 	go h.Event.Publish(ctx, &pb.Event{
-		Type:    pb.EventType_DepoymentCreated,
+		Type:    pb.EventType_ServiceCreated,
 		Service: req.Service,
 	})
 
@@ -56,7 +56,7 @@ func (h *Handler) UpdateService(ctx context.Context, req *pb.UpdateServiceReques
 	}
 
 	go h.Event.Publish(ctx, &pb.Event{
-		Type:    pb.EventType_DepoymentUpdated,
+		Type:    pb.EventType_ServiceUpdated,
 		Service: req.Service,
 	})
 
@@ -70,7 +70,7 @@ func (h *Handler) DeleteService(ctx context.Context, req *pb.DeleteServiceReques
 	}
 
 	go h.Event.Publish(ctx, &pb.Event{
-		Type:    pb.EventType_DepoymentDeleted,
+		Type:    pb.EventType_ServiceDeleted,
 		Service: req.Service,
 	})
 
