@@ -19,19 +19,29 @@ export class NewServiceComponent implements OnInit {
   runCode: string = "";
   token = "";
   intervalId: any;
+  buildTimerIntervalId: any;
   lastKeypress = new Date();
   events: types.Event[] = [];
   services: types.Service[] = [];
   lastInput;
   step = 0;
+  // approximate time it will take to finisht the build
+  maxBuildTimer = 60;
+  minBuildTimer = 5;
+  buildTimer = this.maxBuildTimer;
   progressPercentage = 0;
-  stepLabels = [
-    "We are waiting for you to push your service...",
-    "Found your service on GitHub. Waiting for the build to start...",
-    "Build is in progress. This might take a few minutes...",
-    "Build finished. Waiting for you to start your service...",
-    "Ready to roll! Redirecting you to your service page..."
-  ];
+  percenTages = [0, 10, 20, 80];
+  stepLabels = (): string[] => {
+    return [
+      "We are waiting for you to push your service...",
+      "Found your service on GitHub. Waiting for the build to start...",
+      "Build is in progress. Build finishes in about " +
+        this.buildTimer.toFixed(1) +
+        " seconds...",
+      "Build finished. Waiting for you to start your service...",
+      "Ready to roll! Redirecting you to your service page..."
+    ];
+  };
 
   constructor(
     private us: UserService,
@@ -44,8 +54,9 @@ export class NewServiceComponent implements OnInit {
     this.lastKeypress.setDate(this.lastKeypress.getDate() + 14);
     this.newCode();
     this.newRunCode();
-    this.serviceName = this.namespace + '.' + this.serviceType + '.' + this.alias;
-    
+    this.serviceName =
+      this.namespace + "." + this.serviceType + "." + this.alias;
+
     this.intervalId = setInterval(() => {
       this.ses.events(this.serviceName).then(events => {
         this.events = events;
@@ -56,6 +67,8 @@ export class NewServiceComponent implements OnInit {
         this.checkServices();
       });
     }, 3000);
+    this.progressPercentage = this.percenTages[this.step];
+    this.startBuildTimer();
   }
 
   keyPress(event: any) {
@@ -76,19 +89,50 @@ export class NewServiceComponent implements OnInit {
       // source updated
       if (e.type == 4 && this.step < 1) {
         this.step = 1;
-        this.progressPercentage = 25;
+        this.progressPercentage = this.percenTages[1];
       }
       // build started
       if (e.type == 5 && this.step < 2) {
         this.step = 2;
-        this.progressPercentage = 50;
+        this.progressPercentage = this.percenTages[2];
       }
       // build finished
       if (e.type == 6 && this.step < 3) {
         this.step = 3;
-        this.progressPercentage = 75;
+        this.progressPercentage = this.percenTages[3];
       }
     });
+  }
+
+  stopBuildTimer() {
+    if (this.buildTimerIntervalId) {
+      clearInterval(this.buildTimerIntervalId);
+    }
+  }
+
+  // the timer will only kick off after step 2
+  startBuildTimer() {
+    const intervalMs = 100;
+    this.buildTimerIntervalId = setInterval(() => {
+      if (this.step !== 2) {
+        return;
+      }
+      // the numbers below will depend heavily on the interval parameter of
+      // the setInterval function
+      const secs = intervalMs / 1000;
+      if (this.buildTimer - secs <= this.minBuildTimer) {
+        this.buildTimer = this.minBuildTimer;
+        this.stopBuildTimer();
+        return;
+      }
+      this.buildTimer -= secs;
+      const div = (this.maxBuildTimer - this.minBuildTimer) / secs;
+
+      // calculating how much to add based on the difference in percentage between
+      // the third and second step.
+      this.progressPercentage +=
+        (this.percenTages[3] - this.percenTages[2]) / div;
+    }, intervalMs);
   }
 
   checkServices() {
@@ -106,7 +150,7 @@ export class NewServiceComponent implements OnInit {
       this.step = 4;
       this.progressPercentage = 100;
       setTimeout(() => {
-        this.router.navigate(["/service/"+this.serviceName]);
+        this.router.navigate(["/service/" + this.serviceName]);
       }, 3000);
     }
   }
@@ -118,7 +162,8 @@ export class NewServiceComponent implements OnInit {
   }
 
   regen() {
-    this.serviceName = this.namespace + '.' + this.serviceType + '.' + this.alias;
+    this.serviceName =
+      this.namespace + "." + this.serviceType + "." + this.alias;
     this.newCode();
     this.newRunCode();
   }

@@ -9,7 +9,8 @@
         >{{ alias }}</span
       >
 
-      <mat-form-field id="new-service-input"
+      <mat-form-field
+        id="new-service-input"
         *ngIf="step == 0"
         style="padding-top: 0em; margin-top: 0em; width: 9em;"
       >
@@ -70,7 +71,7 @@
       style="margin-top: 0.5em;"
     ><code [highlight]="runCode" [languages]="languages" [lineNumbers]="false"></code><mat-icon ngxClipboard cbContent="{{runCode}}" class="copy-icon">file_copy</mat-icon></pre>
     <br />
-    {{ this.stepLabels[this.step] }}<br /><br />
+    {{ this.stepLabels()[this.step] }}<br /><br />
     <mat-progress-bar
       mode="determinate"
       value="{{ progressPercentage }}"
