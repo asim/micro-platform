@@ -9,7 +9,7 @@
         >{{ alias }}</span
       >
 
-      <mat-form-field
+      <mat-form-field id="new-service-input"
         *ngIf="step == 0"
         style="padding-top: 0em; margin-top: 0em; width: 9em;"
       >
@@ -20,6 +20,7 @@
           [(ngModel)]="alias"
           (ngModelChange)="regen()"
           (keypress)="keyPress($event)"
+          autocomplete="off"
         />
       </mat-form-field>
     </mat-card-title>
