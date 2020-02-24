@@ -129,7 +129,7 @@ export class NewServiceComponent implements OnInit {
       (new Date().getTime() - new Date(e.timestamp * 1000).getTime()) / 1000;
     if (secsSinceBuild > secRange) {
       this.buildTimer = this.minBuildTimer;
-      this.progressPercentage = this.progressPercentage[2];
+      this.progressPercentage = this.progressPercentage[3];
       return;
     }
 
