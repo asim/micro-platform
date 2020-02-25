@@ -40,6 +40,9 @@ export class EventsListComponent implements OnInit {
   }
 
   commitUrl(e: types.Event): string {
+    if (!e.metadata) {
+      return "";
+    }
     const repo = e.metadata.get("repo");
     const commitHash = e.metadata.get("commit");
     // https://github.com/micro/services/commit/f291afc98f624c44e34e758efab89e77546b709d
@@ -47,17 +50,23 @@ export class EventsListComponent implements OnInit {
   }
 
   buildUrl(e: types.Event): string {
+    if (!e.metadata) {
+      return "";
+    }
     const repo = e.metadata.get("repo");
     const buildId = e.metadata.get("build");
     // eg. https://github.com/micro/services/runs/466859781
     return "https://" + repo + "/runs/" + buildId;
   }
 
-  hasMeta(e: types.Event) {
-    return (e.metadata && e.metadata.has("commit")) || e.metadata.has("build");
+  hasMeta(e: types.Event): boolean {
+    return e.metadata && (e.metadata.has("commit") || e.metadata.has("build"));
   }
 
   visibleMeta(e: types.Event): Map<string, string> {
+    if (!e.metadata) {
+      return new Map();
+    }
     return new Map([
       ["commit", e.metadata.get("commit")],
       ["build", e.metadata.get("build")]
