@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/micro/go-micro/logger"
+	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/web"
 	platform "github.com/micro/platform/service/proto"
 	utils "github.com/micro/platform/web/util"
