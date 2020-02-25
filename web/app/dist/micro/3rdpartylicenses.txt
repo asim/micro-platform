@@ -120,6 +120,8 @@ THE SOFTWARE.
 
 @angular/material/core
 
+@angular/material/divider
+
 @angular/material/expansion
 
 @angular/material/form-field

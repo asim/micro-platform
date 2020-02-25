@@ -30,6 +30,11 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: "service/:id/:tab",
+    component: ServiceComponent,
+    canActivate: [AuthGuard]
+  },
+  {
     path: "service/:id",
     component: ServiceComponent,
     canActivate: [AuthGuard]

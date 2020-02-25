@@ -1,9 +1,28 @@
 import { Component, OnInit, ViewEncapsulation } from "@angular/core";
 import { ServiceService } from "../service.service";
 import * as types from "../types";
+import { Location } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { Subject } from "rxjs";
 import * as _ from "lodash";
+
+const tabNamesToIndex = {
+  "": 0,
+  logs: 1,
+  stats: 2,
+  nodes: 3,
+  traces: 4,
+  events: 5
+};
+
+const tabIndexesToName = {
+  0: "",
+  1: "logs",
+  2: "stats",
+  3: "nodes",
+  4: "traces",
+  5: "events"
+};
 
 @Component({
   selector: "app-service",
@@ -32,7 +51,8 @@ export class ServiceComponent implements OnInit {
 
   constructor(
     private ses: ServiceService,
-    private activeRoute: ActivatedRoute
+    private activeRoute: ActivatedRoute,
+    private location: Location
   ) {}
 
   ngOnInit() {
@@ -52,6 +72,10 @@ export class ServiceComponent implements OnInit {
         this.events = events;
       });
       this.loadVersionData();
+      const tab = <string>p["tab"];
+      if (tab) {
+        this.selected = tabNamesToIndex[tab];
+      }
     });
   }
 
@@ -91,6 +115,9 @@ export class ServiceComponent implements OnInit {
 
   tabChange($event: number) {
     this.selected = $event;
+    this.location.replaceState(
+      "/service/" + this.serviceName + "/" + tabIndexesToName[this.selected]
+    );
     this.tabValueChange.next(this.selected);
   }
 
