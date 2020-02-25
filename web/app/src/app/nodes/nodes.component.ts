@@ -1,5 +1,6 @@
 import { Component, OnInit, Input } from "@angular/core";
 import * as types from "../types";
+import * as _ from "lodash";
 
 @Component({
   selector: "app-nodes",
@@ -8,9 +9,13 @@ import * as types from "../types";
 })
 export class NodesComponent implements OnInit {
   @Input() services: types.Service[] = [];
+  nodes: types.Node[];
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.nodes = _.flatten(this.services.map(s => s.nodes));
+    this.nodes.push(this.nodes[0]);
+  }
 
   metadata(node: types.Node) {
     let serialised = "No metadata.";
@@ -19,7 +24,6 @@ export class NodesComponent implements OnInit {
     }
     serialised = "";
     const v = JSON.parse(JSON.stringify(node.metadata));
-    console.log(v);
     for (var key in v) {
       serialised += key + ": " + node.metadata[key] + "\n";
     }

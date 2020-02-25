@@ -5,7 +5,7 @@
 </form>
 <mat-card
   class="mat-card-flat"
-  *ngFor="let event of testEvents | search: 'service.name':query"
+  *ngFor="let event of events | search: 'service.name':query"
   style="margin-bottom: 1em; background: #f5f5f5;"
 >
   <mat-card-title style="align-items: center; font-size: 1.25em;">
