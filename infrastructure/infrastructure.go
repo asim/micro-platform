@@ -81,9 +81,11 @@ func (p *Platform) Steps() ([]Step, error) {
 
 		// 2.3 Create namespaces
 		vars = make(map[string]string)
+		env := make(map[string]string)
 		vars["control_namespace"] = strings.ToLower(fmt.Sprintf("%s-control", p.Name))
 		vars["resource_namespace"] = strings.ToLower(fmt.Sprintf("%s-resource", p.Name))
 		vars["network_namespace"] = strings.ToLower(fmt.Sprintf("%s-network", p.Name))
+		env["KUBECONFIG"] = fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d/kubeconfig", p.Name, r.Region, r.Provider, dirSuffix)
 		steps = append(steps, Step{
 			&TerraformModule{
 				ID:        p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces",
@@ -91,12 +93,13 @@ func (p *Platform) Steps() ([]Step, error) {
 				Source:    "./infrastructure/kubernetes/namespaces",
 				Path:      fmt.Sprintf("/tmp/%s-%s-%s-namespaces-%d", p.Name, r.Region, r.Provider, dirSuffix),
 				Variables: vars,
+				Env:       env,
 			},
 		})
 
 		// 2.4 Create shared resources
 		vars = make(map[string]string)
-		env := make(map[string]string)
+		env = make(map[string]string)
 		remoteStates := make(map[string]string)
 
 		if r.Provider == "aws" {
@@ -105,7 +108,7 @@ func (p *Platform) Steps() ([]Step, error) {
 			vars["in_aws"] = "false"
 		}
 		env["KUBECONFIG"] = fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d/kubeconfig", p.Name, r.Region, r.Provider, dirSuffix)
-		remoteStates["resource_namespace"] = strings.ToLower(fmt.Sprintf("%s-resource", p.Name))
+		remoteStates["resource_namespace"] = p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces"
 		steps = append(steps, Step{
 			&TerraformModule{
 				ID:           p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
