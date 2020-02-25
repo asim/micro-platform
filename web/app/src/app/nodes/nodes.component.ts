@@ -13,8 +13,11 @@ export class NodesComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    this.nodes = _.flatten(this.services.map(s => s.nodes));
-    this.nodes.push(this.nodes[0]);
+    this.nodes = _.uniqBy(
+      _.flatten(this.services.map(s => s.nodes)),
+      n => n.id
+    );
+    //this.nodes.push(this.nodes[0])
   }
 
   metadata(node: types.Node) {
@@ -22,10 +25,21 @@ export class NodesComponent implements OnInit {
     if (!node.metadata) {
       return serialised;
     }
-    serialised = "";
     const v = JSON.parse(JSON.stringify(node.metadata));
+    serialised = "";
+    let maxKeyLength = 0;
     for (var key in v) {
-      serialised += key + ": " + node.metadata[key] + "\n";
+      if (maxKeyLength < key.length) {
+        maxKeyLength = key.length;
+      }
+    }
+    console.log(maxKeyLength)
+    for (var key in v) {
+      console.log(maxKeyLength - key.length)
+      serialised +=
+        key.padEnd(maxKeyLength + 3, " ") +
+        node.metadata[key] +
+        "\n";
     }
     return serialised;
   }
