@@ -63,6 +63,7 @@ func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
 
 	// generate a pseudo event
 	event := &event{
+		build: req.Header.Get("X-Github-Build"),
 		// The source repo
 		Repo: repo{
 			Url: "https://github.com/" + req.Header.Get("X-Github-Repo"),
@@ -71,7 +72,7 @@ func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
 		Commits: []commit{
 			{
 				// git commit
-				Id: req.Header.Get("X-Github-Sha"),
+				Id: req.Header.Get("X-Github-Commit"),
 				// Timestamp
 				Timestamp: time.Now().Format(time.RFC3339),
 				// Files changed
@@ -180,7 +181,12 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 					Source: source,
 				},
 				Metadata: map[string]string{
+					// github action number
+					"build": ev.build,
+					// commit hash
 					"commit": commit,
+					// github.com/micro/services
+					"repo": strings.TrimPrefix(ev.Repo.Url, "https://"),
 				},
 			},
 		}); err != nil {
@@ -193,9 +199,12 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 }
 
 type event struct {
+	// https://github.com/micro/services
 	Repo repo `json:"repository"`
 	// The commits which occurred
 	Commits []commit `json:"commits"`
+	// The github actions run id
+	build string
 }
 
 type repo struct {
