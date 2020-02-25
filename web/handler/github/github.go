@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/web"
 	platform "github.com/micro/platform/service/proto"
 	utils "github.com/micro/platform/web/util"
@@ -36,6 +38,7 @@ func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		utils.Write500(w, err)
+		log.Errorf("Failed to read build data: %v", err)
 		return
 	}
 
@@ -43,6 +46,7 @@ func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
 	var data []string
 	if err := json.Unmarshal(body, &data); err != nil {
 		utils.Write500(w, err)
+		log.Errorf("Failed to unmarshal build data: %v", err)
 		return
 	}
 
@@ -57,12 +61,17 @@ func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
 	case "build.failed":
 		evType = platform.EventType_BuildFailed
 	default:
+		log.Errorf("Unknown event type: %s", ev)
+		utils.Write500(w, errors.New("unknown event type"))
 		// unknown event
 		return
 	}
 
+	log.Info("Processing %v build event", evType)
+
 	// generate a pseudo event
 	event := &event{
+		build: req.Header.Get("X-Github-Build"),
 		// The source repo
 		Repo: repo{
 			Url: "https://github.com/" + req.Header.Get("X-Github-Repo"),
@@ -71,7 +80,7 @@ func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
 		Commits: []commit{
 			{
 				// git commit
-				Id: req.Header.Get("X-Github-Sha"),
+				Id: req.Header.Get("X-Github-Commit"),
 				// Timestamp
 				Timestamp: time.Now().Format(time.RFC3339),
 				// Files changed
@@ -134,7 +143,7 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 	services := make(map[string]string)
 
 	for _, f := range ev.Files() {
-		if c := strings.Split(f, "/"); len(c) > 1 {
+		if c := strings.Split(f, "/"); len(c) >= 1 {
 			// TODO: decide what to do if non service type files change
 			// service alias
 			alias := c[0]
@@ -149,12 +158,14 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 			}
 
 			// if its the api dir or web dir set type
-			switch c[1] {
-			case "api", "web":
-				// service type
-				srvType = c[1]
-				// service directory
-				dir = c[0] + "/" + c[1]
+			if len(c) > 1 {
+				switch c[1] {
+				case "api", "web":
+					// service type
+					srvType = c[1]
+					// service directory
+					dir = c[0] + "/" + c[1]
+				}
 			}
 
 			// fully qualified name
@@ -180,7 +191,12 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 					Source: source,
 				},
 				Metadata: map[string]string{
+					// github action number
+					"build": ev.build,
+					// commit hash
 					"commit": commit,
+					// github.com/micro/services
+					"repo": strings.TrimPrefix(ev.Repo.Url, "https://"),
 				},
 			},
 		}); err != nil {
@@ -193,9 +209,12 @@ func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev
 }
 
 type event struct {
+	// https://github.com/micro/services
 	Repo repo `json:"repository"`
 	// The commits which occurred
 	Commits []commit `json:"commits"`
+	// The github actions run id
+	build string
 }
 
 type repo struct {

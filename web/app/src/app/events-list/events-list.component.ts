@@ -1,5 +1,6 @@
-import { Component, OnInit, Input } from "@angular/core";
+import { Component, OnInit, Input, Pipe } from "@angular/core";
 import * as types from "../types";
+import * as testEvents from "./mock-events";
 
 const eventTypes = {
   1: "ServiceCreated",
@@ -28,6 +29,7 @@ const eventTypesNice = {
 })
 export class EventsListComponent implements OnInit {
   @Input() events: types.Event[];
+  testEvents: types.Event[] = testEvents.default;
   query: string = "";
 
   constructor() {}
@@ -36,5 +38,43 @@ export class EventsListComponent implements OnInit {
 
   eventTypeToString(e: types.Event): string {
     return eventTypesNice[e.type];
+  }
+
+  commitUrl(e: types.Event): string {
+    if (!e.metadata) {
+      return "";
+    }
+    const repo = e.metadata["repo"];
+    const commitHash = e.metadata["commit"];
+    // https://github.com/micro/services/commit/f291afc98f624c44e34e758efab89e77546b709d
+    return "https://" + repo + "/commit/" + commitHash;
+  }
+
+  buildUrl(e: types.Event): string {
+    if (!e.metadata) {
+      return "";
+    }
+    const repo = e.metadata["repo"];
+    const buildId = e.metadata["build"];
+    // eg. https://github.com/micro/services/runs/466859781
+    return "https://" + repo + "/actions/runs/" + buildId;
+  }
+
+  hasMeta(e: types.Event): boolean {
+    return e.metadata && (e.metadata["commit"] || e.metadata["build"]);
+  }
+
+  visibleMeta(e: types.Event): Map<string, string> {
+    if (!e.metadata) {
+      return new Map();
+    }
+    return new Map([
+      ["commit", e.metadata["commit"]],
+      ["build", e.metadata["build"]]
+    ]);
+  }
+
+  shortHash(s: string): string {
+    return s.slice(0, 8);
   }
 }
