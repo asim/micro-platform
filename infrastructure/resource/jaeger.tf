@@ -5,7 +5,7 @@ locals {
 resource "kubernetes_deployment" "jaeger" {
   metadata {
     name      = "jaeger-tracing"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.jaeger_labels
   }
   spec {
@@ -89,7 +89,7 @@ resource "kubernetes_deployment" "jaeger" {
 resource "kubernetes_service" "jaeger_query" {
   metadata {
     name      = "jaeger-tracing-query"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.jaeger_labels
   }
   spec {
@@ -107,7 +107,7 @@ resource "kubernetes_service" "jaeger_query" {
 resource "kubernetes_service" "jaeger_collector" {
   metadata {
     name      = "jaeger-tracing-collector"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
   }
   spec {
     selector = local.jaeger_labels
@@ -135,7 +135,7 @@ resource "kubernetes_service" "jaeger_collector" {
 resource "kubernetes_service" "jaeger_agent" {
   metadata {
     name      = "jaeger-tracing-agent"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.jaeger_labels
   }
   spec {
@@ -171,7 +171,7 @@ resource "kubernetes_service" "jaeger_agent" {
 resource "kubernetes_service" "zipkin" {
   metadata {
     name      = "zipkin"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.jaeger_labels
   }
   spec {

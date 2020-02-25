@@ -9,7 +9,7 @@ resource "random_uuid" "netdata_stream_id" {}
 resource "kubernetes_config_map" "netdata_master" {
   metadata {
     name      = "netdata-conf-master"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.netdata_labels
   }
   data = {
@@ -44,7 +44,7 @@ resource "kubernetes_config_map" "netdata_master" {
         diskspace = no
         micro.d = yes
       [plugin:micro.d]
-        command options = --registry=etcd --registry_address=etcd-cluster.${var.resource_namespace}.svc
+        command options = --registry=etcd --registry_address=etcd-cluster.${data.terraform_remote_state.resource_namespace.outputs.resource_namespace}.svc
       EONETDATA
     "stream"  = <<-EOSTREAM
       [${upper(random_uuid.netdata_stream_id.result)}]
@@ -60,7 +60,7 @@ resource "kubernetes_config_map" "netdata_master" {
 resource "kubernetes_config_map" "netdata_worker" {
   metadata {
     name      = "netdata-conf-worker"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.netdata_labels
   }
   data = {
@@ -106,7 +106,7 @@ resource "kubernetes_config_map" "netdata_worker" {
 resource "kubernetes_service_account" "netdata" {
   metadata {
     name      = "netdata"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.netdata_labels
   }
 }
@@ -161,14 +161,14 @@ resource "kubernetes_cluster_role_binding" "netdata" {
   subject {
     kind      = "ServiceAccount"
     name      = "netdata"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
   }
 }
 
 resource "kubernetes_service" "netdata" {
   metadata {
     name      = "netdata"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = merge(local.netdata_labels, { "role" = "master" })
   }
   spec {
@@ -186,7 +186,7 @@ resource "kubernetes_service" "netdata" {
 resource "kubernetes_daemonset" "netdata-worker" {
   metadata {
     name      = "netdata-worker"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = merge(local.netdata_labels, { "role" = "worker" })
   }
   spec {
@@ -341,7 +341,7 @@ resource "kubernetes_daemonset" "netdata-worker" {
 resource "kubernetes_stateful_set" "netdata_master" {
   metadata {
     name      = "netdata-master"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = merge(local.netdata_labels, { "role" = "master" })
   }
   spec {

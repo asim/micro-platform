@@ -5,7 +5,7 @@ locals {
 resource "kubernetes_service" "cockroachdb_public" {
   metadata {
     name      = "cockroachdb-public"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
   }
   spec {
     port {
@@ -25,7 +25,7 @@ resource "kubernetes_service" "cockroachdb_public" {
 resource "kubernetes_service" "cockroachdb" {
   metadata {
     name      = "cockroachdb"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
 
     labels = local.cockroachdb_labels
     annotations = {
@@ -52,7 +52,7 @@ resource "kubernetes_service" "cockroachdb" {
 resource "kubernetes_pod_disruption_budget" "cockroachdb" {
   metadata {
     name      = "cockroachdb"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.cockroachdb_labels
   }
   spec {
@@ -66,7 +66,7 @@ resource "kubernetes_pod_disruption_budget" "cockroachdb" {
 resource "kubernetes_stateful_set" "cockroachdb" {
   metadata {
     name      = "cockroachdb"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
   }
   spec {
     service_name = kubernetes_service.cockroachdb.metadata.0.name
@@ -183,7 +183,7 @@ resource "kubernetes_stateful_set" "cockroachdb" {
 resource "kubernetes_job" "cockroachdb_init" {
   metadata {
     name      = "cockroachdb-init"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
   }
   spec {
     selector {

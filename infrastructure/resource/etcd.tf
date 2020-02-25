@@ -5,7 +5,7 @@ locals {
 resource "kubernetes_service" "etcd" {
   metadata {
     name      = "etcd"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     annotations = {
       # Deprecated but still around
       "service.alpha.kubernetes.io/tolerate-unready-endpoints" = "true"
@@ -29,7 +29,7 @@ resource "kubernetes_service" "etcd" {
 resource "kubernetes_service" "etcd_cluster" {
   metadata {
     name      = "etcd-cluster"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.etcd_labels
   }
   spec {
@@ -45,7 +45,7 @@ resource "kubernetes_service" "etcd_cluster" {
 resource "kubernetes_pod_disruption_budget" "etcd" {
   metadata {
     name      = "etcd"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
   }
   spec {
     max_unavailable = "1"
@@ -66,7 +66,7 @@ resource "random_id" "etcd_cluster_token" {
 resource "kubernetes_stateful_set" "etcd" {
   metadata {
     name      = "etcd"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.etcd_labels
   }
   spec {

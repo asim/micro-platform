@@ -79,23 +79,42 @@ func (p *Platform) Steps() ([]Step, error) {
 			},
 		})
 
-		// 2.3 Create shared resources
+		// 2.3 Create namespaces
+		vars = make(map[string]string)
+		vars["control_namespace"] = strings.ToLower(fmt.Sprintf("%s-control", p.Name))
+		vars["resource_namespace"] = strings.ToLower(fmt.Sprintf("%s-resource", p.Name))
+		vars["network_namespace"] = strings.ToLower(fmt.Sprintf("%s-network", p.Name))
+		steps = append(steps, Step{
+			&TerraformModule{
+				ID:        p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces",
+				Name:      p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces",
+				Source:    "./infrastructure/kubernetes/namespaces",
+				Path:      fmt.Sprintf("/tmp/%s-%s-%s-namespaces-%d", p.Name, r.Region, r.Provider, dirSuffix),
+				Variables: vars,
+			},
+		})
+
+		// 2.4 Create shared resources
 		vars = make(map[string]string)
 		env := make(map[string]string)
+		remoteStates := make(map[string]string)
+
 		if r.Provider == "aws" {
 			vars["in_aws"] = "true"
 		} else {
 			vars["in_aws"] = "false"
 		}
 		env["KUBECONFIG"] = fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d/kubeconfig", p.Name, r.Region, r.Provider, dirSuffix)
+		remoteStates["resource_namespace"] = strings.ToLower(fmt.Sprintf("%s-resource", p.Name))
 		steps = append(steps, Step{
 			&TerraformModule{
-				ID:        p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
-				Name:      p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
-				Source:    "./infrastructure/resource",
-				Path:      fmt.Sprintf("/tmp/%s-%s-%s-resource-%d", p.Name, r.Region, r.Provider, dirSuffix),
-				Variables: vars,
-				Env:       env,
+				ID:           p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
+				Name:         p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
+				Source:       "./infrastructure/resource",
+				Path:         fmt.Sprintf("/tmp/%s-%s-%s-resource-%d", p.Name, r.Region, r.Provider, dirSuffix),
+				Variables:    vars,
+				Env:          env,
+				RemoteStates: remoteStates,
 			},
 		})
 	}

@@ -73,6 +73,9 @@ func (t *TerraformModule) Validate() error {
 	}
 
 	// import any remote states
+	if err := t.generateRemoteStateDataSources(); err != nil {
+		return err
+	}
 
 	// Initialise terraform and validate the syntax is correct
 	if err := t.execTerraform(context.Background(), "init"); err != nil {
@@ -236,6 +239,37 @@ func (t *TerraformModule) generateBackendConfig() error {
 		return err
 	}
 
+	return f.Close()
+}
+
+func (t *TerraformModule) generateRemoteStateDataSources() error {
+	remote := template.Must(template.New("tfRemoteState").Parse(tfS3RemoteStateTemplate))
+	f, err := os.OpenFile(filepath.Join(t.Path, "remote-state-data-sources.tf"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
+	}
+	for k, v := range t.RemoteStates {
+		if err := remote.Execute(f, struct {
+			RemoteStateName string
+			StateBucket     string
+			LockTable       string
+			Key             string
+			Region          string
+		}{
+			RemoteStateName: k,
+			StateBucket:     viper.GetString("aws-s3-bucket"),
+			LockTable:       viper.GetString("aws-dynamodb-table"),
+			Key:             v,
+			Region: func() string {
+				if r := os.Getenv("AWS_REGION"); len(r) != 0 {
+					return r
+				}
+				return "eu-west-2"
+			}(),
+		}); err != nil {
+			return err
+		}
+	}
 	return f.Close()
 }
 

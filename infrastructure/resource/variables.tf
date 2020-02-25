@@ -1,8 +1,3 @@
-variable "resource_namespace" {
-  description = "Shared resources kubernetes namespace"
-  default     = "resource"
-}
-
 variable "domain_name" {
   description = "Domain name of the platform (e.g. micro.mu)"
   default     = "micro.mu"

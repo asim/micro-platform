@@ -5,7 +5,7 @@ locals {
 resource "kubernetes_persistent_volume_claim" "athens" {
   metadata {
     name      = "athens-storage"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.athens_labels
   }
   spec {
@@ -21,7 +21,7 @@ resource "kubernetes_persistent_volume_claim" "athens" {
 resource "kubernetes_service" "athens" {
   metadata {
     name      = "athens-proxy"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.athens_labels
   }
   spec {
@@ -39,7 +39,7 @@ resource "kubernetes_service" "athens" {
 resource "kubernetes_deployment" "athens" {
   metadata {
     name      = "athens-proxy"
-    namespace = kubernetes_namespace.resource.id
+    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
     labels    = local.athens_labels
   }
   spec {
