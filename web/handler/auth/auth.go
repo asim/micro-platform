@@ -135,7 +135,7 @@ func userHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		acc, err := service.Options().Service.Options().Auth.Validate(token)
+		acc, err := service.Options().Service.Options().Auth.Verify(token)
 		if err != nil {
 			utils.Write400(w, err)
 			return

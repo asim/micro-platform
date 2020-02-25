@@ -12,7 +12,7 @@ import (
 )
 
 func IsLoggedIn(service web.Service, token string) error {
-	_, err := service.Options().Service.Options().Auth.Validate(token)
+	_, err := service.Options().Service.Options().Auth.Verify(token)
 	return err
 }
 
