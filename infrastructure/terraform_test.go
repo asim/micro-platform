@@ -3,11 +3,15 @@ package infrastructure
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"testing"
 	"time"
 )
 
 func TestTerraformModule(t *testing.T) {
+	if e := os.Getenv("IN_TRAVIS_CI"); e == "yes" {
+		t.Skip("In Travis CI")
+	}
 	rand.Seed(time.Now().UnixNano())
 	path := fmt.Sprintf("/tmp/test-module-%d", rand.Int31())
 	testModule := &TerraformModule{
