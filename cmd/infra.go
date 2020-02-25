@@ -43,7 +43,7 @@ func infraConfig() {
 	// Defaults - can be overwritten in the config file or env variables, but undocumented atm
 	viper.SetDefault("state-store", "aws")
 	viper.SetDefault("aws-s3-bucket", "micro-platform-terraform-state")
-	viper.SetDefault("aws-dynamodb-table", "micro-platform-terraform-state")
+	viper.SetDefault("aws-dynamodb-table", "micro-platform-terraform-lock")
 
 	// Handle env variables, e.g. --config-file flag can be set with MICRO_CONFIG_FILE
 	viper.SetEnvPrefix("micro")
