@@ -295,3 +295,7 @@ resource "kubernetes_service" "nginx_ingress" {
     ignore_changes = [metadata.0.annotations]
   }
 }
+
+output "load_balancer_ingress" {
+  value = kubernetes_service.nginx_ingress.load_balancer_ingress
+}
