@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Pipe } from "@angular/core";
 import * as types from "../types";
-import { mapToMapExpression } from "@angular/compiler/src/render3/util";
+import * as testEvents from "./mock-events";
 
 const eventTypes = {
   1: "ServiceCreated",
@@ -29,6 +29,7 @@ const eventTypesNice = {
 })
 export class EventsListComponent implements OnInit {
   @Input() events: types.Event[];
+  testEvents: types.Event[] = testEvents.default;
   query: string = "";
 
   constructor() {}
@@ -56,7 +57,7 @@ export class EventsListComponent implements OnInit {
     const repo = e.metadata["repo"];
     const buildId = e.metadata["build"];
     // eg. https://github.com/micro/services/runs/466859781
-    return "https://" + repo + "/runs/" + buildId;
+    return "https://" + repo + "/actions/runs/" + buildId;
   }
 
   hasMeta(e: types.Event): boolean {

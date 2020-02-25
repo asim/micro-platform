@@ -5,7 +5,7 @@
 </form>
 <mat-card
   class="mat-card-flat"
-  *ngFor="let event of events | search: 'service.name':query"
+  *ngFor="let event of testEvents | search: 'service.name':query"
   style="margin-bottom: 1em; background: #f5f5f5;"
 >
   <mat-card-title style="align-items: center; font-size: 1.25em;">
@@ -18,10 +18,10 @@
     <span style="color: #555">{{ event.timestamp * 1000 | dateAgo }}</span
     >&nbsp;
     <span *ngFor="let meta of visibleMeta(event) | keyvalue; let isLast = last">
-      <span style="color: grey" *ngIf="meta.key == 'commit'">
+      <span style="color: grey" *ngIf="meta.key == 'commit' && meta.value">
         commit:
         <a href="{{ commitUrl(event) }}">{{ shortHash(meta.value) }}</a></span
-      ><span style="color: grey" *ngIf="meta.key == 'build'">
+      ><span style="color: grey" *ngIf="meta.key == 'build' && meta.value">
         build:
         <a href="{{ buildUrl(event) }}">{{ meta.value }}</a></span
       >
