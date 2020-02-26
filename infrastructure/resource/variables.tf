@@ -1,8 +1,3 @@
-variable "domain_name" {
-  description = "Domain name of the platform (e.g. micro.mu)"
-  default     = "micro.mu"
-}
-
 variable "image_pull_policy" {
   description = "Kubernetes image pull policy for control plane deployments"
   default     = "Always"
