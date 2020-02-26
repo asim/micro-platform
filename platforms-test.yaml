@@ -1,6 +1,6 @@
 platforms:
 - name: "micro"
-  domain: "micro.mu"
+  domain: "mu.network"
   gslb: "cloudflare"
   kv: "cloudflare"
   regions:

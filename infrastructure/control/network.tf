@@ -1,6 +1,6 @@
 resource "kubernetes_deployment" "network" {
   metadata {
-    namespace   = kubernetes_namespace.control.id
+    namespace   = data.terraform_remote_state.namespaces.outputs.control_namespace
     name        = "micro-network"
     labels      = merge(local.common_labels, { "name" = "micro-network" })
     annotations = merge(local.common_annotations, { "name" = "go.micro.network" })
@@ -75,7 +75,7 @@ resource "kubernetes_deployment" "network" {
 
 resource "kubernetes_service" "network" {
   metadata {
-    namespace = kubernetes_namespace.control.id
+    namespace = data.terraform_remote_state.namespaces.outputs.control_namespace
     name      = "micro-network"
     labels    = merge(local.common_labels, { "name" = "micro-network" })
   }
@@ -87,23 +87,6 @@ resource "kubernetes_service" "network" {
       port      = 8085
       node_port = 30038
       protocol  = "UDP"
-    }
-  }
-}
-
-resource "kubernetes_service" "gateway" {
-  metadata {
-    namespace = kubernetes_namespace.control.id
-    name      = "micro-gateway"
-    labels    = merge(local.common_labels, { "name" = "micro-gateway" })
-  }
-  spec {
-    type     = "ClusterIP"
-    selector = merge(local.common_labels, { "name" = "micro-network" })
-    port {
-      name     = "service"
-      port     = 8080
-      protocol = "TCP"
     }
   }
 }

@@ -1,6 +1,6 @@
 resource "kubernetes_deployment" "bot" {
   metadata {
-    namespace   = kubernetes_namespace.control.id
+    namespace   = data.terraform_remote_state.namespaces.outputs.control_namespace
     name        = "micro-bot"
     labels      = merge(local.common_labels, { "name" = "micro-bot" })
     annotations = merge(local.common_annotations, { "name" = "go.micro.bot" })
@@ -52,7 +52,7 @@ resource "kubernetes_deployment" "bot" {
 
 resource "kubernetes_secret" "bot_slack_token" {
   metadata {
-    namespace = kubernetes_namespace.control.id
+    namespace = data.terraform_remote_state.namespaces.outputs.control_namespace
     name      = "micro-slack"
   }
   type = "Opaque"

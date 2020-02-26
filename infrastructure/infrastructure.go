@@ -119,6 +119,25 @@ func (p *Platform) Steps() ([]Step, error) {
 				RemoteStates: remoteStates,
 			},
 		})
+
+		// 2.5 Create control plane
+		vars = make(map[string]string)
+		env = make(map[string]string)
+		remoteStates = make(map[string]string)
+		vars["domain_name"] = p.Domain
+		env["KUBECONFIG"] = fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d/kubeconfig", p.Name, r.Region, r.Provider, dirSuffix)
+		remoteStates["namespaces"] = p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces"
+		steps = append(steps, Step{
+			&TerraformModule{
+				ID:           p.Name + "-" + r.Region + "-" + r.Provider + "-control",
+				Name:         p.Name + "-" + r.Region + "-" + r.Provider + "-control",
+				Source:       "./infrastructure/control",
+				Path:         fmt.Sprintf("/tmp/%s-%s-%s-control-%d", p.Name, r.Region, r.Provider, dirSuffix),
+				Variables:    vars,
+				Env:          env,
+				RemoteStates: remoteStates,
+			},
+		})
 	}
 
 	return steps, nil
