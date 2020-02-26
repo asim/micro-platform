@@ -8,7 +8,7 @@ locals {
 resource "kubernetes_config_map" "nginx_configuration" {
   metadata {
     name      = "nginx-configuration"
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
     labels    = local.ingress_nginx_labels
   }
   data = merge(
@@ -20,7 +20,7 @@ resource "kubernetes_config_map" "nginx_configuration" {
 resource "kubernetes_config_map" "tcp_services" {
   metadata {
     name      = "tcp-services"
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
     labels    = local.ingress_nginx_labels
   }
 }
@@ -28,7 +28,7 @@ resource "kubernetes_config_map" "tcp_services" {
 resource "kubernetes_config_map" "udp_services" {
   metadata {
     name      = "udp-services"
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
     labels    = local.ingress_nginx_labels
   }
 }
@@ -36,7 +36,7 @@ resource "kubernetes_config_map" "udp_services" {
 resource "kubernetes_service_account" "nginx_ingress" {
   metadata {
     name      = "nginx-ingress"
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
     labels    = local.ingress_nginx_labels
   }
 }
@@ -96,7 +96,7 @@ resource "kubernetes_cluster_role" "nginx_ingress" {
 resource "kubernetes_role" "nginx_ingress" {
   metadata {
     name      = "nginx-ingress"
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
     labels    = local.ingress_nginx_labels
   }
   rule {
@@ -127,7 +127,7 @@ resource "kubernetes_role" "nginx_ingress" {
 resource "kubernetes_role_binding" "nginx_ingress" {
   metadata {
     name      = "nginx-ingress"
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
     labels    = local.ingress_nginx_labels
   }
   role_ref {
@@ -138,7 +138,7 @@ resource "kubernetes_role_binding" "nginx_ingress" {
   subject {
     kind      = "ServiceAccount"
     name      = kubernetes_service_account.nginx_ingress.metadata.0.name
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
   }
 }
 
@@ -155,14 +155,14 @@ resource "kubernetes_cluster_role_binding" "nginx_ingress" {
   subject {
     kind = "ServiceAccount"
     name = kubernetes_service_account.nginx_ingress.metadata.0.name
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
   }
 }
 
 resource "kubernetes_deployment" "nginx_ingress" {
   metadata {
     name      = "nginx-ingress-controller"
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
     labels    = local.ingress_nginx_labels
   }
   spec {
@@ -183,10 +183,10 @@ resource "kubernetes_deployment" "nginx_ingress" {
           image = var.nginx_ingress_image
           args = [
             "/nginx-ingress-controller",
-            "--configmap=${data.terraform_remote_state.resource_namespace.outputs.resource_namespace}/${kubernetes_config_map.nginx_configuration.metadata.0.name}",
-            "--tcp-services-configmap=${data.terraform_remote_state.resource_namespace.outputs.resource_namespace}/${kubernetes_config_map.tcp_services.metadata.0.name}",
-            "--udp-services-configmap=${data.terraform_remote_state.resource_namespace.outputs.resource_namespace}/${kubernetes_config_map.udp_services.metadata.0.name}",
-            "--publish-service=${data.terraform_remote_state.resource_namespace.outputs.resource_namespace}/ingress-nginx",
+            "--configmap=${data.terraform_remote_state.namespaces.outputs.resource_namespace}/${kubernetes_config_map.nginx_configuration.metadata.0.name}",
+            "--tcp-services-configmap=${data.terraform_remote_state.namespaces.outputs.resource_namespace}/${kubernetes_config_map.tcp_services.metadata.0.name}",
+            "--udp-services-configmap=${data.terraform_remote_state.namespaces.outputs.resource_namespace}/${kubernetes_config_map.udp_services.metadata.0.name}",
+            "--publish-service=${data.terraform_remote_state.namespaces.outputs.resource_namespace}/ingress-nginx",
             "--annotations-prefix=nginx.ingress.kubernetes.io",
           ]
           security_context {
@@ -262,7 +262,7 @@ resource "kubernetes_deployment" "nginx_ingress" {
 resource "kubernetes_service" "nginx_ingress" {
   metadata {
     name      = "ingress-nginx"
-    namespace = data.terraform_remote_state.resource_namespace.outputs.resource_namespace
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
     labels    = local.ingress_nginx_labels
     annotations = merge({},
       var.in_aws ? {

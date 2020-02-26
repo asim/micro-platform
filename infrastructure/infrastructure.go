@@ -101,14 +101,13 @@ func (p *Platform) Steps() ([]Step, error) {
 		vars = make(map[string]string)
 		env = make(map[string]string)
 		remoteStates := make(map[string]string)
-
 		if r.Provider == "aws" {
 			vars["in_aws"] = "true"
 		} else {
 			vars["in_aws"] = "false"
 		}
 		env["KUBECONFIG"] = fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d/kubeconfig", p.Name, r.Region, r.Provider, dirSuffix)
-		remoteStates["resource_namespace"] = p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces"
+		remoteStates["namespaces"] = p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces"
 		steps = append(steps, Step{
 			&TerraformModule{
 				ID:           p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
