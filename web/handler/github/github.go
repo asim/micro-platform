@@ -3,6 +3,7 @@ package github
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -19,6 +20,9 @@ var (
 	// DefaultVersion is the default version of the service
 	// the assume if none is specified
 	DefaultVersion = "latest"
+	// DefaultNamespace is the default namespace of the services,
+	// this will eventually be loaded from config
+	DefaultNamespace = "go.micro"
 )
 
 // Handler encapsulates the events handlers
@@ -98,12 +102,25 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 	// in the platform service, as it uses lots of immutable variables, this function
 	// was declared inline so they all didn't need to be passed on every function call.
 	createEvent := func(srv string, event platform.EventType) {
+		// determine the name of the service from the directory path, e.g. foo/bar would
+		// become go.micro.srv.foo-bar and foo/api would become go.micro.api.foo
+		var name string
+		if strings.HasSuffix(srv, "web") {
+			name = fmt.Sprintf("%v.web.%v", DefaultNamespace, strings.ReplaceAll(srv, "/web", ""))
+		} else if strings.HasSuffix(srv, "api") {
+			name = fmt.Sprintf("%v.api.%v", DefaultNamespace, strings.ReplaceAll(srv, "/api", ""))
+		} else {
+			name = fmt.Sprintf("%v.srv.%v", DefaultNamespace, srv)
+		}
+		name = strings.ReplaceAll(name, "/", "-")
+
+		// create the event in the platform service
 		_, err := h.platform.CreateEvent(req.Context(), &platform.CreateEventRequest{
 			Event: &platform.Event{
 				Type:      event,
 				Timestamp: time.Now().Unix(),
 				Service: &platform.Service{
-					Name:    srv,
+					Name:    name,
 					Version: DefaultVersion,
 					Source:  path.Join(repoURL, srv),
 				},
