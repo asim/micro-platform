@@ -58,8 +58,8 @@ export class NewServiceComponent implements OnInit {
       const id = <string>p["id"];
       if (id) {
         this.alias = _.last(id.split("."));
-        this.regen();
       }
+      this.regen();
     });
 
     this.token = this.us.token();

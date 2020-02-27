@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,7 +11,7 @@ import (
 	"github.com/dghubble/gologin/v2/github"
 	"github.com/micro/go-micro/v2/auth"
 	"github.com/micro/go-micro/v2/web"
-	"github.com/micro/platform/web/util"
+	utils "github.com/micro/platform/web/util"
 	"golang.org/x/oauth2"
 
 	gologinOauth "github.com/dghubble/gologin/v2/oauth2"
@@ -90,10 +91,27 @@ func issueSession(service web.Service) http.Handler {
 			http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/not-invited", http.StatusFound)
 			return
 		}
+		// gracefully degrading in case we have no ORG ID
+		// ORG ID is only needed so we can read the team for teamname
+		orgID, _ := strconv.ParseInt(os.Getenv("GITHUB_ORG_ID"), 10, 64)
+		team, _, err := client.Teams.GetTeamByID(req.Context(), orgID, teamID)
+		teamName := ""
+		if err == nil {
+			teamName = team.GetName()
+		}
+		org, _, err := client.Organizations.GetByID(req.Context(), orgID)
+		teamURL := ""
+		if err == nil {
+			teamURL = fmt.Sprintf("https://github.com/orgs/%v/teams/%v", org.GetLogin(), team.GetSlug())
+		}
 		acc, err := service.Options().Service.Options().Auth.Generate(*githubUser.Email, auth.Metadata(
 			map[string]string{
-				"email": *githubUser.Email,
-				"name":  *githubUser.Name,
+				"email":                   *githubUser.Email,
+				"name":                    *githubUser.Name,
+				"avatar_url":              githubUser.GetAvatarURL(),
+				"team_name":               teamName,
+				"team_url":                teamURL,
+				"organization_avatar_url": org.GetAvatarURL(),
 			}))
 		if err != nil {
 			utils.Write500(w, err)
@@ -119,8 +137,12 @@ func issueSession(service web.Service) http.Handler {
 }
 
 type User struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Name                  string `json:"name"`
+	Email                 string `json:"email"`
+	AvatarURL             string `json:"avatarURL"`
+	TeamName              string `json:"teamName"`
+	TeamURL               string `json:"teamURL"`
+	OrganizationAvatarURL string `json:"organizationAvatarURL"`
 }
 
 func userHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
@@ -151,8 +173,12 @@ func userHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 		}
 
 		utils.WriteJSON(w, &User{
-			Name:  acc.Metadata["name"],
-			Email: acc.Metadata["email"],
+			Name:                  acc.Metadata["name"],
+			Email:                 acc.Metadata["email"],
+			AvatarURL:             acc.Metadata["avatar_url"],
+			TeamName:              acc.Metadata["team_name"],
+			TeamURL:               acc.Metadata["team_url"],
+			OrganizationAvatarURL: acc.Metadata["organization_avatar_url"],
 		})
 	}
 }

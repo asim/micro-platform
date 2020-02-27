@@ -675,7 +675,7 @@ export default [
     timestamp: 1582328561,
     metadata: { commit: "e53f9091a49d08f181adb1b0e7b45ffe159fef1d" },
     service: {
-      name: "go.micro.srv.foobar",
+      name: "go.micro.srv.foobax",
       version: "latest",
       source: "foobar"
     }
