@@ -6,20 +6,24 @@ const eventTypes = {
   1: "ServiceCreated",
   2: "ServiceDeleted",
   3: "ServiceUpdated",
-  4: "SourceUpdated",
+  4: "SourceCreated",
   5: "BuildStarted",
   6: "BuildFinished",
-  7: "BuildFailed"
+  7: "BuildFailed",
+  8: "SourceUpdated",
+  9: "SourceDeleted"
 };
 
 const eventTypesNice = {
   1: "service created",
   2: "service deleted",
   3: "service updated",
-  4: "source updated",
+  4: "source created",
   5: "build started",
   6: "build finished",
-  7: "build failed"
+  7: "build failed",
+  8: "source updated",
+  9: "source deleted"
 };
 
 @Component({
