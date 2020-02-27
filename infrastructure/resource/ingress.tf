@@ -153,8 +153,8 @@ resource "kubernetes_cluster_role_binding" "nginx_ingress" {
     name      = kubernetes_cluster_role.nginx_ingress.metadata.0.name
   }
   subject {
-    kind = "ServiceAccount"
-    name = kubernetes_service_account.nginx_ingress.metadata.0.name
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.nginx_ingress.metadata.0.name
     namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
   }
 }
@@ -175,7 +175,7 @@ resource "kubernetes_deployment" "nginx_ingress" {
         labels = local.ingress_nginx_labels
       }
       spec {
-        automount_service_account_token = true
+        automount_service_account_token  = true
         termination_grace_period_seconds = 300
         service_account_name             = kubernetes_service_account.nginx_ingress.metadata.0.name
         container {
@@ -188,6 +188,8 @@ resource "kubernetes_deployment" "nginx_ingress" {
             "--udp-services-configmap=${data.terraform_remote_state.namespaces.outputs.resource_namespace}/${kubernetes_config_map.udp_services.metadata.0.name}",
             "--publish-service=${data.terraform_remote_state.namespaces.outputs.resource_namespace}/ingress-nginx",
             "--annotations-prefix=nginx.ingress.kubernetes.io",
+            "--enable-ssl-passthrough",
+            "--default-backend-service=${data.terraform_remote_state.namespaces.outputs.resource_namespace}/default-backend",
           ]
           security_context {
             allow_privilege_escalation = true
@@ -252,6 +254,71 @@ resource "kubernetes_deployment" "nginx_ingress" {
                 command = ["/wait-shutdown"]
               }
             }
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "default_backend" {
+  metadata {
+    name      = "default-backend"
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
+    labels = {
+      "app.kubernetes.io/name"    = "default-backend"
+      "app.kubernetes.io/part-of" = "ingress-nginx"
+    }
+  }
+  spec {
+    selector = {
+      "app.kubernetes.io/name"    = "default-backend"
+      "app.kubernetes.io/part-of" = "ingress-nginx"
+    }
+    port {
+      name        = "http"
+      port        = 80
+      target_port = "http"
+      protocol    = "TCP"
+    }
+  }
+}
+
+resource "kubernetes_deployment" "default_backend" {
+  metadata {
+    name      = "default-backend"
+    namespace = data.terraform_remote_state.namespaces.outputs.resource_namespace
+    labels = {
+      "app.kubernetes.io/name"    = "default-backend"
+      "app.kubernetes.io/part-of" = "ingress-nginx"
+    }
+  }
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        "app.kubernetes.io/name"    = "default-backend"
+        "app.kubernetes.io/part-of" = "ingress-nginx"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          "app.kubernetes.io/name"    = "default-backend"
+          "app.kubernetes.io/part-of" = "ingress-nginx"
+        }
+      }
+      spec {
+        container {
+          name  = "default-backend"
+          image = "k8s.gcr.io/defaultbackend-amd64:1.5"
+          security_context {
+            run_as_user = 65534
+          }
+          port {
+            name           = "http"
+            container_port = 8080
+            protocol       = "TCP"
           }
         }
       }

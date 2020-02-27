@@ -138,6 +138,30 @@ func (p *Platform) Steps() ([]Step, error) {
 				RemoteStates: remoteStates,
 			},
 		})
+
+		// 2.6 Create network
+		vars = make(map[string]string)
+		env = make(map[string]string)
+		remoteStates = make(map[string]string)
+		vars["domain_name"] = p.Domain
+		vars["cloudflare_account_id"] = "TODO"
+		vars["cloudflare_dns_zone_id"] = "TODO"
+		vars["cloudflare_api_token"] = "TODO"
+		vars["region_slug"] = r.Region + "-" + r.Provider
+		env["KUBECONFIG"] = fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d/kubeconfig", p.Name, r.Region, r.Provider, dirSuffix)
+		remoteStates["namespaces"] = p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces"
+		remoteStates["kv"] = p.Name + "-global-kv"
+		steps = append(steps, Step{
+			&TerraformModule{
+				ID:           p.Name + "-" + r.Region + "-" + r.Provider + "-network",
+				Name:         p.Name + "-" + r.Region + "-" + r.Provider + "-network",
+				Source:       "./infrastructure/network",
+				Path:         fmt.Sprintf("/tmp/%s-%s-%s-network-%d", p.Name, r.Region, r.Provider, dirSuffix),
+				Variables:    vars,
+				Env:          env,
+				RemoteStates: remoteStates,
+			},
+		})
 	}
 
 	return steps, nil

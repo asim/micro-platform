@@ -1,7 +1,7 @@
 locals {
   common_labels = {
     "micro" = "runtime"
-    "name"  = var.service_name
+    "service-name"  = var.service_name
   }
   common_annotations = {
     "name"    = "go.micro.${var.service_name}"
@@ -52,21 +52,23 @@ resource "kubernetes_ingress" "network_ingress" {
     annotations = {
       // We only expose services that manage their own certificates
       "nginx.ingress.kubernetes.io/ssl-passthrough" = "true"
+      "nginx.ingress.kubernetes.io/service-upstream" = "true"
+      "nginx.ingress.kubernetes.io/secure-backends" = "true"
+      "nginx.ingress.kubernetes.io/backend-protocol" = "HTTPS"
     }
   }
   spec {
-    tls {
-      hosts = formatlist("${var.service_name}.%s", var.domain_names)
-    }
+    # tls {
+    #   hosts = var.domain_names
+    # }
     dynamic "rule" {
       for_each = var.domain_names
       content {
-        host = "${var.service_name}.${rule.value}"
+        host = rule.value
         http {
           path {
-            path = "/"
             backend {
-              service_name = kubernetes_service.network_service.metadata.0.name
+              service_name = kubernetes_service.network_service.0.metadata.0.name
               service_port = var.service_port
             }
           }

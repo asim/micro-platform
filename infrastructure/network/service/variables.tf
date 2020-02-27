@@ -84,5 +84,5 @@ variable "image_pull_policy" {
 variable "domain_names" {
   description = "List of valid domain names for network services"
   type        = list(string)
-  default     = ["micro.mu", "cloud.micro.mu"]
+  default = []
 }

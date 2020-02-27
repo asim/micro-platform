@@ -50,7 +50,7 @@ variable "athens_storage" {
 
 variable "nginx_ingress_image" {
   description = "nginx ingress controller image"
-  default     = "quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.28.0"
+  default     = "quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.30.0"
 }
 
 variable "in_aws" {
