@@ -90,37 +90,22 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 
 	// metadata is passed with each event
 	metadata := map[string]string{
-		// github action number
-		"build": buildID,
-		// commit hash
-		"commit": commitID,
-		// github.com/micro/services
-		"repo": repoURL,
+		"build":  buildID,  // github action number
+		"commit": commitID, // commit hash
+		"repo":   repoURL,  // github.com/micro/services
 	}
 
 	// createEvent is an function which encapsulates the logic to create the event
 	// in the platform service, as it uses lots of immutable variables, this function
 	// was declared inline so they all didn't need to be passed on every function call.
 	createEvent := func(srv string, event platform.EventType) {
-		// determine the name of the service from the directory path, e.g. foo/bar would
-		// become go.micro.srv.foo-bar and foo/api would become go.micro.api.foo
-		var name string
-		if strings.HasSuffix(srv, "web") {
-			name = fmt.Sprintf("%v.web.%v", DefaultNamespace, strings.ReplaceAll(srv, "/web", ""))
-		} else if strings.HasSuffix(srv, "api") {
-			name = fmt.Sprintf("%v.api.%v", DefaultNamespace, strings.ReplaceAll(srv, "/api", ""))
-		} else {
-			name = fmt.Sprintf("%v.srv.%v", DefaultNamespace, srv)
-		}
-		name = strings.ReplaceAll(name, "/", "-")
-
 		// create the event in the platform service
 		_, err := h.platform.CreateEvent(req.Context(), &platform.CreateEventRequest{
 			Event: &platform.Event{
 				Type:      event,
 				Timestamp: time.Now().Unix(),
 				Service: &platform.Service{
-					Name:    name,
+					Name:    nameForService(srv),
 					Version: DefaultVersion,
 					Source:  path.Join(repoURL, srv),
 				},
@@ -166,6 +151,51 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 	for _, srv := range data.Services.Modified {
 		createEvent(srv, evType)
 	}
+
+	// If the build has finished, update or create all services
+	if evType == platform.EventType_BuildFinished {
+		for _, srv := range data.Services.Created {
+			_, err := h.platform.CreateService(req.Context(), &platform.CreateServiceRequest{
+				Service: &platform.Service{
+					Name:    srv,
+					Version: DefaultVersion,
+				},
+			})
+
+			if err != nil {
+				log.Errorf("Unable to create service %v: %v", srv, err)
+				utils.Write500(w, err)
+			}
+		}
+
+		for _, srv := range data.Services.Modified {
+			_, err := h.platform.UpdateService(req.Context(), &platform.UpdateServiceRequest{
+				Service: &platform.Service{
+					Name:    srv,
+					Version: DefaultVersion,
+				},
+			})
+
+			if err != nil {
+				log.Errorf("Unable to update service %v: %v", srv, err)
+				utils.Write500(w, err)
+			}
+		}
+	}
+}
+
+// nameForService determines the name of the service from the directory path,
+// e.g. foo/bar becomes go.micro.srv.foo-bar and foo/api becomes go.micro.api.foo
+func nameForService(srv string) string {
+	var name string
+	if strings.HasSuffix(srv, "web") {
+		name = fmt.Sprintf("%v.web.%v", DefaultNamespace, strings.ReplaceAll(srv, "/web", ""))
+	} else if strings.HasSuffix(srv, "api") {
+		name = fmt.Sprintf("%v.api.%v", DefaultNamespace, strings.ReplaceAll(srv, "/api", ""))
+	} else {
+		name = fmt.Sprintf("%v.srv.%v", DefaultNamespace, srv)
+	}
+	return strings.ReplaceAll(name, "/", "-")
 }
 
 type githubWebhook struct {
