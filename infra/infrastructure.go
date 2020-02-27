@@ -1,5 +1,5 @@
 // Package infrastructure provides functions for orchestrating a Micro platform
-package infrastructure
+package infra
 
 import (
 	"fmt"

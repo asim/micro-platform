@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/micro/platform/infrastructure"
+	"github.com/micro/platform/infra"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -14,7 +14,7 @@ import (
 var infraCmd = &cobra.Command{
 	Use:   "infra",
 	Short: "Manage the platform's infrastructure'",
-	Long: `Manage the platform's infrastructure. Based on a configuration file,
+	Long: `Manage the platform's infra. Based on a configuration file,
 a complete platform can be created across multiple cloud providers`,
 }
 
@@ -86,7 +86,7 @@ Instantiates various terraform modules, then runs terraform init, terraform vali
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
-			if err := infrastructure.ExecutePlan(s); err != nil {
+			if err := infra.ExecutePlan(s); err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
@@ -109,7 +109,7 @@ If you cancel this command, data loss may occur`,
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
-			if err := infrastructure.ExecuteApply(s); err != nil {
+			if err := infra.ExecuteApply(s); err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
@@ -132,7 +132,7 @@ If you cancel this command, data loss may occur`,
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
-			if err := infrastructure.ExecuteDestroy(s); err != nil {
+			if err := infra.ExecuteDestroy(s); err != nil {
 				fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 				os.Exit(1)
 			}
@@ -141,12 +141,12 @@ If you cancel this command, data loss may occur`,
 	},
 }
 
-func validate() []infrastructure.Platform {
+func validate() []infra.Platform {
 	if viper.Get("platforms") == nil || len(viper.Get("platforms").([]interface{})) == 0 {
 		fmt.Fprintf(os.Stderr, "No platforms defined in config file %s\n", viper.Get("config-file"))
 		os.Exit(1)
 	}
-	var platforms []infrastructure.Platform
+	var platforms []infra.Platform
 	err := viper.UnmarshalKey("platforms", &platforms)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
