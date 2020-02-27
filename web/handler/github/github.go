@@ -132,7 +132,7 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 			createEvent(srv, platform.EventType_SourceCreated)
 		}
 
-		for _, srv := range data.Services.Modified {
+		for _, srv := range data.Services.Updated {
 			createEvent(srv, platform.EventType_SourceUpdated)
 		}
 
@@ -148,7 +148,7 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 		createEvent(srv, evType)
 	}
 
-	for _, srv := range data.Services.Modified {
+	for _, srv := range data.Services.Updated {
 		createEvent(srv, evType)
 	}
 
@@ -168,7 +168,7 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 
-		for _, srv := range data.Services.Modified {
+		for _, srv := range data.Services.Updated {
 			_, err := h.platform.UpdateService(req.Context(), &platform.UpdateServiceRequest{
 				Service: &platform.Service{
 					Name:    srv,
@@ -200,9 +200,9 @@ func nameForService(srv string) string {
 
 type githubWebhook struct {
 	Services struct {
-		Created  []string `json:"added"`
-		Modified []string `json:"modified"`
-		Deleted  []string `json:"removed"`
+		Created []string `json:"added"`
+		Updated []string `json:"modified"`
+		Deleted []string `json:"removed"`
 	} `json:"services"`
 	CommitIDs []string `json:"commit_ids"`
 	Payload   struct {
