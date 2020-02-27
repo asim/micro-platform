@@ -48,7 +48,8 @@ export class EventsListComponent implements OnInit {
   }
 
   ngOnChanges(changes) {
-    this.length = this.events.length;
+    this.searched = this.events;
+    this.length = this.searched.length;
     this.iterator();
   }
 
@@ -92,7 +93,7 @@ export class EventsListComponent implements OnInit {
 
   shortHash(s: string): string {
     if (!s) {
-      return ""
+      return "";
     }
     return s.slice(0, 8);
   }
@@ -111,7 +112,14 @@ export class EventsListComponent implements OnInit {
   }
 
   search() {
+    console.log("whaa")
     this.searched = this.events.filter(e => {
+      if (!this.query || this.query.length == 0) {
+        return true;
+      } 
+      if (!e.service || !e.service.name) {
+        return false;
+      }
       return e.service.name.includes(this.query);
     });
     this.currentPage = 0;
