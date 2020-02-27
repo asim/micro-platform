@@ -42,12 +42,14 @@ export class EventsListComponent implements OnInit {
 
   ngOnInit() {
     //this.events = this.testEvents;
-    this.searched = this.events;
-    this.length = this.searched.length;
-    this.iterator();
+    this.refresh();
   }
 
   ngOnChanges(changes) {
+    this.refresh();
+  }
+
+  refresh() {
     this.searched = this.events;
     this.length = this.searched.length;
     this.iterator();
@@ -112,11 +114,10 @@ export class EventsListComponent implements OnInit {
   }
 
   search() {
-    console.log("whaa")
     this.searched = this.events.filter(e => {
       if (!this.query || this.query.length == 0) {
         return true;
-      } 
+      }
       if (!e.service || !e.service.name) {
         return false;
       }
