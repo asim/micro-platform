@@ -152,7 +152,7 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 		createEvent(srv, evType)
 	}
 
-	// If the build has finished, update or create all services
+	// If the build has finished, create/update/delete all services
 	if evType == platform.EventType_BuildFinished {
 		for _, srv := range data.Services.Created {
 			_, err := h.platform.CreateService(req.Context(), &platform.CreateServiceRequest{
@@ -178,6 +178,20 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 
 			if err != nil {
 				log.Errorf("Unable to update service %v: %v", srv, err)
+				utils.Write500(w, err)
+			}
+		}
+
+		for _, srv := range data.Services.Deleted {
+			_, err := h.platform.DeleteService(req.Context(), &platform.DeleteServiceRequest{
+				Service: &platform.Service{
+					Name:    srv,
+					Version: DefaultVersion,
+				},
+			})
+
+			if err != nil {
+				log.Errorf("Unable to delete service %v: %v", srv, err)
 				utils.Write500(w, err)
 			}
 		}
