@@ -1,10 +1,8 @@
 package github
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
@@ -15,6 +13,12 @@ import (
 	"github.com/micro/go-micro/v2/web"
 	platform "github.com/micro/platform/service/proto"
 	utils "github.com/micro/platform/web/util"
+)
+
+var (
+	// DefaultVersion is the default version of the service
+	// the assume if none is specified
+	DefaultVersion = "latest"
 )
 
 // Handler encapsulates the events handlers
@@ -33,26 +37,25 @@ func RegisterHandlers(srv web.Service) error {
 }
 
 // processBuildEvent processes build events fired through github actions
-func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
+func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 	// Extract the request body containing the webhook data
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		utils.Write500(w, err)
-		log.Errorf("Failed to read build data: %v", err)
+		log.Errorf("Failed to read webhook data: %v", err)
 		return
 	}
 
 	// Unmarshal the bytes into a struct
-	var data []string
+	var data *githubWebhook
 	if err := json.Unmarshal(body, &data); err != nil {
 		utils.Write500(w, err)
-		log.Errorf("Failed to unmarshal build data: %v", err)
+		log.Errorf("Failed to unmarshal webhook data: %v", err)
 		return
 	}
 
+	// Event type indicates what stage of the build is occurring
 	var evType platform.EventType
-
-	// default event type
 	switch ev := req.Header.Get("Micro-Event"); ev {
 	case "build.started":
 		evType = platform.EventType_BuildStarted
@@ -61,208 +64,103 @@ func (h *Handler) processBuildEvent(w http.ResponseWriter, req *http.Request) {
 	case "build.failed":
 		evType = platform.EventType_BuildFailed
 	default:
+		// unknown event
 		log.Errorf("Unknown event type: %s", ev)
 		utils.Write500(w, errors.New("unknown event type"))
-		// unknown event
 		return
 	}
 
-	log.Info("Processing %v build event", evType)
+	// buildID is the github actions build ID, e.g. 46017067
+	buildID := req.Header.Get("X-Github-Build")
+	log.Infof("Processing %v build event #%v", evType, buildID)
 
-	// generate a pseudo event
-	event := &event{
-		build: req.Header.Get("X-Github-Build"),
-		// The source repo
-		Repo: repo{
-			Url: "https://github.com/" + req.Header.Get("X-Github-Repo"),
-		},
-		// Single commit reference
-		Commits: []commit{
-			{
-				// git commit
-				Id: req.Header.Get("X-Github-Commit"),
-				// Timestamp
-				Timestamp: time.Now().Format(time.RFC3339),
-				// Files changed
-				Modified: data,
-			},
-		},
+	// repoURL is the source of the code, e.g. "github.com/micro/services"
+	repoURL := strings.TrimPrefix(data.Payload.Repository.URL, "https://")
+
+	// commitID is the ID of the last ID. In an ideal world we'd pass
+	// all of the IDs in the metadata. e.g. "974b680d403ad7d5594ca812a146b3bd342c089b"
+	var commitID string
+	if len(data.CommitIDs) > 0 {
+		commitID = data.CommitIDs[0]
 	}
 
-	// Create the events
-	err = h.createEvents(req.Context(), evType, event)
-	if err != nil {
-		utils.Write500(w, err)
-	}
-}
-
-// eventsHandler processes GitHub events
-func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
-	// process build event
-	if strings.HasPrefix(req.Header.Get("Micro-Event"), "build") {
-		h.processBuildEvent(w, req)
-		return
+	// metadata is passed with each event
+	metadata := map[string]string{
+		// github action number
+		"build": buildID,
+		// commit hash
+		"commit": commitID,
+		// github.com/micro/services
+		"repo": repoURL,
 	}
 
-	// Extract the request body containing the webhook data
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		utils.Write500(w, err)
-		return
-	}
-
-	var event *event
-
-	if err := json.Unmarshal(body, &event); err != nil {
-		utils.Write500(w, err)
-		return
-	}
-
-	// create the events
-	err = h.createEvents(req.Context(), platform.EventType_SourceUpdated, event)
-	if err != nil {
-		utils.Write500(w, err)
-	}
-}
-
-// createEvents creates an event per file by extrapolating to a service
-func (h *Handler) createEvents(ctx context.Context, event platform.EventType, ev *event) error {
-	// the commit affecting all the services
-	commit := ev.Commit()
-	// version being defaulted to latest
-	// TODO: make version and namespace configurable
-	version := "latest"
-	// default namespace
-	namespace := "go.micro"
-
-	// Get the directories (services) which have been impacted
-	// TODO: determine if we want to present repo changes
-	// versus creating service names here
-
-	// service name to directory
-	services := make(map[string]string)
-
-	for _, f := range ev.Files() {
-		if c := strings.Split(f, "/"); len(c) >= 1 {
-			// TODO: decide what to do if non service type files change
-			// service alias
-			alias := c[0]
-			// base directory
-			dir := c[0]
-			// service type
-			srvType := "srv"
-
-			// skip any dir starting with dot
-			if strings.HasPrefix(dir, ".") {
-				continue
-			}
-
-			// if its the api dir or web dir set type
-			if len(c) > 1 {
-				switch c[1] {
-				case "api", "web":
-					// service type
-					srvType = c[1]
-					// service directory
-					dir = c[0] + "/" + c[1]
-				}
-			}
-
-			// fully qualified name
-			fqdn := fmt.Sprintf("%s.%s.%s", namespace, srvType, alias)
-			// append to list of services
-			services[fqdn] = dir
-		}
-	}
-
-	// generate an event per service which changed
-	for service, dir := range services {
-		// github.com/micro/services/helloworld
-		source := path.Join(strings.TrimPrefix(ev.Repo.Url, "https://"), dir)
-
-		if _, err := h.platform.CreateEvent(ctx, &platform.CreateEventRequest{
+	// createEvent is an function which encapsulates the logic to create the event
+	// in the platform service, as it uses lots of immutable variables, this function
+	// was declared inline so they all didn't need to be passed on every function call.
+	createEvent := func(srv string, event platform.EventType) {
+		_, err := h.platform.CreateEvent(req.Context(), &platform.CreateEventRequest{
 			Event: &platform.Event{
 				Type:      event,
 				Timestamp: time.Now().Unix(),
 				Service: &platform.Service{
-					Name:    service,
-					Version: version,
-					// TODO: should we set this?
-					Source: source,
+					Name:    srv,
+					Version: DefaultVersion,
+					Source:  path.Join(repoURL, srv),
 				},
-				Metadata: map[string]string{
-					// github action number
-					"build": ev.build,
-					// commit hash
-					"commit": commit,
-					// github.com/micro/services
-					"repo": strings.TrimPrefix(ev.Repo.Url, "https://"),
-				},
+				Metadata: metadata,
 			},
-		}); err != nil {
-			fmt.Println(service, event, err)
-			return err
-		}
-	}
+		})
 
-	return nil
-}
-
-type event struct {
-	// https://github.com/micro/services
-	Repo repo `json:"repository"`
-	// The commits which occurred
-	Commits []commit `json:"commits"`
-	// The github actions run id
-	build string
-}
-
-type repo struct {
-	// The git url of the repo
-	Url string `json:"url"`
-}
-
-// list of changes files
-func (e *event) Files() []string {
-	var files []string
-	for _, c := range e.Commits {
-		files = append(files, c.Files()...)
-	}
-	return files
-}
-
-// Latest returns the latest commit
-func (e *event) Commit() string {
-	var latest string
-	var timestamp int64
-
-	for _, c := range e.Commits {
-		t, err := time.Parse(time.RFC3339, c.Timestamp)
+		// Handle the error which was returned by the platform service, since the error
+		// could be a one-off, we don't abort the request, however we do write a 500 code
+		// to the response. Note, since this function is called multiple times, the error
+		// will be overriden if another one occurs.
 		if err != nil {
-			continue
-		}
-
-		if t.Unix() > timestamp {
-			latest = c.Id
-			timestamp = t.Unix()
+			log.Errorf("Unable to create event type %v for service %v: %v", event.String(), srv, err)
+			utils.Write500(w, err)
+		} else {
+			log.Infof("Created %v event for service %v", event.String(), srv)
 		}
 	}
 
-	return latest
+	// We only want to create source changed events once, so we do this on
+	// build started, since this only happens as a result of source changing.
+	if evType == platform.EventType_BuildStarted {
+		for _, srv := range data.Services.Created {
+			createEvent(srv, platform.EventType_SourceCreated)
+		}
+
+		for _, srv := range data.Services.Modified {
+			createEvent(srv, platform.EventType_SourceUpdated)
+		}
+
+		for _, srv := range data.Services.Deleted {
+			createEvent(srv, platform.EventType_SourceDeleted)
+		}
+	}
+
+	// Create the build event for all the created and modified services,
+	// deleted services don't need this event since they can no longer be
+	// built
+	for _, srv := range data.Services.Created {
+		createEvent(srv, evType)
+	}
+
+	for _, srv := range data.Services.Modified {
+		createEvent(srv, evType)
+	}
 }
 
-type commit struct {
-	// Commit hash
-	Id string
-	// Time of commit
-	Timestamp string
-	// File changes
-	Added    []string
-	Removed  []string
-	Modified []string
-}
-
-func (c *commit) Files() []string {
-	files := append(c.Added, c.Removed...)
-	return append(files, c.Modified...)
+type githubWebhook struct {
+	Services struct {
+		Created  []string `json:"added"`
+		Modified []string `json:"modified"`
+		Deleted  []string `json:"removed"`
+	} `json:"services"`
+	CommitIDs []string `json:"commit_ids"`
+	Payload   struct {
+		Repository struct {
+			URL string `json:"url"`
+		} `json:"repository"`
+	} `json:"payload"`
 }
