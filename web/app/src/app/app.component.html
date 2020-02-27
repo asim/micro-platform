@@ -20,8 +20,12 @@
       <span class="menu-spacer"></span>
       <div style="padding-top: 4px;" fxShow="true" fxHide.lt-md>
         <!-- The following menu items will be hidden on both SM and XS screen sizes -->
-        <a *ngIf="user && user.teamName" routerLink="/services" mat-button>Services</a>
-        <a *ngIf="user && user.teamName" routerLink="/events" mat-button>Events</a>
+        <a *ngIf="user && user.teamName" routerLink="/services" mat-button
+          >Services</a
+        >
+        <a *ngIf="user && user.teamName" routerLink="/events" mat-button
+          >Events</a
+        >
 
         <mat-menu id="matmenu" #menu="matMenu">
           <button
@@ -92,7 +96,10 @@
   <mat-sidenav-container>
     <mat-sidenav style="width: 66%;" #sidenav>
       <mat-nav-list>
-        <div *ngIf="user && user.teamName" style="margin-bottom: 1em; padding-left: 1em;">
+        <div
+          *ngIf="user && user.teamName"
+          style="margin-bottom: 1em; padding-left: 1em;"
+        >
           <img
             *ngIf="user.avatarURL"
             style="vertical-align: middle; margin-right: 0.5em; border-radius: 3px; height: 2em; width: 2em;"
@@ -105,6 +112,15 @@
             ><mat-icon style="margin-right: 0.15em;">close</mat-icon>Close</a
           >
         </div>
+        <div *ngIf="user && user.teamName && user.teamURL">
+          <a mat-list-item (click)="goToTeam()"
+            ><img
+              *ngIf="user.organizationAvatarURL"
+              style="vertical-align: middle; margin-right: 0.5em; border-radius: 3px; height: 2em; width: 2em;"
+              src="{{ user.organizationAvatarURL }}"
+            />{{ user.teamName }}</a
+          >
+        </div>
         <div *ngIf="user && user.teamName">
           <a mat-list-item (click)="sidenav.toggle()" routerLink="/services"
             >Services</a
@@ -113,15 +129,6 @@
         <div *ngIf="user && user.teamName">
           <a mat-list-item (click)="sidenav.toggle()" routerLink="/events"
             >Events</a
-          >
-        </div>
-        <div *ngIf="user && user.teamName && user.teamURL">
-          <a mat-list-item (click)="goToTeam()"
-            ><img
-              *ngIf="user.organizationAvatarURL"
-              style="vertical-align: middle; margin-right: 0.5em; border-radius: 3px; height: 2em; width: 2em;"
-              src="{{ user.organizationAvatarURL }}"
-            />{{ user.teamName }}</a
           >
         </div>
         <div *ngIf="user && user.name">
