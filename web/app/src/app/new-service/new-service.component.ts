@@ -36,15 +36,13 @@ export class NewServiceComponent implements OnInit {
   failureEvent: types.Event;
   buildTimer = this.maxBuildTimer;
   progressPercentage = 0;
-  percenTages = [0, 10, 20, 80];
+  percentages = [0, 10, 20, 80];
   eventErrored = false;
   stepLabels = (): string[] => {
     return [
       "We are waiting for you to push your service...",
       "Found your service on GitHub. Waiting for the build to start...",
-      "Build is in progress. Build finishes in about " +
-        this.buildTimer.toFixed(1) +
-        " seconds...",
+      "Build is in progress. Waiting for the build to finish...",
       "Build finished. Waiting for your service to start...",
       "Ready to roll! Redirecting you to your service page..."
     ];
@@ -83,7 +81,6 @@ export class NewServiceComponent implements OnInit {
           if (this.eventErrored) {
             return;
           }
-          console.log(e);
           this.eventErrored = true;
           this.notif.error(
             "Error listing events",
@@ -96,7 +93,7 @@ export class NewServiceComponent implements OnInit {
       });
     }, 1500);
 
-    this.progressPercentage = this.percenTages[this.step];
+    this.progressPercentage = this.percentages[this.step];
   }
 
   keyPress(event: any) {
@@ -111,36 +108,51 @@ export class NewServiceComponent implements OnInit {
     ) {
       return;
     }
-    this.events.forEach(e => {
-      if (e.service.name != this.serviceName) {
+    const e = _.last(_.orderBy(this.events, e => e.timestamp, "asc"));
+    if (e.service.name != this.serviceName) {
+      return;
+    }
+    // source updated
+    if (e.type == 4) {
+      this.step = 1;
+      this.progressPercentage = this.percentages[1];
+    }
+    // build started and in progress
+    if (e.type == 5) {
+      this.step = 2;
+      this.buildTimer = this.maxBuildTimer;
+      this.progressPercentage = this.percentages[2];
+      this.startBuildTimer(e);
+    }
+    // build finished
+    if (e.type == 6) {
+      this.step = 3;
+      this.progressPercentage = this.percentages[3];
+    }
+    // build failure
+    if (e.type == 7) {
+      this.step = 1;
+      if (this.buildTimerIntervalId) {
+        this.stopBuildTimer();
+      }
+      if (this.progressPercentage == 0) {
+        this.progressPercentage = this.percentages[1];
+      }
+      if (this.lastBuildFailureTimestamp == e.timestamp) {
         return;
       }
-      // source updated
-      if (e.type == 4 && this.step < 1) {
-        this.step = 1;
-        this.progressPercentage = this.percenTages[1];
-      }
-      // build started
-      if (e.type == 5 && this.step < 2) {
-        this.step = 2;
-        this.progressPercentage = this.percenTages[2];
-        this.startBuildTimer(e);
-      }
-      // build finished
-      if (e.type == 6 && this.step < 3) {
-        this.step = 3;
-        this.progressPercentage = this.percenTages[3];
-      }
-      // build failure
-      if (e.type == 7) {
-        if (this.lastBuildFailureTimestamp == e.timestamp) {
-          return;
-        }
-        this.lastBuildFailureTimestamp = e.timestamp;
-        this.failureEvent = e;
-        this.notif.error("Build failed");
-      }
-    });
+      this.lastBuildFailureTimestamp = e.timestamp;
+      this.failureEvent = e;
+
+      this.notif.error(
+        "Build failed",
+        'Please see build <a href="' + this.buildUrl(e) + '">' + e &&
+          e.metadata &&
+          e.metadata["build"]
+          ? e.metadata["build"]
+          : "" + "</a>"
+      );
+    }
   }
 
   // todo: this is copypasted from events-list.compinent.ts, fix that
@@ -157,6 +169,7 @@ export class NewServiceComponent implements OnInit {
   stopBuildTimer() {
     if (this.buildTimerIntervalId) {
       clearInterval(this.buildTimerIntervalId);
+      this.buildTimerIntervalId = null;
     }
   }
 
@@ -168,16 +181,19 @@ export class NewServiceComponent implements OnInit {
       (new Date().getTime() - new Date(e.timestamp * 1000).getTime()) / 1000;
     if (secsSinceBuild > secRange) {
       this.buildTimer = this.minBuildTimer;
-      this.progressPercentage = this.progressPercentage[3];
+      this.progressPercentage = this.percentages[3];
       return;
     }
 
     const ratio = secsSinceBuild / secRange;
     this.buildTimer -= secRange * ratio;
-    const percentageRange = this.percenTages[3] - this.percenTages[2];
-    this.progressPercentage = this.percenTages[2] + percentageRange * ratio;
+    const percentageRange = this.percentages[3] - this.percentages[2];
+    this.progressPercentage = this.percentages[2] + percentageRange * ratio;
 
     const percentageStep = secRange / intervalSecs;
+    if (this.buildTimerIntervalId) {
+      return;
+    }
     this.buildTimerIntervalId = setInterval(() => {
       if (this.step !== 2) {
         return;
@@ -195,7 +211,7 @@ export class NewServiceComponent implements OnInit {
       // calculating how much to add based on the difference in percentage between
       // the third and second step.
       this.progressPercentage +=
-        (this.percenTages[3] - this.percenTages[2]) / percentageStep;
+        (this.percentages[3] - this.percentages[2]) / percentageStep;
     }, intervalSecs * 1000);
   }
 
