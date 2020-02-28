@@ -44,7 +44,9 @@ export class ServiceComponent implements OnInit {
   serviceName: string;
   endpointQuery: string;
   intervalId: any;
+  // refresh stats
   refresh = true;
+  refreshLogs = true;
 
   selected = 0;
   tabValueChange = new Subject<number>();
@@ -80,12 +82,10 @@ export class ServiceComponent implements OnInit {
   }
 
   loadVersionData() {
-    this.ses.logs(this.serviceName).then(logs => {
-      this.logs = logs;
-    });
     this.ses.trace(this.serviceName).then(spans => {
       this.traceSpans = spans;
     });
+    // stats subscriptions
     this.intervalId = setInterval(() => {
       if (this.selected !== 2 || !this.refresh) {
         return;
@@ -100,6 +100,23 @@ export class ServiceComponent implements OnInit {
       }
       this.ses.stats(this.serviceName).then(stats => {
         this.stats = stats;
+      });
+    });
+    // logs subscriptions
+    this.intervalId = setInterval(() => {
+      if (this.selected !== 1 || !this.refreshLogs) {
+        return;
+      }
+      this.ses.logs(this.serviceName).then(logs => {
+        this.logs = logs;
+      });
+    }, 2000);
+    this.tabValueChange.subscribe(index => {
+      if (index !== 1 || !this.refreshLogs) {
+        return;
+      }
+      this.ses.logs(this.serviceName).then(logs => {
+        this.logs = logs;
       });
     });
   }

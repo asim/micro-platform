@@ -54,7 +54,12 @@ export class EventsListComponent implements OnInit {
   }
 
   refresh() {
-    this.searched = this.events;
+    this.searched = this.events.filter(e => {
+      if (!e || !e.service || !e.service.name) {
+        return false;
+      }
+      return true;
+    });
     this.length = this.searched.length;
     this.iterator();
   }
