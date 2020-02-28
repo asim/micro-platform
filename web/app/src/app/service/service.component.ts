@@ -5,6 +5,7 @@ import { Location } from "@angular/common";
 import { ActivatedRoute } from "@angular/router";
 import { Subject } from "rxjs";
 import * as _ from "lodash";
+import { NotificationsService } from "angular2-notifications";
 
 const tabNamesToIndex = {
   "": 0,
@@ -54,7 +55,8 @@ export class ServiceComponent implements OnInit {
   constructor(
     private ses: ServiceService,
     private activeRoute: ActivatedRoute,
-    private location: Location
+    private location: Location,
+    private notif: NotificationsService
   ) {}
 
   ngOnInit() {
@@ -70,9 +72,17 @@ export class ServiceComponent implements OnInit {
             ? "latest"
             : this.services[0].version;
       });
-      this.ses.events(this.serviceName).then(events => {
-        this.events = events;
-      });
+      this.ses
+        .events(this.serviceName)
+        .then(events => {
+          this.events = events;
+        })
+        .catch(e => {
+          this.notif.error(
+            "Error listing events",
+            JSON.parse(e.error.error).detail
+          );
+        });
       this.loadVersionData();
       const tab = <string>p["tab"];
       if (tab) {
@@ -82,42 +92,101 @@ export class ServiceComponent implements OnInit {
   }
 
   loadVersionData() {
-    this.ses.trace(this.serviceName).then(spans => {
-      this.traceSpans = spans;
-    });
+    this.ses
+      .trace(this.serviceName)
+      .then(spans => {
+        this.traceSpans = spans;
+      })
+      .catch(e => {
+        console.log(e);
+        this.notif.error(
+          "Error listing trace",
+          JSON.parse(e.error.error).detail
+        );
+      });
     // stats subscriptions
+    let statsFailure = false;
     this.intervalId = setInterval(() => {
       if (this.selected !== 2 || !this.refresh) {
         return;
       }
-      this.ses.stats(this.serviceName).then(stats => {
-        this.stats = stats;
-      });
+      this.ses
+        .stats(this.serviceName)
+        .then(stats => {
+          this.stats = stats;
+        })
+        .catch(e => {
+          if (statsFailure) {
+            return;
+          }
+          statsFailure = true;
+          this.notif.error(
+            "Error reading stats",
+            JSON.parse(e.error.error).detail
+          );
+        });
     }, 2000);
     this.tabValueChange.subscribe(index => {
       if (index !== 2 || !this.refresh) {
         return;
       }
-      this.ses.stats(this.serviceName).then(stats => {
-        this.stats = stats;
-      });
+      this.ses
+        .stats(this.serviceName)
+        .then(stats => {
+          this.stats = stats;
+        })
+        .catch(e => {
+          if (statsFailure) {
+            return;
+          }
+          statsFailure = true;
+          this.notif.error(
+            "Error reading stats",
+            JSON.parse(e.error.error).detail
+          );
+        });
     });
     // logs subscriptions
+    let logFailure = false;
     this.intervalId = setInterval(() => {
       if (this.selected !== 1 || !this.refreshLogs) {
         return;
       }
-      this.ses.logs(this.serviceName).then(logs => {
-        this.logs = logs;
-      });
+      this.ses
+        .logs(this.serviceName)
+        .then(logs => {
+          this.logs = logs;
+        })
+        .catch(e => {
+          if (logFailure) {
+            return;
+          }
+          logFailure = true;
+          this.notif.error(
+            "Error reading logs",
+            JSON.parse(e.error.error).detail
+          );
+        });
     }, 2000);
     this.tabValueChange.subscribe(index => {
       if (index !== 1 || !this.refreshLogs) {
         return;
       }
-      this.ses.logs(this.serviceName).then(logs => {
-        this.logs = logs;
-      });
+      this.ses
+        .logs(this.serviceName)
+        .then(logs => {
+          this.logs = logs;
+        })
+        .catch(e => {
+          if (logFailure) {
+            return;
+          }
+          logFailure = true;
+          this.notif.error(
+            "Error reading logs",
+            JSON.parse(e.error.error).detail
+          );
+        });
     });
   }
 
