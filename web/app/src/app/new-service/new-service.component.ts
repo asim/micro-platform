@@ -5,6 +5,7 @@ import { ServiceService } from "../service.service";
 import * as types from "../types";
 import { Router, ActivatedRoute } from "@angular/router";
 import * as _ from "lodash";
+import { NotificationsService } from "angular2-notifications";
 
 @Component({
   selector: "app-new-service",
@@ -30,9 +31,12 @@ export class NewServiceComponent implements OnInit {
   // approximate time it will take to finisht the build
   maxBuildTimer = 60;
   minBuildTimer = 5;
+  // no id for events so have to use timestamp
+  lastBuildFailureTimestamp = 0;
   buildTimer = this.maxBuildTimer;
   progressPercentage = 0;
   percenTages = [0, 10, 20, 80];
+  eventErrored = false;
   stepLabels = (): string[] => {
     return [
       "We are waiting for you to push your service...",
@@ -50,7 +54,8 @@ export class NewServiceComponent implements OnInit {
     private ses: ServiceService,
     private router: Router,
     private location: Location,
-    private activeRoute: ActivatedRoute
+    private activeRoute: ActivatedRoute,
+    private notif: NotificationsService
   ) {}
 
   ngOnInit() {
@@ -67,10 +72,22 @@ export class NewServiceComponent implements OnInit {
       this.namespace + "." + this.serviceType + "." + this.alias;
 
     this.intervalId = setInterval(() => {
-      this.ses.events(this.serviceName).then(events => {
-        this.events = events;
-        this.checkEvents();
-      });
+      this.ses
+        .events(this.serviceName)
+        .then(events => {
+          this.events = events;
+          this.checkEvents();
+        })
+        .catch(e => {
+          if (this.eventErrored) {
+            return;
+          }
+          this.eventErrored = true;
+          this.notif.error(
+            "Error listing events",
+            JSON.parse(e.error.error).detail
+          );
+        });
       this.ses.list().then(services => {
         this.services = services;
         this.checkServices();
@@ -111,6 +128,14 @@ export class NewServiceComponent implements OnInit {
       if (e.type == 6 && this.step < 3) {
         this.step = 3;
         this.progressPercentage = this.percenTages[3];
+      }
+      // build failure
+      if (e.type == 7) {
+        if (this.lastBuildFailureTimestamp == e.timestamp) {
+          return;
+        }
+        this.lastBuildFailureTimestamp = e.timestamp;
+        this.notif.error("Build failed");
       }
     });
   }
