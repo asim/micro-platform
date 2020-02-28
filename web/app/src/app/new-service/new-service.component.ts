@@ -33,6 +33,7 @@ export class NewServiceComponent implements OnInit {
   minBuildTimer = 5;
   // no id for events so have to use timestamp
   lastBuildFailureTimestamp = 0;
+  failureEvent: types.Event;
   buildTimer = this.maxBuildTimer;
   progressPercentage = 0;
   percenTages = [0, 10, 20, 80];
@@ -44,7 +45,7 @@ export class NewServiceComponent implements OnInit {
       "Build is in progress. Build finishes in about " +
         this.buildTimer.toFixed(1) +
         " seconds...",
-      "Build finished. Waiting for you to start your service...",
+      "Build finished. Waiting for your service to start...",
       "Ready to roll! Redirecting you to your service page..."
     ];
   };
@@ -82,6 +83,7 @@ export class NewServiceComponent implements OnInit {
           if (this.eventErrored) {
             return;
           }
+          console.log(e);
           this.eventErrored = true;
           this.notif.error(
             "Error listing events",
@@ -135,9 +137,21 @@ export class NewServiceComponent implements OnInit {
           return;
         }
         this.lastBuildFailureTimestamp = e.timestamp;
+        this.failureEvent = e;
         this.notif.error("Build failed");
       }
     });
+  }
+
+  // todo: this is copypasted from events-list.compinent.ts, fix that
+  buildUrl(e: types.Event): string {
+    if (!e.metadata) {
+      return "";
+    }
+    const repo = e.metadata["repo"];
+    const buildId = e.metadata["build"];
+    // eg. https://github.com/micro/services/runs/466859781
+    return "https://" + repo + "/actions/runs/" + buildId;
   }
 
   stopBuildTimer() {
