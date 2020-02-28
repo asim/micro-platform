@@ -33,9 +33,24 @@
       New service
     </mat-card-title>
 
-    <div *ngIf="step == 3" style="vertical-align: center;">
+    <div *ngIf="step == 0 && !failureEvent">
       <p>
-        <span style="font-weight: 700">Login in terminal:</span>
+        Create your service with the following commands:
+      </p>
+
+      <pre
+        class="code-wrapper"
+        *ngIf="step == 0"
+        style="margin-top: 0.5em;"
+      ><code [highlight]="code" [languages]="languages" [lineNumbers]="false"></code><mat-icon ngxClipboard cbContent="{{code}}" class="copy-icon">file_copy</mat-icon></pre>
+    </div>
+    <div *ngIf="step == 3 && !failureEvent" style="vertical-align: center;">
+      <p>
+        Your service is being auto-deployed. Optionally use the step below to
+        manually run the service.
+      </p>
+      <p>
+        Login in terminal:
         <code
           >micro login $token
           <button mat-stroked-button>
@@ -54,27 +69,26 @@
         <a routerLink="/settings/tokens">After logging in</a>, start your
         service with the following command:
       </p>
+      <pre
+        class="code-wrapper"
+        *ngIf="step == 3"
+        style="margin-top: 0.5em;"
+      ><code [highlight]="runCode" [languages]="languages" [lineNumbers]="false"></code><mat-icon ngxClipboard cbContent="{{runCode}}" class="copy-icon">file_copy</mat-icon></pre>
     </div>
-    <div *ngIf="step == 0">
-      <p>
-        Create your service with the following commands:
-      </p>
+    <div *ngIf="!failureEvent">
+      <br />
+      {{ this.stepLabels()[this.step] }}<br /><br />
+      <mat-progress-bar
+        mode="determinate"
+        value="{{ progressPercentage }}"
+      ></mat-progress-bar>
     </div>
-    <pre
-      class="code-wrapper"
-      *ngIf="step == 0"
-      style="margin-top: 0.5em;"
-    ><code [highlight]="code" [languages]="languages" [lineNumbers]="false"></code><mat-icon ngxClipboard cbContent="{{code}}" class="copy-icon">file_copy</mat-icon></pre>
-    <pre
-      class="code-wrapper"
-      *ngIf="step == 3"
-      style="margin-top: 0.5em;"
-    ><code [highlight]="runCode" [languages]="languages" [lineNumbers]="false"></code><mat-icon ngxClipboard cbContent="{{runCode}}" class="copy-icon">file_copy</mat-icon></pre>
-    <br />
-    {{ this.stepLabels()[this.step] }}<br /><br />
-    <mat-progress-bar
-      mode="determinate"
-      value="{{ progressPercentage }}"
-    ></mat-progress-bar>
+    <div *ngIf="failureEvent">
+      Please fix
+      <a href="{{ buildUrl(failureEvent) }}"
+        >build {{ (failureEvent?.metadata)["build"] }}</a
+      >
+      to continue.
+    </div>
   </mat-card>
 </div>

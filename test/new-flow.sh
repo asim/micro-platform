@@ -2,8 +2,8 @@ micro call go.micro.platform Platform.CreateEvent '{"event":{"service":{"name": 
 sleep 5
 micro call go.micro.platform Platform.CreateEvent '{"event":{"service":{"name": "go.micro.srv.'$1'"}, "type": 5}}'
 # Build failure test optional
-sleep 5
-micro call go.micro.platform Platform.CreateEvent '{"event":{"service":{"name": "go.micro.srv.'$1'"}, "type": 7}}'
+#sleep 5
+#micro call go.micro.platform Platform.CreateEvent '{"event":{"service":{"name": "go.micro.srv.'$1'"}, "type": 7, "metadata":{"build": "4567863", "repo":"github.com/micro/services"}}}'
 
 sleep 60
 
