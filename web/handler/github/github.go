@@ -159,6 +159,9 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 				Service: &platform.Service{
 					Name:    srv,
 					Version: DefaultVersion,
+					Metadata: map[string]string{
+						"build": commitID,
+					},
 				},
 			})
 
@@ -173,6 +176,9 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 				Service: &platform.Service{
 					Name:    srv,
 					Version: DefaultVersion,
+					Metadata: map[string]string{
+						"build": commitID,
+					},
 				},
 			})
 
