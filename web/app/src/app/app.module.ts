@@ -115,6 +115,7 @@ export function getHighlightLanguages() {
     HttpClientModule,
     SimpleNotificationsModule.forRoot({
       //position: ["top", "right"],
+
     }),
     MatCardModule,
     MatChipsModule,

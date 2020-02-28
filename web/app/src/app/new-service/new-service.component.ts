@@ -82,10 +82,11 @@ export class NewServiceComponent implements OnInit {
             return;
           }
           this.eventErrored = true;
-          this.notif.error(
-            "Error listing events",
-            JSON.parse(e.error.error).detail
-          );
+          let errMsg = "";
+          try {
+            errMsg = JSON.parse(e.error.error).detail;
+          } catch (e) {}
+          this.notif.error("Error listing events", errMsg);
         });
       this.ses.list().then(services => {
         this.services = services;
@@ -106,6 +107,9 @@ export class NewServiceComponent implements OnInit {
       !this.serviceName ||
       new Date().getTime() - this.lastKeypress.getTime() < 1500
     ) {
+      return;
+    }
+    if (!this.events || this.events.length == 0) {
       return;
     }
     const e = _.last(_.orderBy(this.events, e => e.timestamp, "asc"));
@@ -143,14 +147,15 @@ export class NewServiceComponent implements OnInit {
       }
       this.lastBuildFailureTimestamp = e.timestamp;
       this.failureEvent = e;
-
+      const buildNum =
+        e.metadata && e.metadata["build"] ? e.metadata["build"] : "";
       this.notif.error(
         "Build failed",
-        'Please see build <a href="' + this.buildUrl(e) + '">' + e &&
-          e.metadata &&
-          e.metadata["build"]
-          ? e.metadata["build"]
-          : "" + "</a>"
+        'Please see build <a target="_blank" href="' +
+          this.buildUrl(e) +
+          '">' +
+          buildNum +
+          "</a>"
       );
     }
   }
