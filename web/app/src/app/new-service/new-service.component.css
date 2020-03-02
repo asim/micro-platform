@@ -22,3 +22,8 @@ code {
   color: #f5f5f5;
   cursor: pointer;
 }
+
+.simple-notification a {
+  color: #f3f3f3 !important;
+  text-decoration: underline;
+}

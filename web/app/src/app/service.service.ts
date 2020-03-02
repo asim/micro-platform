@@ -28,6 +28,9 @@ export class ServiceService {
         .toPromise()
         .then(servs => {
           resolve(servs as types.Service[]);
+        })
+        .catch(e => {
+          reject(e);
         });
     });
   }
@@ -45,6 +48,9 @@ export class ServiceService {
         .toPromise()
         .then(servs => {
           resolve(servs as types.LogRecord[]);
+        })
+        .catch(e => {
+          reject(e);
         });
     });
   }
@@ -62,6 +68,9 @@ export class ServiceService {
         .toPromise()
         .then(servs => {
           resolve(servs as types.DebugSnapshot[]);
+        })
+        .catch(e => {
+          reject(e);
         });
     });
   }
@@ -81,6 +90,9 @@ export class ServiceService {
         .toPromise()
         .then(servs => {
           resolve(servs as types.Span[]);
+        })
+        .catch(e => {
+          reject(e);
         });
     });
   }
@@ -94,14 +106,13 @@ export class ServiceService {
           resolve(JSON.stringify(response, null, "  "));
         })
         .catch(e => {
-          resolve(e);
+          reject(e);
         });
     });
   }
 
   events(service?: string): Promise<types.Event[]> {
-
-    const serviceQuery = service ? "?service=" + service : '';
+    const serviceQuery = service ? "?service=" + service : "";
     return new Promise<types.Event[]>((resolve, reject) => {
       return this.http
         .get<types.Event[]>(
@@ -112,7 +123,7 @@ export class ServiceService {
           resolve(_.orderBy(events, e => e.timestamp, ["desc"]));
         })
         .catch(e => {
-          resolve(e);
+          reject(e);
         });
     });
   }
