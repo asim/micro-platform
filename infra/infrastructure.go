@@ -49,7 +49,7 @@ func (p *Platform) Steps() ([]Step, error) {
 		&TerraformModule{
 			ID:     p.Name + "-global-kv",
 			Name:   p.Name + "-global-kv",
-			Source: "./infrastructure/kv/" + p.Kv,
+			Source: "./infra/kv/" + p.Kv,
 			Path:   fmt.Sprintf("/tmp/%s-%d", p.Name+"-kv", dirSuffix),
 		},
 	})
@@ -60,7 +60,7 @@ func (p *Platform) Steps() ([]Step, error) {
 			&TerraformModule{
 				ID:     p.Name + "-" + r.Region + "-" + r.Provider + "-k8s",
 				Name:   p.Name + "-" + r.Region + "-" + r.Provider + "-k8s",
-				Source: "./infrastructure/kubernetes/" + r.Provider,
+				Source: "./infra/kubernetes/" + r.Provider,
 				Path:   fmt.Sprintf("/tmp/%s-%s-%s-%d", p.Name, r.Region, r.Provider, dirSuffix),
 			},
 		})
@@ -73,7 +73,7 @@ func (p *Platform) Steps() ([]Step, error) {
 			&TerraformModule{
 				ID:        p.Name + "-" + r.Region + "-" + r.Provider + "-kubeconfig",
 				Name:      p.Name + "-" + r.Region + "-" + r.Provider + "-kubeconfig",
-				Source:    "./infrastructure/kubernetes/kubeconfig",
+				Source:    "./infra/kubernetes/kubeconfig",
 				Path:      fmt.Sprintf("/tmp/%s-%s-%s-kubeconfig-%d", p.Name, r.Region, r.Provider, dirSuffix),
 				Variables: vars,
 			},
@@ -90,7 +90,7 @@ func (p *Platform) Steps() ([]Step, error) {
 			&TerraformModule{
 				ID:        p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces",
 				Name:      p.Name + "-" + r.Region + "-" + r.Provider + "-namespaces",
-				Source:    "./infrastructure/kubernetes/namespaces",
+				Source:    "./infra/kubernetes/namespaces",
 				Path:      fmt.Sprintf("/tmp/%s-%s-%s-namespaces-%d", p.Name, r.Region, r.Provider, dirSuffix),
 				Variables: vars,
 				Env:       env,
@@ -112,7 +112,7 @@ func (p *Platform) Steps() ([]Step, error) {
 			&TerraformModule{
 				ID:           p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
 				Name:         p.Name + "-" + r.Region + "-" + r.Provider + "-resource",
-				Source:       "./infrastructure/resource",
+				Source:       "./infra/resource",
 				Path:         fmt.Sprintf("/tmp/%s-%s-%s-resource-%d", p.Name, r.Region, r.Provider, dirSuffix),
 				Variables:    vars,
 				Env:          env,
@@ -131,7 +131,7 @@ func (p *Platform) Steps() ([]Step, error) {
 			&TerraformModule{
 				ID:           p.Name + "-" + r.Region + "-" + r.Provider + "-control",
 				Name:         p.Name + "-" + r.Region + "-" + r.Provider + "-control",
-				Source:       "./infrastructure/control",
+				Source:       "./infra/control",
 				Path:         fmt.Sprintf("/tmp/%s-%s-%s-control-%d", p.Name, r.Region, r.Provider, dirSuffix),
 				Variables:    vars,
 				Env:          env,
@@ -155,7 +155,7 @@ func (p *Platform) Steps() ([]Step, error) {
 			&TerraformModule{
 				ID:           p.Name + "-" + r.Region + "-" + r.Provider + "-network",
 				Name:         p.Name + "-" + r.Region + "-" + r.Provider + "-network",
-				Source:       "./infrastructure/network",
+				Source:       "./infra/network",
 				Path:         fmt.Sprintf("/tmp/%s-%s-%s-network-%d", p.Name, r.Region, r.Provider, dirSuffix),
 				Variables:    vars,
 				Env:          env,

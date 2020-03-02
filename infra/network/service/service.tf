@@ -1,6 +1,5 @@
 locals {
   common_labels = {
-    "micro" = "runtime"
     "service-name"  = var.service_name
   }
   common_annotations = {
@@ -51,16 +50,13 @@ resource "kubernetes_ingress" "network_ingress" {
     labels    = merge(local.common_labels, var.extra_labels)
     annotations = {
       // We only expose services that manage their own certificates
-      "nginx.ingress.kubernetes.io/ssl-passthrough" = "true"
-      "nginx.ingress.kubernetes.io/service-upstream" = "true"
-      "nginx.ingress.kubernetes.io/secure-backends" = "true"
-      "nginx.ingress.kubernetes.io/backend-protocol" = "HTTPS"
+      "haproxy.org/ssl-passthrough" = "true"
     }
   }
   spec {
-    # tls {
-    #   hosts = var.domain_names
-    # }
+    tls {
+      hosts = var.domain_names
+    }
     dynamic "rule" {
       for_each = var.domain_names
       content {

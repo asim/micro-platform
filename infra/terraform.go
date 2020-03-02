@@ -149,8 +149,8 @@ func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) err
 	} {
 		go func(name string, in io.ReadCloser, out *os.File, done chan<- struct{}) {
 			r := bufio.NewReader(in)
-			defer in.Close()
 			defer func() { done <- struct{}{} }()
+			defer in.Close()
 			for {
 				s, err := r.ReadString('\n')
 				if err == nil || err == io.EOF {
