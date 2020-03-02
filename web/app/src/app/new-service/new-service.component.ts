@@ -36,6 +36,7 @@ export class NewServiceComponent implements OnInit {
   buildTimerIntervalId: any;
   lastKeypress = new Date();
   loadingServices = false;
+  loaded = false;
   events: types.Event[] = [];
   services: types.Service[] = [];
   lastInput;
@@ -86,7 +87,7 @@ export class NewServiceComponent implements OnInit {
     this.serviceName =
       this.namespace + "." + this.serviceType + "." + this.alias;
 
-    this.loadAll();
+    this.loadAll(true);
     this.intervalId = setInterval(() => {
       this.loadAll();
     }, 1500);
@@ -96,12 +97,14 @@ export class NewServiceComponent implements OnInit {
   ngAfterViewInit() {
     const source = rxjs.fromEvent(this.sinput.nativeElement, "keyup");
     source.pipe(debounceTime(600)).subscribe(c => {
-      this.loadingServices = true
-      this.loadAll();
+      this.loadAll(true);
     });
   }
 
-  loadAll() {
+  loadAll(setLoader?: boolean) {
+    if (setLoader) {
+      this.loadingServices = true;
+    }
     this.ses
       .events(this.serviceName)
       .then(events => {
@@ -121,8 +124,11 @@ export class NewServiceComponent implements OnInit {
       });
     this.ses.list().then(services => {
       this.services = services;
-      this.checkServices();
-      this.loadingServices = false;
+      this.checkServices(setLoader);
+      if (setLoader) {
+        this.loadingServices = false;
+      }
+      this.loaded = true;
     });
   }
 
@@ -139,12 +145,6 @@ export class NewServiceComponent implements OnInit {
   }
 
   checkEvents() {
-    if (
-      !this.serviceName ||
-      new Date().getTime() - this.lastKeypress.getTime() < 1500
-    ) {
-      return;
-    }
     if (!this.events || this.events.length == 0) {
       return;
     }
@@ -256,28 +256,27 @@ export class NewServiceComponent implements OnInit {
     }, intervalSecs * 1000);
   }
 
-  checkServices() {
-    if (
-      !this.serviceName ||
-      new Date().getTime() - this.lastKeypress.getTime() < 1500
-    ) {
-      return;
-    }
+  checkServices(setExists?: boolean) {
     const inRegistry =
       this.services.filter(e => {
         return e.name == this.serviceName;
       }).length > 0;
     if (!inRegistry) {
-      this.serviceExists = false;
-      this.serviceInput.markAsTouched();
+      if (setExists) {
+        this.serviceExists = false;
+        this.serviceExists = false;
+        this.serviceInput.markAsTouched();
+      }
       return;
     }
     if (this.step == 0) {
       // Only checking for service exist on step 0
       // to support "service already exists "
-      this.serviceExists = true;
-      this.serviceInput.setErrors({ incorrect: true });
-      this.serviceInput.markAsTouched();
+      if (setExists) {
+        this.serviceExists = true;
+        this.serviceInput.setErrors({ incorrect: true });
+        this.serviceInput.markAsTouched();
+      }
     } else if (this.step < 4) {
       this.step = 4;
       this.progressPercentage = 100;

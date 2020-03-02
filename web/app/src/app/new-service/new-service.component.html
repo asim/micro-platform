@@ -38,7 +38,7 @@
       </mat-form-field>
     </mat-card-title>
   </mat-card>
-  <mat-card style="padding-top: 0; margin-top: 0;" class="mat-card-flat">
+  <mat-card *ngIf="loaded" style="padding-top: 0; margin-top: 0;" class="mat-card-flat">
     <!-- Next level cruft alert. Input box adds margin which is not present on steps 1+ -->
     <br *ngIf="step != 0" />
     <mat-card-title>
