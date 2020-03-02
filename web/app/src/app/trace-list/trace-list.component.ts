@@ -13,7 +13,7 @@ export class TraceListComponent implements OnInit {
 
   traceDatas: any[] = [];
   traceDatasPart: any[] = [];
-  public pageSize = 10;
+  public pageSize = 20;
   public currentPage = 0;
   public length = 0;
 
@@ -21,6 +21,13 @@ export class TraceListComponent implements OnInit {
     this.currentPage = e.pageIndex;
     this.pageSize = e.pageSize;
     this.iterator();
+  }
+
+  private iterator() {
+    const end = (this.currentPage + 1) * this.pageSize;
+    const start = this.currentPage * this.pageSize;
+    const part = this.traceDatas.slice(start, end);
+    this.traceDatasPart = part;
   }
 
   constructor() {}
@@ -61,13 +68,6 @@ export class TraceListComponent implements OnInit {
     })[0][1] as string)
       .split(":")[1]
       .split(" ")[1];
-  }
-
-  private iterator() {
-    const end = (this.currentPage + 1) * this.pageSize;
-    const start = this.currentPage * this.pageSize;
-    const part = this.traceDatas.slice(start, end);
-    this.traceDatasPart = part;
   }
 
   processTraces() {

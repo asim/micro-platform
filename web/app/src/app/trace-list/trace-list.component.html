@@ -13,6 +13,9 @@
   </div>
 </div>
 <br />
+<div *ngIf="!traceDatasPart || traceDatasPart.length == 0">
+  No traces.
+</div>
 <ng-container *ngFor="let traceData of traceDatasPart">
   <div fxHide.lt-md class="full-line" fxLayout="row">
     <div fxFlex="20%">

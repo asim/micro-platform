@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/micro/go-micro/v2"
 	log "github.com/micro/go-micro/v2/logger"
@@ -49,10 +51,10 @@ func NewHandler(srv micro.Service) *Handler {
 // as it would any other request, ensuring there is no duplicate logic.
 func (h *Handler) HandleEvent(ctx context.Context, event *runtimepb.Event) error {
 	req := &pb.CreateEventRequest{Event: &pb.Event{
-		Type:      runtimeEventsMap[event.Type],
+		Type:      RuntimeEventsMap[event.Type],
 		Timestamp: event.Timestamp,
 		Service: &pb.Service{
-			Name:    event.Service,
+			Name:    nameForService(event.Service),
 			Version: event.Version,
 		},
 	}}
@@ -60,8 +62,29 @@ func (h *Handler) HandleEvent(ctx context.Context, event *runtimepb.Event) error
 	return h.CreateEvent(ctx, req, &pb.CreateEventResponse{})
 }
 
-var runtimeEventsMap = map[string]pb.EventType{
-	"create": pb.EventType_ServiceCreated,
-	"update": pb.EventType_ServiceUpdated,
-	"delete": pb.EventType_ServiceDeleted,
+var (
+	// RuntimeEventsMap stores the map of runtime event types
+	// and the service event type.
+	RuntimeEventsMap = map[string]pb.EventType{
+		"create": pb.EventType_ServiceCreated,
+		"update": pb.EventType_ServiceUpdated,
+		"delete": pb.EventType_ServiceDeleted,
+	}
+	// DefaultNamespace is the default namespace of the services,
+	// this will eventually be loaded from config
+	DefaultNamespace = "go.micro"
+)
+
+// nameForService determines the name of the service from the directory path,
+// e.g. foo/bar becomes go.micro.srv.foo-bar and foo/api becomes go.micro.api.foo
+func nameForService(srv string) string {
+	var name string
+	if strings.HasSuffix(srv, "web") {
+		name = fmt.Sprintf("%v.web.%v", DefaultNamespace, strings.ReplaceAll(srv, "/web", ""))
+	} else if strings.HasSuffix(srv, "api") {
+		name = fmt.Sprintf("%v.api.%v", DefaultNamespace, strings.ReplaceAll(srv, "/api", ""))
+	} else {
+		name = fmt.Sprintf("%v.srv.%v", DefaultNamespace, srv)
+	}
+	return strings.ReplaceAll(name, "/", "-")
 }

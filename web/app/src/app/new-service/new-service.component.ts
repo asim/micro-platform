@@ -5,6 +5,7 @@ import { ServiceService } from "../service.service";
 import * as types from "../types";
 import { Router, ActivatedRoute } from "@angular/router";
 import * as _ from "lodash";
+import { NotificationsService } from "angular2-notifications";
 
 @Component({
   selector: "app-new-service",
@@ -30,17 +31,19 @@ export class NewServiceComponent implements OnInit {
   // approximate time it will take to finisht the build
   maxBuildTimer = 60;
   minBuildTimer = 5;
+  // no id for events so have to use timestamp
+  lastBuildFailureTimestamp = 0;
+  failureEvent: types.Event;
   buildTimer = this.maxBuildTimer;
   progressPercentage = 0;
-  percenTages = [0, 10, 20, 80];
+  percentages = [0, 10, 20, 80];
+  eventErrored = false;
   stepLabels = (): string[] => {
     return [
       "We are waiting for you to push your service...",
       "Found your service on GitHub. Waiting for the build to start...",
-      "Build is in progress. Build finishes in about " +
-        this.buildTimer.toFixed(1) +
-        " seconds...",
-      "Build finished. Waiting for you to start your service...",
+      "Build is in progress. Waiting for the build to finish...",
+      "Build finished. Waiting for your service to start...",
       "Ready to roll! Redirecting you to your service page..."
     ];
   };
@@ -50,7 +53,8 @@ export class NewServiceComponent implements OnInit {
     private ses: ServiceService,
     private router: Router,
     private location: Location,
-    private activeRoute: ActivatedRoute
+    private activeRoute: ActivatedRoute,
+    private notif: NotificationsService
   ) {}
 
   ngOnInit() {
@@ -58,8 +62,8 @@ export class NewServiceComponent implements OnInit {
       const id = <string>p["id"];
       if (id) {
         this.alias = _.last(id.split("."));
-        this.regen();
       }
+      this.regen();
     });
 
     this.token = this.us.token();
@@ -67,17 +71,30 @@ export class NewServiceComponent implements OnInit {
       this.namespace + "." + this.serviceType + "." + this.alias;
 
     this.intervalId = setInterval(() => {
-      this.ses.events(this.serviceName).then(events => {
-        this.events = events;
-        this.checkEvents();
-      });
+      this.ses
+        .events(this.serviceName)
+        .then(events => {
+          this.events = events;
+          this.checkEvents();
+        })
+        .catch(e => {
+          if (this.eventErrored) {
+            return;
+          }
+          this.eventErrored = true;
+          let errMsg = "";
+          try {
+            errMsg = JSON.parse(e.error.error).detail;
+          } catch (e) {}
+          this.notif.error("Error listing events", errMsg);
+        });
       this.ses.list().then(services => {
         this.services = services;
         this.checkServices();
       });
     }, 1500);
 
-    this.progressPercentage = this.percenTages[this.step];
+    this.progressPercentage = this.percentages[this.step];
   }
 
   keyPress(event: any) {
@@ -92,32 +109,72 @@ export class NewServiceComponent implements OnInit {
     ) {
       return;
     }
-    this.events.forEach(e => {
-      if (e.service.name != this.serviceName) {
+    if (!this.events || this.events.length == 0) {
+      return;
+    }
+    const e = _.last(_.orderBy(this.events, e => e.timestamp, "asc"));
+    if (e.service.name != this.serviceName) {
+      return;
+    }
+    // source updated
+    if (e.type == 4) {
+      this.step = 1;
+      this.progressPercentage = this.percentages[1];
+    }
+    // build started and in progress
+    if (e.type == 5) {
+      this.step = 2;
+      this.buildTimer = this.maxBuildTimer;
+      this.progressPercentage = this.percentages[2];
+      this.startBuildTimer(e);
+    }
+    // build finished
+    if (e.type == 6) {
+      this.step = 3;
+      this.progressPercentage = this.percentages[3];
+    }
+    // build failure
+    if (e.type == 7) {
+      this.step = 1;
+      if (this.buildTimerIntervalId) {
+        this.stopBuildTimer();
+      }
+      if (this.progressPercentage == 0) {
+        this.progressPercentage = this.percentages[1];
+      }
+      if (this.lastBuildFailureTimestamp == e.timestamp) {
         return;
       }
-      // source updated
-      if (e.type == 4 && this.step < 1) {
-        this.step = 1;
-        this.progressPercentage = this.percenTages[1];
-      }
-      // build started
-      if (e.type == 5 && this.step < 2) {
-        this.step = 2;
-        this.progressPercentage = this.percenTages[2];
-        this.startBuildTimer(e);
-      }
-      // build finished
-      if (e.type == 6 && this.step < 3) {
-        this.step = 3;
-        this.progressPercentage = this.percenTages[3];
-      }
-    });
+      this.lastBuildFailureTimestamp = e.timestamp;
+      this.failureEvent = e;
+      const buildNum =
+        e.metadata && e.metadata["build"] ? e.metadata["build"] : "";
+      this.notif.error(
+        "Build failed",
+        'Please see build <a target="_blank" href="' +
+          this.buildUrl(e) +
+          '">' +
+          buildNum +
+          "</a>"
+      );
+    }
+  }
+
+  // todo: this is copypasted from events-list.compinent.ts, fix that
+  buildUrl(e: types.Event): string {
+    if (!e.metadata) {
+      return "";
+    }
+    const repo = e.metadata["repo"];
+    const buildId = e.metadata["build"];
+    // eg. https://github.com/micro/services/runs/466859781
+    return "https://" + repo + "/actions/runs/" + buildId;
   }
 
   stopBuildTimer() {
     if (this.buildTimerIntervalId) {
       clearInterval(this.buildTimerIntervalId);
+      this.buildTimerIntervalId = null;
     }
   }
 
@@ -129,16 +186,19 @@ export class NewServiceComponent implements OnInit {
       (new Date().getTime() - new Date(e.timestamp * 1000).getTime()) / 1000;
     if (secsSinceBuild > secRange) {
       this.buildTimer = this.minBuildTimer;
-      this.progressPercentage = this.progressPercentage[3];
+      this.progressPercentage = this.percentages[3];
       return;
     }
 
     const ratio = secsSinceBuild / secRange;
     this.buildTimer -= secRange * ratio;
-    const percentageRange = this.percenTages[3] - this.percenTages[2];
-    this.progressPercentage = this.percenTages[2] + percentageRange * ratio;
+    const percentageRange = this.percentages[3] - this.percentages[2];
+    this.progressPercentage = this.percentages[2] + percentageRange * ratio;
 
     const percentageStep = secRange / intervalSecs;
+    if (this.buildTimerIntervalId) {
+      return;
+    }
     this.buildTimerIntervalId = setInterval(() => {
       if (this.step !== 2) {
         return;
@@ -156,7 +216,7 @@ export class NewServiceComponent implements OnInit {
       // calculating how much to add based on the difference in percentage between
       // the third and second step.
       this.progressPercentage +=
-        (this.percenTages[3] - this.percenTages[2]) / percentageStep;
+        (this.percentages[3] - this.percentages[2]) / percentageStep;
     }, intervalSecs * 1000);
   }
 

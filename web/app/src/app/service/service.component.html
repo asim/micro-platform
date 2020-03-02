@@ -57,6 +57,9 @@
         ></app-endpoint-list>
       </mat-tab>
       <mat-tab label="Logs">
+        <div style="text-align: center; margin-top: 1.5em;">
+          <mat-checkbox [(ngModel)]="refreshLogs">Refresh</mat-checkbox>
+        </div>
         <app-logs [logs]="logs"></app-logs>
       </mat-tab>
       <mat-tab label="Stats">

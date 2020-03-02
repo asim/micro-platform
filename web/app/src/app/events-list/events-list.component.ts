@@ -6,20 +6,24 @@ const eventTypes = {
   1: "ServiceCreated",
   2: "ServiceDeleted",
   3: "ServiceUpdated",
-  4: "SourceUpdated",
+  4: "SourceCreated",
   5: "BuildStarted",
   6: "BuildFinished",
-  7: "BuildFailed"
+  7: "BuildFailed",
+  8: "SourceUpdated",
+  9: "SourceDeleted"
 };
 
 const eventTypesNice = {
   1: "service created",
   2: "service deleted",
   3: "service updated",
-  4: "source updated",
+  4: "source created",
   5: "build started",
   6: "build finished",
-  7: "build failed"
+  7: "build failed",
+  8: "source updated",
+  9: "source deleted"
 };
 
 @Component({
@@ -29,12 +33,38 @@ const eventTypesNice = {
 })
 export class EventsListComponent implements OnInit {
   @Input() events: types.Event[];
+  searched: types.Event[];
+  eventsPart: types.Event[] = [];
   testEvents: types.Event[] = testEvents.default;
   query: string = "";
 
+  public pageSize = 30;
+  public currentPage = 0;
+  public length = 0;
+
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    //this.events = this.testEvents;
+    this.refresh();
+  }
+
+  ngOnChanges(changes) {
+    this.refresh();
+  }
+
+  refresh() {
+    this.searched = this.events
+      ? this.events.filter(e => {
+          if (!e || !e.service || !e.service.name) {
+            return false;
+          }
+          return true;
+        })
+      : [];
+    this.length = this.searched.length;
+    this.iterator();
+  }
 
   eventTypeToString(e: types.Event): string {
     return eventTypesNice[e.type];
@@ -75,6 +105,37 @@ export class EventsListComponent implements OnInit {
   }
 
   shortHash(s: string): string {
+    if (!s) {
+      return "";
+    }
     return s.slice(0, 8);
+  }
+
+  public handlePage(e: any) {
+    this.currentPage = e.pageIndex;
+    this.pageSize = e.pageSize;
+    this.iterator();
+  }
+
+  private iterator() {
+    const end = (this.currentPage + 1) * this.pageSize;
+    const start = this.currentPage * this.pageSize;
+    const part = this.searched ? this.searched.slice(start, end) : [];
+    this.eventsPart = part;
+  }
+
+  search() {
+    this.searched = this.events.filter(e => {
+      if (!this.query || this.query.length == 0) {
+        return true;
+      }
+      if (!e.service || !e.service.name) {
+        return false;
+      }
+      return e.service.name.includes(this.query);
+    });
+    this.currentPage = 0;
+    this.length = this.searched.length;
+    this.iterator();
   }
 }

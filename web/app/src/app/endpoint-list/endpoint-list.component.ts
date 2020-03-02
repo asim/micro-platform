@@ -14,9 +14,16 @@ export class EndpointListComponent implements OnInit {
 
   constructor(private ses: ServiceService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.regenJSONs();
+  }
 
   ngOnCange() {
+    
+    this.regenJSONs();
+  }
+
+  regenJSONs() {
     this.services.forEach(service => {
       service.endpoints.forEach(endpoint => {
         endpoint.requestJSON = this.valueToJson(endpoint.request, 1);

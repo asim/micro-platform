@@ -5,6 +5,7 @@ package go.micro.platform;
 service Platform {
     rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {}
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
+    rpc GetEvent(GetEventRequest) returns (GetEventResponse) {}
     
     rpc CreateService(CreateServiceRequest) returns (CreateServiceResponse) {};
     rpc ReadService(ReadServiceRequest) returns (ReadServiceResponse) {};
@@ -19,6 +20,14 @@ message CreateEventRequest {
 
 message CreateEventResponse {}
 
+message GetEventRequest {
+    Event event = 1;
+}
+
+message GetEventResponse {
+    Event event = 1;
+}
+
 message ListEventsRequest {
     Service service = 1;
 }
@@ -32,10 +41,12 @@ enum EventType {
     ServiceCreated = 1;
     ServiceDeleted = 2;
     ServiceUpdated = 3;
-    SourceUpdated = 4;
     BuildStarted = 5;
     BuildFinished = 6;
     BuildFailed = 7;
+    SourceCreated = 4;
+    SourceUpdated = 8;
+    SourceDeleted = 9;
 }
 
 message Event {
@@ -43,6 +54,7 @@ message Event {
     int64 timestamp = 2;
     map<string,string> metadata = 3;
     Service service = 4;
+    string id = 5;
 }
 
 message CreateServiceRequest {
