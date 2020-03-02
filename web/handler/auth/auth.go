@@ -108,6 +108,7 @@ func issueSession(service web.Service) http.Handler {
 			map[string]string{
 				"email":                   *githubUser.Email,
 				"name":                    *githubUser.Name,
+				"login":                   *githubUser.Login,
 				"avatar_url":              githubUser.GetAvatarURL(),
 				"team_name":               teamName,
 				"team_url":                teamURL,
@@ -143,6 +144,7 @@ type User struct {
 	TeamName              string `json:"teamName"`
 	TeamURL               string `json:"teamURL"`
 	OrganizationAvatarURL string `json:"organizationAvatarURL"`
+	Login                 string `json:"login"`
 }
 
 func userHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
@@ -179,6 +181,7 @@ func userHandler(service web.Service) func(http.ResponseWriter, *http.Request) {
 			TeamName:              acc.Metadata["team_name"],
 			TeamURL:               acc.Metadata["team_url"],
 			OrganizationAvatarURL: acc.Metadata["organization_avatar_url"],
+			Login:                 acc.Metadata["login"],
 		})
 	}
 }

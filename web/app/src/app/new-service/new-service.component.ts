@@ -1,10 +1,19 @@
-import { Component, OnInit, ViewEncapsulation } from "@angular/core";
+import {
+  Component,
+  OnInit,
+  ViewEncapsulation,
+  ViewChild,
+  ElementRef
+} from "@angular/core";
+import { FormControl, Validators } from "@angular/forms";
 import { Location } from "@angular/common";
 import { UserService } from "../user.service";
 import { ServiceService } from "../service.service";
 import * as types from "../types";
 import { Router, ActivatedRoute } from "@angular/router";
 import * as _ from "lodash";
+import * as rxjs from "rxjs";
+import { debounceTime } from "rxjs/operators";
 import { NotificationsService } from "angular2-notifications";
 
 @Component({
@@ -14,6 +23,8 @@ import { NotificationsService } from "angular2-notifications";
   encapsulation: ViewEncapsulation.None
 })
 export class NewServiceComponent implements OnInit {
+  serviceInput = new FormControl("", [Validators.required]);
+  @ViewChild("sinput", { static: false }) sinput: ElementRef;
   alias = "";
   namespace = "go.micro";
   serviceType = "srv";
@@ -24,12 +35,14 @@ export class NewServiceComponent implements OnInit {
   intervalId: any;
   buildTimerIntervalId: any;
   lastKeypress = new Date();
+  loadingServices = false;
   events: types.Event[] = [];
   services: types.Service[] = [];
   lastInput;
   step = 0;
   // approximate time it will take to finisht the build
   maxBuildTimer = 60;
+  serviceExists = false;
   minBuildTimer = 5;
   // no id for events so have to use timestamp
   lastBuildFailureTimestamp = 0;
@@ -58,47 +71,70 @@ export class NewServiceComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.alias = this.us.user.login;
+    this.serviceInput.markAsTouched();
     this.activeRoute.params.subscribe(p => {
       const id = <string>p["id"];
       if (id) {
         this.alias = _.last(id.split("."));
       }
       this.regen();
+      this.serviceInput.markAsTouched();
     });
 
     this.token = this.us.token();
     this.serviceName =
       this.namespace + "." + this.serviceType + "." + this.alias;
 
+    this.loadAll();
     this.intervalId = setInterval(() => {
-      this.ses
-        .events(this.serviceName)
-        .then(events => {
-          this.events = events;
-          this.checkEvents();
-        })
-        .catch(e => {
-          if (this.eventErrored) {
-            return;
-          }
-          this.eventErrored = true;
-          let errMsg = "";
-          try {
-            errMsg = JSON.parse(e.error.error).detail;
-          } catch (e) {}
-          this.notif.error("Error listing events", errMsg);
-        });
-      this.ses.list().then(services => {
-        this.services = services;
-        this.checkServices();
-      });
+      this.loadAll();
     }, 1500);
-
     this.progressPercentage = this.percentages[this.step];
+  }
+
+  ngAfterViewInit() {
+    const source = rxjs.fromEvent(this.sinput.nativeElement, "keyup");
+    source.pipe(debounceTime(600)).subscribe(c => {
+      this.loadingServices = true
+      this.loadAll();
+    });
+  }
+
+  loadAll() {
+    this.ses
+      .events(this.serviceName)
+      .then(events => {
+        this.events = events;
+        this.checkEvents();
+      })
+      .catch(e => {
+        if (this.eventErrored) {
+          return;
+        }
+        this.eventErrored = true;
+        let errMsg = "";
+        try {
+          errMsg = JSON.parse(e.error.error).detail;
+        } catch (e) {}
+        this.notif.error("Error listing events", errMsg);
+      });
+    this.ses.list().then(services => {
+      this.services = services;
+      this.checkServices();
+      this.loadingServices = false;
+    });
   }
 
   keyPress(event: any) {
     this.lastKeypress = new Date();
+    if (
+      !this.serviceName ||
+      new Date().getTime() - this.lastKeypress.getTime() < 1500
+    ) {
+      return;
+    }
+    this.loadAll();
     this.location.replaceState("/service/new/" + this.serviceName);
   }
 
@@ -231,7 +267,18 @@ export class NewServiceComponent implements OnInit {
       this.services.filter(e => {
         return e.name == this.serviceName;
       }).length > 0;
-    if (inRegistry && this.step < 4) {
+    if (!inRegistry) {
+      this.serviceExists = false;
+      this.serviceInput.markAsTouched();
+      return;
+    }
+    if (this.step == 0) {
+      // Only checking for service exist on step 0
+      // to support "service already exists "
+      this.serviceExists = true;
+      this.serviceInput.setErrors({ incorrect: true });
+      this.serviceInput.markAsTouched();
+    } else if (this.step < 4) {
       this.step = 4;
       this.progressPercentage = 100;
       setTimeout(() => {
