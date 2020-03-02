@@ -13,7 +13,7 @@
       -->
       <mat-form-field
         id="new-service-input"
-        [class.show]="step == 0"
+        *ngIf="step == 0"
         style="padding-top: 0em; margin-top: 0em; width: 9em;"
       >
         <input
@@ -22,7 +22,6 @@
           matInputAutofocus
           matInput
           [formControl]="serviceInput"
-          [disabled]="step > 0"
           [(ngModel)]="alias"
           (ngModelChange)="regen()"
           (keyup)="keyPress($event)"
@@ -38,7 +37,11 @@
       </mat-form-field>
     </mat-card-title>
   </mat-card>
-  <mat-card *ngIf="loaded" style="padding-top: 0; margin-top: 0;" class="mat-card-flat">
+  <mat-card
+    *ngIf="loaded"
+    style="padding-top: 0; margin-top: 0;"
+    class="mat-card-flat"
+  >
     <!-- Next level cruft alert. Input box adds margin which is not present on steps 1+ -->
     <br *ngIf="step != 0" />
     <mat-card-title>

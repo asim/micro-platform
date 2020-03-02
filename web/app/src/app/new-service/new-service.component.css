@@ -27,3 +27,8 @@ code {
   color: #f3f3f3 !important;
   text-decoration: underline;
 }
+.mat-form-field-infix {
+  padding-top: 0 !important;
+  margin-top: 0;
+  border-top: 0;
+}
