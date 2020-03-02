@@ -134,13 +134,6 @@ export class NewServiceComponent implements OnInit {
 
   keyPress(event: any) {
     this.lastKeypress = new Date();
-    if (
-      !this.serviceName ||
-      new Date().getTime() - this.lastKeypress.getTime() < 1500
-    ) {
-      return;
-    }
-    this.loadAll();
     this.location.replaceState("/service/new/" + this.serviceName);
   }
 
