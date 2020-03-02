@@ -8,7 +8,9 @@
         *ngIf="step > 0"
         >{{ alias }}</span
       >
-
+      <!-- Using ngif here breaks viewchild, see:
+        https://stackoverflow.com/questions/39158922/viewchild-not-working-cannot-read-property-nativeelement-of-undefined
+      -->
       <mat-form-field
         id="new-service-input"
         [class.show]="step == 0"
