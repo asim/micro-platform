@@ -86,6 +86,7 @@ export class NewServiceComponent implements OnInit {
     this.token = this.us.token();
     this.serviceName =
       this.namespace + "." + this.serviceType + "." + this.alias;
+    this.location.replaceState("/service/new/" + this.serviceName);
 
     this.loadAll(true);
     this.intervalId = setInterval(() => {
