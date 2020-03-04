@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/dghubble/gologin/v2"
 	"github.com/dghubble/gologin/v2/github"
@@ -122,15 +123,14 @@ func issueSession(service web.Service) http.Handler {
 			return
 		}
 
-		// Include the minted session in a query parameter so the frontend can save it.
-		// Although with https query paramteres are encrypted, this is still not the most ideal
-		// way to do it. Will suffice for now.
 		http.SetCookie(w, &http.Cookie{
 			Name:    "micro_token",
 			Value:   acc.Token,
 			Expires: acc.Expiry,
 			Path:    "/",
+			Domain:  strings.ReplaceAll(os.Getenv("FRONTEND_ADDRESS"), "https://", "*"),
 		})
+
 		http.Redirect(w, req, os.Getenv("FRONTEND_ADDRESS")+"/services", http.StatusFound)
 	}
 	return http.HandlerFunc(fn)
