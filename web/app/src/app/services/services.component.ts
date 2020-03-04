@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { ServiceService } from "../service.service";
 import * as types from "../types";
+import { NotificationsService } from "angular2-notifications";
 
 var groupBy = function(xs, key) {
   return xs.reduce(function(rv, x) {
@@ -20,11 +21,21 @@ export class ServicesComponent implements OnInit {
 
   constructor(
     private ses: ServiceService,
+    private notif: NotificationsService
   ) {}
 
   ngOnInit() {
-    this.ses.list().then(servs => {
-      this.services = groupBy(servs, "name");
-    });
+    this.ses
+      .list()
+      .then(servs => {
+        this.services = groupBy(servs, "name");
+      })
+      .catch(e => {
+        console.log(e);
+        this.notif.error(
+          "Error listing services",
+          JSON.parse(e.error.error).detail
+        );
+      });
   }
 }

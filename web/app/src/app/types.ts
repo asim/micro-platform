@@ -1,3 +1,5 @@
+
+
 export interface User {
   name: string;
   email: string;
@@ -5,6 +7,7 @@ export interface User {
   teamName: string;
   teamURL: string;
   organizationAvatarURL: string;
+  login: string;
 }
 
 export interface Value {

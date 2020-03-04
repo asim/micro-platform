@@ -22,13 +22,14 @@ func (h *Handler) ListEvents(ctx context.Context, req *pb.ListEventsRequest, rsp
 	// Use a prefix to scope to the resource (if one was provided)
 	if req.Service != nil && len(req.Service.Name) > 0 {
 		records, err = h.Store.Read(req.Service.Name, store.ReadPrefix())
+		if err != nil && !strings.Contains(err.Error(), "not found") {
+			return errors.InternalServerError("go.micro.platform", "unable to read from store: %v", err)
+		}
 	} else {
 		records, err = h.Store.List()
-	}
-
-	//  Checck for the error
-	if err != nil {
-		return errors.InternalServerError("go.micro.platform", "unable to read from store: %v", err)
+		if err != nil {
+			return errors.InternalServerError("go.micro.platform", "unable to read from store: %v", err)
+		}
 	}
 
 	// Decode the records
