@@ -31,3 +31,5 @@ The web interface for the basic oauth flow. This will simply provide a basic log
 
 ### go.micro.web.user.login?
 The web interface the user is redirected to when they need to login / signup. The various oauth options are presented to the user.
+
+We will also update the go-micro auth-wrapper to redirect rather than 401 if the service is of type web.
