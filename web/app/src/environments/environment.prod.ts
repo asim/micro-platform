@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  backendUrl: "https://micro.mu/platform",
+  backendUrl: "https://web.micro.mu/platform",
 };

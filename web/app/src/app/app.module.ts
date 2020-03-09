@@ -40,7 +40,7 @@ import { UserService } from "./user.service";
 import { HttpClientModule } from "@angular/common/http";
 import { SimpleNotificationsModule } from "angular2-notifications";
 import { ServiceComponent } from "./service/service.component";
-import { FormsModule } from "@angular/forms";
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { SearchPipe } from "./search.pipe";
 import { NewServiceComponent } from "./new-service/new-service.component";
 
@@ -115,13 +115,13 @@ export function getHighlightLanguages() {
     HttpClientModule,
     SimpleNotificationsModule.forRoot({
       //position: ["top", "right"],
-
     }),
     MatCardModule,
     MatChipsModule,
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
+    ReactiveFormsModule,
     MatProgressSpinnerModule,
     MatExpansionModule,
     MatProgressBarModule,
