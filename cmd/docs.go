@@ -13,11 +13,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var path string
-var goImportPrefix string
+var (
+	path           string
+	goImportPrefix string
+	skip           = []string{"node_modules"}
+)
 
-var rootCmd = &cobra.Command{
-	Use:   "api-doc-gen",
+var docsCmd = &cobra.Command{
+	Use:   "doc-gen",
 	Short: "Hugo is a very fast static site generator",
 	Long: `A Fast and Flexible Static Site Generator built with
 				  love by spf13 and friends in Go.
@@ -28,18 +31,10 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.Flags().StringVarP(&path, "path", "p", "", "Source directory to read from")
-	rootCmd.Flags().StringVarP(&goImportPrefix, "go-import-prefix", "g", "github.com/micro/services", "For go client examples, the path must be known ie \"github.com/micro/service\"")
+	docsCmd.Flags().StringVarP(&path, "path", "p", "", "Source directory to read from")
+	docsCmd.Flags().StringVarP(&goImportPrefix, "go-import-prefix", "g", "github.com/micro/services", "For go client examples, the path must be known ie \"github.com/micro/service\"")
+	rootCmd.AddCommand(docsCmd)
 }
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-var skip = []string{"node_modules"}
 
 func generate() {
 	protoPaths := getProtoPaths(path)
