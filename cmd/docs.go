@@ -96,21 +96,36 @@ func generateMarkdowns(serviceName string, protoPaths []string) error {
 			rpcs[s.Name] = s
 		}))
 
+	getNormalisedFields := func(messgeName string) []*proto.NormalField {
+		msg, ok := messages[messgeName]
+		if !ok {
+			return []*proto.NormalField{}
+		}
+		ret := []*proto.NormalField{}
+		for _, element := range msg.Elements {
+			if nf, ok := element.(*proto.NormalField); ok {
+				ret = append(ret, nf)
+			}
+		}
+		return ret
+	}
+
+	var getMessageNames func(fields []*proto.NormalField) []string
+	getMessageNames = func(fields []*proto.NormalField) []string {
+		ret := []string{}
+		for _, field := range fields {
+			// this means it's a custom message
+			if field.Type != strings.ToLower(field.Type) {
+				ret = append(ret, field.Type)
+				fields := getNormalisedFields(field.Type)
+				ret = append(ret, getMessageNames(fields)...)
+			}
+		}
+		return ret
+	}
 	tmpl, err := template.New(serviceName).Funcs(template.FuncMap{
-		"toJSON": toJSON,
-		"getNormalFields": func(messgeName string) []*proto.NormalField {
-			msg, ok := messages[messgeName]
-			if !ok {
-				return []*proto.NormalField{}
-			}
-			ret := []*proto.NormalField{}
-			for _, element := range msg.Elements {
-				if nf, ok := element.(*proto.NormalField); ok {
-					ret = append(ret, nf)
-				}
-			}
-			return ret
-		},
+		"toJSON":          toJSON,
+		"getNormalFields": getNormalisedFields,
 		"commentLines": func(comment *proto.Comment) string {
 			if comment == nil {
 				return ""
@@ -122,6 +137,11 @@ func generateMarkdowns(serviceName string, protoPaths []string) error {
 		},
 		"parentService": func(s *proto.RPC) *proto.Service {
 			return s.Parent.(*proto.Service)
+		},
+		"messagesUsedByReqRsp": func(s *proto.RPC) []string {
+			reqFields := getNormalisedFields(s.RequestType)
+			rspFields := getNormalisedFields(s.ReturnsType)
+			return unique(append(getMessageNames(reqFields), getMessageNames(rspFields)...))
 		},
 	}).Parse(serviceTemplate)
 	if err != nil {
@@ -142,6 +162,18 @@ func generateMarkdowns(serviceName string, protoPaths []string) error {
 		return err
 	}
 	return nil
+}
+
+func unique(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range stringSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func inSkip(dirname string) bool {
