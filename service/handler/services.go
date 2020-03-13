@@ -14,7 +14,9 @@ func (h *Handler) CreateService(ctx context.Context, req *pb.CreateServiceReques
 		return errors.BadRequest("go.micro.api.platform", "service required")
 	}
 
-	if err := h.Runtime.Create(deserializeService(req.Service)); err != nil {
+	service := deserializeService(req.Service)
+
+	if err := h.Runtime.Create(service, runtime.CreateType(req.Service.Type)); err != nil {
 		return err
 	}
 
