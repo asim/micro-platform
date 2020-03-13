@@ -15,8 +15,13 @@ import (
 	pb "github.com/micro/platform/service/proto"
 )
 
-// Topic aysnc messages are published to
-var Topic = "go.micro.runtime.events"
+var (
+	// Topic aysnc messages are published to
+	Topic = "go.micro.runtime.events"
+
+	// The base image for our builds
+	Image = "docker.pkg.github.com/micro/services"
+)
 
 // Handler implements the platform service interface
 type Handler struct {

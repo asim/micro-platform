@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	"github.com/emicklei/proto"
-	registry "github.com/micro/go-micro/registry/service/proto"
+	registry "github.com/micro/go-micro/v2/registry/service/proto"
 	"github.com/spf13/cobra"
 )
 

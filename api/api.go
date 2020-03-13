@@ -118,6 +118,7 @@ func serializeService(service *platform.Service) *pb.Service {
 		Version:  service.Version,
 		Source:   service.Source,
 		Metadata: service.Metadata,
+		Type: service.Type,
 	}
 }
 
@@ -127,5 +128,6 @@ func deserializeService(service *pb.Service) *platform.Service {
 		Version:  service.Version,
 		Source:   service.Source,
 		Metadata: service.Metadata,
+		Type: service.Type,
 	}
 }
