@@ -17,6 +17,7 @@ func (h *Handler) CreateService(ctx context.Context, req *pb.CreateServiceReques
 	}
 
 	service := deserializeService(req.Service)
+
 	// specify the image to use
 	formattedName := strings.ReplaceAll(service.Name, "/", "-")
 	image := fmt.Sprintf("%v/%v", Image, formattedName)

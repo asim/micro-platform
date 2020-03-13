@@ -13,11 +13,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var path string
-var goImportPrefix string
+var (
+	path           string
+	goImportPrefix string
+	skip           = []string{"node_modules"}
+)
 
-var rootCmd = &cobra.Command{
-	Use:   "api-doc-gen",
+var docsCmd = &cobra.Command{
+	Use:   "doc-gen",
 	Short: "Hugo is a very fast static site generator",
 	Long: `A Fast and Flexible Static Site Generator built with
 				  love by spf13 and friends in Go.
@@ -28,18 +31,10 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.Flags().StringVarP(&path, "path", "p", "", "Source directory to read from")
-	rootCmd.Flags().StringVarP(&goImportPrefix, "go-import-prefix", "g", "github.com/micro/services", "For go client examples, the path must be known ie \"github.com/micro/service\"")
+	docsCmd.Flags().StringVarP(&path, "path", "p", "", "Source directory to read from")
+	docsCmd.Flags().StringVarP(&goImportPrefix, "go-import-prefix", "g", "github.com/micro/services", "For go client examples, the path must be known ie \"github.com/micro/service\"")
+	rootCmd.AddCommand(docsCmd)
 }
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-var skip = []string{"node_modules"}
 
 func generate() {
 	protoPaths := getProtoPaths(path)
@@ -101,21 +96,36 @@ func generateMarkdowns(serviceName string, protoPaths []string) error {
 			rpcs[s.Name] = s
 		}))
 
+	getNormalisedFields := func(messgeName string) []*proto.NormalField {
+		msg, ok := messages[messgeName]
+		if !ok {
+			return []*proto.NormalField{}
+		}
+		ret := []*proto.NormalField{}
+		for _, element := range msg.Elements {
+			if nf, ok := element.(*proto.NormalField); ok {
+				ret = append(ret, nf)
+			}
+		}
+		return ret
+	}
+
+	var getMessageNames func(fields []*proto.NormalField) []string
+	getMessageNames = func(fields []*proto.NormalField) []string {
+		ret := []string{}
+		for _, field := range fields {
+			// this means it's a custom message
+			if field.Type != strings.ToLower(field.Type) {
+				ret = append(ret, field.Type)
+				fields := getNormalisedFields(field.Type)
+				ret = append(ret, getMessageNames(fields)...)
+			}
+		}
+		return ret
+	}
 	tmpl, err := template.New(serviceName).Funcs(template.FuncMap{
-		"toJSON": toJSON,
-		"getNormalFields": func(messgeName string) []*proto.NormalField {
-			msg, ok := messages[messgeName]
-			if !ok {
-				return []*proto.NormalField{}
-			}
-			ret := []*proto.NormalField{}
-			for _, element := range msg.Elements {
-				if nf, ok := element.(*proto.NormalField); ok {
-					ret = append(ret, nf)
-				}
-			}
-			return ret
-		},
+		"toJSON":          toJSON,
+		"getNormalFields": getNormalisedFields,
 		"commentLines": func(comment *proto.Comment) string {
 			if comment == nil {
 				return ""
@@ -127,6 +137,11 @@ func generateMarkdowns(serviceName string, protoPaths []string) error {
 		},
 		"parentService": func(s *proto.RPC) *proto.Service {
 			return s.Parent.(*proto.Service)
+		},
+		"messagesUsedByReqRsp": func(s *proto.RPC) []string {
+			reqFields := getNormalisedFields(s.RequestType)
+			rspFields := getNormalisedFields(s.ReturnsType)
+			return unique(append(getMessageNames(reqFields), getMessageNames(rspFields)...))
 		},
 	}).Parse(serviceTemplate)
 	if err != nil {
@@ -147,6 +162,18 @@ func generateMarkdowns(serviceName string, protoPaths []string) error {
 		return err
 	}
 	return nil
+}
+
+func unique(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range stringSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func inSkip(dirname string) bool {
