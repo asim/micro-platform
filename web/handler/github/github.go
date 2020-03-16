@@ -158,6 +158,7 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 			_, err := h.platform.CreateService(req.Context(), &platform.CreateServiceRequest{
 				Service: &platform.Service{
 					Name:    srv,
+					Source:  path.Join(repoURL, srv),
 					Version: DefaultVersion,
 					Metadata: map[string]string{
 						"build": commitID,
@@ -175,6 +176,7 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 			_, err := h.platform.UpdateService(req.Context(), &platform.UpdateServiceRequest{
 				Service: &platform.Service{
 					Name:    srv,
+					Source:  path.Join(repoURL, srv),
 					Version: DefaultVersion,
 					Metadata: map[string]string{
 						"build": commitID,
@@ -192,6 +194,7 @@ func (h *Handler) eventsHandler(w http.ResponseWriter, req *http.Request) {
 			_, err := h.platform.DeleteService(req.Context(), &platform.DeleteServiceRequest{
 				Service: &platform.Service{
 					Name:    srv,
+					Source:  path.Join(repoURL, srv),
 					Version: DefaultVersion,
 				},
 			})

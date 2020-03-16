@@ -19,7 +19,7 @@ spec:
         - web
         env:
         - name: FRONTEND_ADDRESS
-          value: "https://micro.mu/platform"
+          value: "https://web.micro.mu/platform"
         - name: MICRO_SERVER_ADDRESS
           value: "0.0.0.0:8080"
         - name: MICRO_BROKER
