@@ -32,6 +32,11 @@ spec:
           value: "etcd"
         - name: MICRO_REGISTRY_ADDRESS
           value: "etcd-cluster-client"
+        - name: GITHUB_ORG_ID
+          valueFrom:
+            secretKeyRef:
+              key: GITHUB_ORG_ID
+              name: github-credentials
         - name: GITHUB_TEAM_ID
           valueFrom:
             secretKeyRef:
