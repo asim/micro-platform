@@ -26,7 +26,14 @@ The features which will be included in the platform
 
 ## Usage
 
-Coming soon...
+To bootstrap the platform, create a [platforms.yaml](./platforms-test.yaml), and prepare a AWS S3 bucket
+for [terraform state storage](https://www.terraform.io/docs/backends/types/s3.html). Then run 
+`./platform infra plan -c platforms.yaml` and `./platform infra apply -c platforms.yaml`.
+To destroy, `./platform infra destroy -c platforms.yaml`.
+
+Configuration options can be set with viper, for example
+[https://github.com/micro/platform/blob/cc27173/cmd/infra.go#L44](the state-store flag) can be set by
+setting the environment variable `MICRO_STATE_STORE`.
 
 See the [docs](docs) for more info.
 
