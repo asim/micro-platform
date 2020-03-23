@@ -19,14 +19,6 @@ RUN apk add ca-certificates && \
 
 WORKDIR /
 COPY . /
-# Specify list of things to copy from builder
-# The backend service
-COPY --from=builder /platform/service/service /service/service
-# The web UI
-COPY --from=builder /platform/web/web /web/web
-# The api
-COPY --from=builder /platform/api/api /api/api
-# The scheduler
 COPY --from=builder /platform/platform /platform
 COPY entrypoint.sh /
 RUN chmod 755 entrypoint.sh
