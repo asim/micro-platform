@@ -14,9 +14,6 @@ vendor:
 	go mod vendor
 
 build:
-	cd service && go build -a -installsuffix cgo -ldflags "-s -w ${LDFLAGS}" . && cd ..
-	cd web && go build -a -installsuffix cgo -ldflags "-s -w ${LDFLAGS}" . && cd ..
-	cd api && go build -a -installsuffix cgo -ldflags "-s -w ${LDFLAGS}" . && cd ..
 	go build -a -installsuffix cgo -ldflags "-s -w ${LDFLAGS}" -o ${NAME} .
 
 docker:

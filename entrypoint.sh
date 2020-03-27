@@ -7,7 +7,3 @@ APP=$1
 
 echo "Running $APP"
 ./platform $APP &
-
-# start the platform
-echo "Running platform"
-./platform scheduler
