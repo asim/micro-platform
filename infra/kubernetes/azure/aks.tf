@@ -13,16 +13,19 @@ resource "random_id" "k8s_name" {
 
 resource "azuread_application" "k8s" {
   name = "micro-${var.region}-k8s-${random_id.k8s_name.hex}"
-    provisioner "local-exec" {
-    command = "sleep 30"
+
+  // hack for consistency
+  provisioner "local-exec" {
+    command = "sleep 10"
   }
 }
 
 resource "azuread_service_principal" "k8s" {
-  application_id = azuread_application.k8s.id
+  application_id = azuread_application.k8s.application_id
 
+  // hack for consistency
   provisioner "local-exec" {
-    command = "sleep 30"
+    command = "sleep 10"
   }
 }
 
@@ -34,7 +37,10 @@ resource "random_password" "service_principle_secret" {
 resource "azuread_service_principal_password" "k8s" {
   service_principal_id = azuread_service_principal.k8s.id
   value                = random_password.service_principle_secret.result
-    provisioner "local-exec" {
+  end_date_relative    = "87600h"
+
+  // hack for consistency
+  provisioner "local-exec" {
     command = "sleep 10"
   }
 }
@@ -58,14 +64,15 @@ resource "azurerm_kubernetes_cluster" "k8s_cluster" {
 
   default_node_pool {
     name       = "default${random_id.k8s_name.dec}"
-    node_count = 5
-    vm_size    = "Standard_D2_v2"
+    node_count = 3
+    vm_size    = "Standard_A2_v2"
   }
 
   service_principal {
     client_id     = azuread_service_principal.k8s.application_id
     client_secret = azuread_service_principal_password.k8s.value
   }
+
 }
 
 output "cluster_name" {
@@ -73,6 +80,6 @@ output "cluster_name" {
 }
 
 output "kubeconfig" {
-  value     = azurerm_kubernetes_cluster.k8s_cluster.kube_admin_config_raw
+  value     = azurerm_kubernetes_cluster.k8s_cluster.kube_config_raw
   sensitive = true
 }

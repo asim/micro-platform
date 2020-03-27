@@ -1,9 +1,9 @@
 variable "region" {
   description = "Region Code"
-  default     = "uksouth"
+  default     = "westeurope"
 }
 
 variable "location" {
   description = "Azure Location"
-  default     = "UK South"
+  default     = "West Europe"
 }

@@ -41,6 +41,9 @@ func (t *TerraformModule) Validate() error {
 	if err := os.MkdirAll(t.Path, 0o777); err != nil {
 		return err
 	}
+	if err := os.MkdirAll("/tmp/micro-platform-plugin-cache", 0o700); err != nil {
+		return err
+	}
 
 	u, err := url.Parse(t.Source)
 	if err != nil {
@@ -123,6 +126,7 @@ func (t *TerraformModule) execTerraform(ctx context.Context, args ...string) err
 	for k, v := range t.Variables {
 		tf.Env = append(tf.Env, fmt.Sprintf("TF_VAR_%s=%s", k, v))
 	}
+	tf.Env = append(tf.Env, "TF_PLUGIN_CACHE_DIR=/tmp/micro-platform-plugin-cache")
 	stdout, err := tf.StdoutPipe()
 	if err != nil {
 		return errors.Wrap(err, "StdoutPipe failed")

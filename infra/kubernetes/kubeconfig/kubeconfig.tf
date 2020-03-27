@@ -48,6 +48,11 @@ data "terraform_remote_state" "aks" {
   }
 }
 
+provider "azurerm" {
+  version = "~>2.2"
+  features {}
+}
+
 data "azurerm_kubernetes_cluster" "aks" {
   count               = var.kubernetes == "azure" ? 1 : 0
   resource_group_name = data.terraform_remote_state.aks[count.index].outputs.cluster_name
@@ -56,7 +61,7 @@ data "azurerm_kubernetes_cluster" "aks" {
 
 resource "local_file" "aks_kubeconfig" {
   count             = var.kubernetes == "azure" ? 1 : 0
-  sensitive_content = data.azurerm_kubernetes_cluster.aks[count.index].kube_admin_config_raw
+  sensitive_content = data.azurerm_kubernetes_cluster.aks[count.index].kube_config_raw
   filename          = "${path.module}/kubeconfig"
   file_permission   = "0600"
 }
