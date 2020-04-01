@@ -17,6 +17,7 @@ The features which will be included in the platform
 
 - **Cloud Automation** - Full terraform automation
 - **Kubernetes Native** - Built to run on Kubernetes
+- **Multi-Region** - Global deployments of the platform
 - **Multi-Cloud** - Deploy across multiple clouds
 
 ## Usage
