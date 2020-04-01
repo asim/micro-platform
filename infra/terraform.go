@@ -218,8 +218,23 @@ func (t *TerraformModule) cleanPath(in string) string {
 }
 
 func (t *TerraformModule) generateBackendConfig() error {
-	backend := template.Must(template.New("tfBackend").Parse(tfS3BackendTemplate))
-	f, err := os.OpenFile(filepath.Join(t.Path, "backend-config.tf"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	stateStore := viper.GetString("state-store")
+	if len(stateStore) == 0 {
+		stateStore = viper.GetString("cloud-provider")
+	}
+	switch stateStore {
+	case "aws":
+		return t.generateBackendConfigAWS()
+	case "azure":
+		return t.generateBackendConfigAzure()
+	default:
+		return errors.New(stateStore + " is not a supported remote state store")
+	}
+}
+
+func (t *TerraformModule) generateBackendConfigAWS() error {
+	backend := template.Must(template.New(t.ID + "backend").Parse(tfS3BackendTemplate))
+	f, err := os.OpenFile(filepath.Join(t.Path, "backend-config-micro-platform.tf"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
@@ -246,9 +261,48 @@ func (t *TerraformModule) generateBackendConfig() error {
 	return f.Close()
 }
 
+func (t *TerraformModule) generateBackendConfigAzure() error {
+	backend := template.Must(template.New(t.ID + "backend").Parse(tfAzureRMBackendTemplate))
+	f, err := os.OpenFile(filepath.Join(t.Path, "backend-config-micro-platform.tf"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
+	}
+	if err := backend.Execute(f, struct {
+		ResourceGroupName  string
+		StorageAccountName string
+		ContainerName      string
+		Key                string
+	}{
+		ResourceGroupName:  viper.GetString("azure-state-resource-group"),
+		StorageAccountName: viper.GetString("azure-storage-account"),
+		ContainerName:      viper.GetString("azure-storage-container"),
+		Key:                t.ID,
+	}); err != nil {
+		f.Close()
+		return err
+	}
+
+	return f.Close()
+}
+
 func (t *TerraformModule) generateRemoteStateDataSources() error {
-	remote := template.Must(template.New("tfRemoteState").Parse(tfS3RemoteStateTemplate))
-	f, err := os.OpenFile(filepath.Join(t.Path, "remote-state-data-sources.tf"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	stateStore := viper.GetString("state-store")
+	if len(stateStore) == 0 {
+		stateStore = viper.GetString("cloud-provider")
+	}
+	switch stateStore {
+	case "aws":
+		return t.generateRemoteStateAws()
+	case "azure":
+		return t.generateRemoteStateAzure()
+	default:
+		return errors.New(stateStore + " is not a supported remote state store")
+	}
+}
+
+func (t *TerraformModule) generateRemoteStateAws() error {
+	remote := template.Must(template.New(t.ID + "remote").Parse(tfS3RemoteStateTemplate))
+	f, err := os.OpenFile(filepath.Join(t.Path, "remote-state-data-sources-micro-platform.tf"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
@@ -277,6 +331,32 @@ func (t *TerraformModule) generateRemoteStateDataSources() error {
 	return f.Close()
 }
 
+func (t *TerraformModule) generateRemoteStateAzure() error {
+	remote := template.Must(template.New(t.ID + "remote").Parse(tfAzureRmStateTemplate))
+	f, err := os.OpenFile(filepath.Join(t.Path, "remote-state-data-sources-micro-platform.tf"), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
+	}
+	for k, v := range t.RemoteStates {
+		if err := remote.Execute(f, struct {
+			RemoteStateName    string
+			ResourceGroupName  string
+			StorageAccountName string
+			ContainerName      string
+			Key                string
+		}{
+			RemoteStateName:    k,
+			ResourceGroupName:  viper.GetString("azure-state-resource-group"),
+			StorageAccountName: viper.GetString("azure-storage-account"),
+			ContainerName:      viper.GetString("azure-storage-container"),
+			Key:                v,
+		}); err != nil {
+			return err
+		}
+	}
+	return f.Close()
+}
+
 const tfS3BackendTemplate = `terraform {
   backend "s3" {
     bucket         = "{{.StateBucket}}"
@@ -294,6 +374,29 @@ const tfS3RemoteStateTemplate = `data "terraform_remote_state" "{{.RemoteStateNa
     dynamodb_table = "{{.LockTable}}"
     key            = "{{.Key}}"
     region         = "{{.Region}}"
+  }
+}
+
+`
+
+const tfAzureRMBackendTemplate = `terraform {
+  backend "azurerm" {
+    resource_group_name  = "{{.ResourceGroupName}}"
+    storage_account_name = "{{.StorageAccountName}}"
+    container_name       = "{{.ContainerName}}"
+    key                  = "{{.Key}}"
+  }
+}
+`
+
+const tfAzureRmStateTemplate = `data "terraform_remote_state" "{{.RemoteStateName}}" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "{{.ResourceGroupName}}"
+    storage_account_name = "{{.StorageAccountName}}"
+    container_name       = "{{.ContainerName}}"
+    key                  = "{{.Key}}"
   }
 }
 

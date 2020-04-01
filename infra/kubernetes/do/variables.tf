@@ -1,3 +1,8 @@
+variable "name" {
+  description = "Cluster Name"
+  default     = "micro"
+}
+
 variable "region" {
   description = "DigitalOcean region"
   default     = "lon1"

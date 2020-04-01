@@ -50,9 +50,23 @@ func (r *RemoteState) Destroy() error {
 }
 
 func (r *RemoteState) validateConfig() error {
-	if viper.GetString("state-store") != "aws" {
-		return errors.New("Only AWS is a supported state store")
+	stateStore := viper.GetString("state-store")
+	switch stateStore {
+	case "aws":
+		return r.validateAws()
+	case "azure":
+		return r.validateAzure()
+	default:
+		return errors.Errorf("%s is not a supported state store", stateStore)
 	}
+}
+
+func (r *RemoteState) validateAzure() error {
+	//TODO: meaningful validation
+	return nil
+}
+
+func (r *RemoteState) validateAws() error {
 	client := s3.New(
 		session.New(
 			&aws.Config{

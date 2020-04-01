@@ -29,7 +29,7 @@ resource "random_id" "k8s_name" {
 }
 
 resource "digitalocean_kubernetes_cluster" "k8s_cluster" {
-  name    = "micro-${var.region}-${random_id.k8s_name.hex}"
+  name    = "${var.name}-${var.region}-${random_id.k8s_name.hex}"
   region  = var.region
   version = data.digitalocean_kubernetes_versions.k8s_versions.latest_version
 

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -24,4 +26,16 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+// Global Flags
+func init() {
+	rootCmd.PersistentFlags().StringP("cloud-provider", "p", "azure", "Cloud provider (azure, do, local)")
+	viper.BindPFlag("cloud-provider", rootCmd.PersistentFlags().Lookup("cloud-provider"))
+	dir, err := homedir.Dir()
+	if err != nil {
+		dir = ""
+	}
+	rootCmd.PersistentFlags().StringP("kubeconfig", "k", dir+"/.kube/config", "Path to Kube Config")
+	viper.BindPFlag("kube-config-path", rootCmd.PersistentFlags().Lookup("kubeconfig"))
 }

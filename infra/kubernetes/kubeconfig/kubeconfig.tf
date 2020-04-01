@@ -12,41 +12,32 @@ variable "args" {
   EOD
 }
 
-data "terraform_remote_state" "do_k8s" {
-  count = var.kubernetes == "do" ? 1 : 0
+variable "output_path" {
+  type        = string
+  description = "File to write kubeconfig to (blank for module path)"
+  default     = ""
+}
 
-  backend = "s3"
-  config = {
-    bucket         = "micro-platform-terraform-state"
-    dynamodb_table = "micro-platform-terraform-lock"
-    key            = var.args[0]
-    region         = var.args[1]
-  }
+provider "local" {
+  version = "~> 1.4"
+}
+
+provider "digitalocean" {
+  version = "~> 1.15"
 }
 
 data "digitalocean_kubernetes_cluster" "do_k8s" {
   count = var.kubernetes == "do" ? 1 : 0
-  name  = data.terraform_remote_state.do_k8s[count.index].outputs.cluster_name
+  name  = data.terraform_remote_state.k8s.outputs.cluster_name
 }
 
 resource "local_file" "do_kubeconfig" {
   count             = var.kubernetes == "do" ? 1 : 0
   sensitive_content = data.digitalocean_kubernetes_cluster.do_k8s[count.index].kube_config.0.raw_config
-  filename          = "${path.module}/kubeconfig"
+  filename          = length(var.output_path) > 0 ? var.output_path : "${path.module}/kubeconfig"
   file_permission   = "0600"
 }
 
-data "terraform_remote_state" "aks" {
-  count = var.kubernetes == "azure" ? 1 : 0
-
-  backend = "s3"
-  config = {
-    bucket         = "micro-platform-terraform-state"
-    dynamodb_table = "micro-platform-terraform-lock"
-    key            = var.args[0]
-    region         = var.args[1]
-  }
-}
 
 provider "azurerm" {
   version = "~>2.2"
@@ -55,13 +46,13 @@ provider "azurerm" {
 
 data "azurerm_kubernetes_cluster" "aks" {
   count               = var.kubernetes == "azure" ? 1 : 0
-  resource_group_name = data.terraform_remote_state.aks[count.index].outputs.cluster_name
-  name                = data.terraform_remote_state.aks[count.index].outputs.cluster_name
+  resource_group_name = data.terraform_remote_state.k8s.outputs.cluster_name
+  name                = data.terraform_remote_state.k8s.outputs.cluster_name
 }
 
 resource "local_file" "aks_kubeconfig" {
   count             = var.kubernetes == "azure" ? 1 : 0
   sensitive_content = data.azurerm_kubernetes_cluster.aks[count.index].kube_config_raw
-  filename          = "${path.module}/kubeconfig"
+  filename          = length(var.output_path) > 0 ? var.output_path : "${path.module}/kubeconfig"
   file_permission   = "0600"
 }

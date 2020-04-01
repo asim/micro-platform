@@ -18,18 +18,13 @@ var infraCmd = &cobra.Command{
 a complete platform can be created across multiple cloud providers`,
 }
 
-// Flags for the infrastructure command
-var (
-	infraConfigFile string
-)
-
 func init() {
-	cobra.OnInitialize(infraConfig)
+	cobra.OnInitialize(viperConfig)
 
-	rootCmd.AddCommand(infraCmd)
+	// TODO at some point: Resurrect the Infra command?
+	// rootCmd.AddCommand(infraCmd)
 
-	infraCmd.PersistentFlags().StringVarP(
-		&infraConfigFile,
+	infraCmd.PersistentFlags().StringP(
 		"config-file",
 		"c",
 		"",
@@ -38,40 +33,28 @@ func init() {
 	viper.BindPFlag("config-file", infraCmd.PersistentFlags().Lookup("config-file"))
 }
 
-// infraConfig is run before every infra command, parsing config using viper
-func infraConfig() {
+// viperConfig is run before every infra command, parsing config using viper
+func viperConfig() {
 	// Defaults - can be overwritten in the config file or env variables, but undocumented atm
-	viper.SetDefault("state-store", "aws")
+	viper.SetDefault("state-store", "azure")
+	// AWS Defaults
 	viper.SetDefault("aws-region", "eu-west-2")
 	viper.SetDefault("aws-s3-bucket", "micro-platform-terraform-state")
 	viper.SetDefault("aws-dynamodb-table", "micro-platform-terraform-lock")
+	// Azure defaults
+	viper.SetDefault("azure-state-resource-group", "micro-terraform-states")
+	viper.SetDefault("azure-storage-account", "microplatform")
+	viper.SetDefault("azure-storage-container", "tfstate")
 
 	// Handle env variables, e.g. --config-file flag can be set with MICRO_CONFIG_FILE
 	viper.SetEnvPrefix("micro")
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
 
-	// cfgfile := viper.Get("config-file")
-	// if cfg, ok := cfgfile.(string); ok {
-	// 	if cfg == "" {
-	// 		infraCmd.Help()
-	// 		fmt.Fprintf(os.Stderr, "\nError: Config file is a required flag\n")
-	// 		os.Exit(1)
-	// 	}
-	// 	viper.SetConfigFile(cfg)
-	// } else {
-	// 	fmt.Fprintf(os.Stderr, "\nError: Config file flag malformed\n")
-	// }
-
-	// Read in config
+	// Read in config file
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
-	// } else {
-	// 	if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-	// 		fmt.Fprintf(os.Stderr, "Error: Config file not found: %s\n", viper.Get("config-file"))
-	// 	}
-	// }
 }
 
 // planCmd represents the plan command
